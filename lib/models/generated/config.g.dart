@@ -363,6 +363,7 @@ _Config _$ConfigFromJson(Map<String, dynamic> json) => _Config(
       : Po0FirewallProps.safeFromJson(
           json['po0FirewallProps'] as Map<String, Object?>?,
         ),
+  nodeProfileId: (json['nodeProfileId'] as num?)?.toInt(),
 );
 
 Map<String, dynamic> _$ConfigToJson(_Config instance) => <String, dynamic>{
@@ -379,4 +380,5 @@ Map<String, dynamic> _$ConfigToJson(_Config instance) => <String, dynamic>{
   'patchClashConfig': instance.patchClashConfig,
   'excludeSSIDs': instance.excludeSSIDs,
   'po0FirewallProps': instance.po0FirewallProps,
+  'nodeProfileId': instance.nodeProfileId,
 };

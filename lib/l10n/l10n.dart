@@ -5559,6 +5559,136 @@ class AppLocalizations {
       args: [],
     );
   }
+
+  /// `Share links`
+  String get shareLinks {
+    return Intl.message('Share links', name: 'shareLinks', desc: '', args: []);
+  }
+
+  /// `Import vmess, vless, trojan, ss, hysteria2 and other node links`
+  String get shareLinksDesc {
+    return Intl.message(
+      'Import vmess, vless, trojan, ss, hysteria2 and other node links',
+      name: 'shareLinksDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `One link per line; base64 subscription text works too`
+  String get shareLinksHint {
+    return Intl.message(
+      'One link per line; base64 subscription text works too',
+      name: 'shareLinksHint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No supported node links found`
+  String get shareLinksInvalid {
+    return Intl.message(
+      'No supported node links found',
+      name: 'shareLinksInvalid',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Manual nodes`
+  String get manualNodes {
+    return Intl.message(
+      'Manual nodes',
+      name: 'manualNodes',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Nodes`
+  String get nodes {
+    return Intl.message('Nodes', name: 'nodes', desc: '', args: []);
+  }
+
+  /// `No nodes yet`
+  String get noNodes {
+    return Intl.message('No nodes yet', name: 'noNodes', desc: '', args: []);
+  }
+
+  /// `Paste or scan share links and the nodes show up here`
+  String get manualNodesEmptyDesc {
+    return Intl.message(
+      'Paste or scan share links and the nodes show up here',
+      name: 'manualNodesEmptyDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This profile is built from the bundled template and rewritten whenever nodes change, so edits made to the file directly are not kept. Use Override to change rules.`
+  String get manualNodesTip {
+    return Intl.message(
+      'This profile is built from the bundled template and rewritten whenever nodes change, so edits made to the file directly are not kept. Use Override to change rules.',
+      name: 'manualNodesTip',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Imported {count} nodes`
+  String nodesImported(Object count) {
+    return Intl.message(
+      'Imported $count nodes',
+      name: 'nodesImported',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Imported {count} nodes, skipped {skipped} duplicates`
+  String nodesImportedSkipped(Object count, Object skipped) {
+    return Intl.message(
+      'Imported $count nodes, skipped $skipped duplicates',
+      name: 'nodesImportedSkipped',
+      desc: '',
+      args: [count, skipped],
+    );
+  }
+
+  /// `These nodes are already in the list`
+  String get nodesAlreadyExist {
+    return Intl.message(
+      'These nodes are already in the list',
+      name: 'nodesAlreadyExist',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Node name`
+  String get nodeName {
+    return Intl.message('Node name', name: 'nodeName', desc: '', args: []);
+  }
+
+  /// `A node or proxy group already uses this name`
+  String get nodeNameDuplicate {
+    return Intl.message(
+      'A node or proxy group already uses this name',
+      name: 'nodeNameDuplicate',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Rename`
+  String get rename {
+    return Intl.message('Rename', name: 'rename', desc: '', args: []);
+  }
+
+  /// `node`
+  String get node {
+    return Intl.message('node', name: 'node', desc: '', args: []);
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {

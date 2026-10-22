@@ -15,9 +15,9 @@ git merge upstream/main
 
 | 文件 | 本分支改动 |
 |---|---|
-| `lib/models/config.dart` | `Config.po0FirewallProps` 字段 |
-| `lib/providers/config.dart` | `Po0FirewallSetting` provider、`configProvider`、`buildConfigOverrides` |
-| `lib/providers/actions/backup.dart` | 恢复时写回 po0 设置 |
+| `lib/models/config.dart` | `Config.po0FirewallProps`、`Config.nodeProfileId` 字段 |
+| `lib/providers/config.dart` | `Po0FirewallSetting`、`NodeProfileId` provider、`configProvider`、`buildConfigOverrides` |
+| `lib/providers/actions/backup.dart` | 恢复时写回 po0 设置与 `nodeProfileId` |
 | `lib/providers/actions/setup.dart` | `getProfile` 按总开关传入 `directCidrs`，并注入直连 listener（`withPo0DirectListener`） |
 | `lib/models/state.dart` | `MakeRealProfileState.directCidrs` |
 | `lib/common/task.dart` | 直连规则与 `route-exclude-address` |
@@ -66,6 +66,11 @@ po0-clash 的值。上游改动这些文件时，**保留本分支的标识**，
 | `linux/CMakeLists.txt` / `linux/runner/my_application.cc` / `linux/packaging/*/make_config.yaml` | `BINARY_NAME`、`APPLICATION_ID`、窗口标题、包名与桌面文件 |
 | `services/helper/**` | helper 二进制 / Windows 服务名、systemd 单元、运行目录与 socket、环境变量、协议头 |
 | `core/common.go` / `core/tun/tun.go` | 调试环境变量、TUN 设备名 |
+| `core/constant.go` / `lib/core/method.dart` / `lib/core/interface.dart` / `lib/core/controller.dart` | 内核方法 `convertShareLinks`（ADR 0015） |
+| `lib/providers/actions/profiles.dart` / `lib/providers/action.dart` / `lib/providers/providers.dart` | `addProfileFormURL` 把分享链接转给节点导入；导出 `node_profile.dart` |
+| `lib/views/profiles/add.dart` / `lib/views/profiles/profiles.dart` | 「分享链接」添加入口；「手动节点」配置菜单里的「节点」页 |
+| `lib/pages/scan.dart` / `lib/common/picker.dart` | 扫码与二维码图片放行分享链接 |
+| `pubspec.yaml` | `yaml` 从 dev 依赖改为正式依赖（读取节点配置模板） |
 | `build_config.yaml` | `core_name` `Po0ClashCore`、`helper_name` `Po0ClashHelperService` |
 | `distribute_options.yaml` | `app_name` `po0-clash`（决定产物文件名） |
 | `plugins/setup/**` | 内核 / helper 构建产物名 |

@@ -10,6 +10,11 @@ fork. Human-facing documentation lives in `docs/` (Chinese).
   `lib/providers/po0_firewall.dart`, `lib/views/po0_firewall.dart`. po0 and ggy share one top-level navigation item
   (`PageLabel.whitelist`), one master switch and one mixed entry list (ADR 0014). Design: `docs/features/po0-firewall.md`,
   decision record: `docs/adr/0001-direct-routing-for-po0-api.md`.
+- Share-link node import (ADR 0015, `docs/features/share-link-nodes.md`): the core method `convertShareLinks`
+  (`core/share_links.go`) wraps mihomo's converter; `lib/common/node_profile.dart` renders the "manual nodes" profile
+  from `assets/data/node_profile_template.yaml`, `lib/providers/node_profile.dart` owns import / rename / delete, and
+  `lib/views/profiles/nodes.dart` is the node page. The profile's `proxies` list is the only node store and every change
+  rewrites the file from the template; `Config.nodeProfileId` records which profile it is.
 - One Liquid Glass UI on every platform (ADR 0009 for the structure, ADR 0010 for the look,
   `docs/features/glass-ui.md`): neutral backgrounds and opaque content cells, glass only on floating controls, tokens in
   `lib/common/glass.dart`, widgets in `lib/widgets/glass.dart`, and a control sidebar / rail / floating dock chosen by

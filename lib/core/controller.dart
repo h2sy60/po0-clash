@@ -245,6 +245,10 @@ class CoreController {
   Future<String> clearEffect(int profileId) async {
     return _interface.clearEffect(profileId);
   }
+
+  Future<List<Map<String, dynamic>>> convertShareLinks(String data) {
+    return _interface.convertShareLinks(data);
+  }
 }
 
 final coreController = CoreController();

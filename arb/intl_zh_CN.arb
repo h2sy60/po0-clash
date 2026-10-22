@@ -668,5 +668,21 @@
   "currentProxy": "当前节点",
   "appearance": "外观",
   "networkAndCore": "网络与内核",
-  "tunAuthorizationFallbackTip": "虚拟网卡未获得授权，已自动改用系统代理。再次开启虚拟网卡会重新请求授权。"
+  "tunAuthorizationFallbackTip": "虚拟网卡未获得授权，已自动改用系统代理。再次开启虚拟网卡会重新请求授权。",
+  "shareLinks": "分享链接",
+  "shareLinksDesc": "导入 vmess、vless、trojan、ss、hysteria2 等节点链接",
+  "shareLinksHint": "每行一条，也可以粘贴 base64 订阅内容",
+  "shareLinksInvalid": "没有识别到可用的节点链接",
+  "manualNodes": "手动节点",
+  "nodes": "节点",
+  "noNodes": "还没有节点",
+  "manualNodesEmptyDesc": "粘贴或扫码导入分享链接，节点会出现在这里",
+  "manualNodesTip": "该配置由内置模板生成，增删改节点时会重写整个文件，直接编辑配置文件的改动不会保留；要调整规则请使用「覆写」。",
+  "nodesImported": "已导入 {count} 个节点",
+  "nodesImportedSkipped": "已导入 {count} 个节点，跳过 {skipped} 个重复节点",
+  "nodesAlreadyExist": "这些节点都已在列表中",
+  "nodeName": "节点名称",
+  "nodeNameDuplicate": "已有同名的节点或策略组",
+  "rename": "重命名",
+  "node": "节点"
 }

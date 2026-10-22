@@ -54,6 +54,14 @@ class CurrentProfileId extends _$CurrentProfileId
 }
 
 @riverpod
+class NodeProfileId extends _$NodeProfileId with AutoDisposeNotifierMixin {
+  @override
+  int? build() {
+    return null;
+  }
+}
+
+@riverpod
 class DavSetting extends _$DavSetting with AutoDisposeNotifierMixin {
   @override
   DAVProps? build() {
@@ -127,6 +135,7 @@ Config _config(Ref ref) {
   final patchClashConfig = ref.watch(patchClashConfigProvider);
   final excludeSSIDs = ref.watch(excludeSSIDsProvider);
   final po0FirewallProps = ref.watch(po0FirewallSettingProvider);
+  final nodeProfileId = ref.watch(nodeProfileIdProvider);
   return Config(
     appSettingProps: appSettingProps,
     windowProps: windowProps,
@@ -141,6 +150,7 @@ Config _config(Ref ref) {
     patchClashConfig: patchClashConfig,
     excludeSSIDs: excludeSSIDs,
     po0FirewallProps: po0FirewallProps,
+    nodeProfileId: nodeProfileId,
   );
 }
 
@@ -167,5 +177,6 @@ List<Override> buildConfigOverrides(Config config) {
     po0FirewallSettingProvider.overrideWithBuild(
       (_, _) => config.po0FirewallProps,
     ),
+    nodeProfileIdProvider.overrideWithBuild((_, _) => config.nodeProfileId),
   ];
 }

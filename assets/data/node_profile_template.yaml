@@ -1,0 +1,516 @@
+mixed-port: 7890
+allow-lan: true
+bind-address: '*'
+lan-allowed-ips:
+  - 127.0.0.0/8
+  - 10.0.0.0/8
+  - 172.16.0.0/12
+  - 192.168.0.0/16
+  - fe80::/10
+  - fc00::/7
+mode: rule
+log-level: warning
+ipv6: false
+find-process-mode: 'off'
+unified-delay: true
+tcp-concurrent: true
+profile:
+  store-fake-ip: true
+  store-selected: true
+tun:
+  enable: true
+  stack: mixed
+  auto-route: true
+  auto-detect-interface: true
+  dns-hijack:
+    - any:53
+    - tcp://any:53
+dns:
+  enable: true
+  listen: 0.0.0.0:1053
+  ipv6: false
+  prefer-h3: false
+  cache-algorithm: arc
+  use-hosts: true
+  use-system-hosts: true
+  respect-rules: true
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  fake-ip-filter-mode: blacklist
+  fake-ip-filter:
+    - '*.lan'
+    - +.lan
+    - +.local
+    - +.localdomain
+    - +.home.arpa
+    - localhost.ptlogin2.qq.com
+    - localhost.sec.qq.com
+    - time.*.com
+    - time.*.gov
+    - time.*.edu.cn
+    - time.*.apple.com
+    - ntp.*.com
+    - +.pool.ntp.org
+    - +.stun.*.*
+    - +.stun.*.*.*
+    - +.stun.*.*.*.*
+    - +.stun.*.*.*.*.*
+    - +.srv.nintendo.net
+    - +.stun.playstation.net
+    - xbox.*.microsoft.com
+    - xbox.*.*.microsoft.com
+    - +.xboxlive.com
+    - +.msftconnecttest.com
+    - +.msftncsi.com
+  default-nameserver:
+    - 223.5.5.5
+    - 119.29.29.29
+  proxy-server-nameserver:
+    - https://223.5.5.5/dns-query#DIRECT
+    - https://120.53.53.53/dns-query#DIRECT
+  direct-nameserver:
+    - https://223.5.5.5/dns-query#DIRECT
+    - https://120.53.53.53/dns-query#DIRECT
+  direct-nameserver-follow-policy: false
+  nameserver:
+    - https://1.1.1.1/dns-query#🌐 DNS 解析组
+    - https://8.8.8.8/dns-query#🌐 DNS 解析组
+sniffer:
+  enable: true
+  force-dns-mapping: true
+  parse-pure-ip: true
+  override-destination: true
+  sniff:
+    HTTP:
+      override-destination: true
+      ports:
+        - 80
+        - 8080-8880
+    TLS:
+      ports:
+        - 443
+        - 8443
+    QUIC:
+      ports:
+        - 443
+        - 8443
+  skip-domain:
+    - Mijia Cloud
+    - +.push.apple.com
+proxies: []
+proxy-groups:
+  - name: 🚀 默认节点
+    type: select
+    include-all: true
+    include-all-proxies: true
+    include-all-providers: true
+    proxies:
+      - __PROXY_PROVIDERS__
+      - __PROXY_NODES__
+  - name: 🌐 DNS 解析组
+    type: select
+    include-all: true
+    include-all-proxies: true
+    include-all-providers: true
+    proxies:
+      - 🚀 默认节点
+      - __PROXY_PROVIDERS__
+      - __PROXY_NODES__
+rule-providers:
+  adblock-global:
+    behavior: domain
+    format: mrs
+    interval: 86400
+    path: ./ruleset/adblock-global.mrs
+    proxy: 🚀 默认节点
+    type: http
+    url: https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/adblockmihomo.mrs
+  anti-ad:
+    behavior: domain
+    format: mrs
+    interval: 86400
+    path: ./ruleset/anti-ad.mrs
+    proxy: DIRECT
+    type: http
+    url: https://anti-ad.net/mihomo.mrs
+  geoip-cn:
+    behavior: ipcidr
+    format: mrs
+    interval: 86400
+    path: ./ruleset/geoip-cn.mrs
+    proxy: 🚀 默认节点
+    type: http
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/cn.mrs
+  geosite-cn:
+    behavior: domain
+    format: mrs
+    interval: 86400
+    path: ./ruleset/geosite-cn.mrs
+    proxy: 🚀 默认节点
+    type: http
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/cn.mrs
+  geosite-not-cn:
+    behavior: domain
+    format: mrs
+    interval: 86400
+    path: ./ruleset/geosite-not-cn.mrs
+    proxy: 🚀 默认节点
+    type: http
+    url: https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/geolocation-!cn.mrs
+rules:
+  - DOMAIN,localhost,DIRECT
+  - DOMAIN-SUFFIX,local,DIRECT
+  - DOMAIN-SUFFIX,lan,DIRECT
+  - DOMAIN-SUFFIX,localdomain,DIRECT
+  - DOMAIN-SUFFIX,home.arpa,DIRECT
+  - IP-CIDR,127.0.0.0/8,DIRECT,no-resolve
+  - IP-CIDR,10.0.0.0/8,DIRECT,no-resolve
+  - IP-CIDR,172.16.0.0/12,DIRECT,no-resolve
+  - IP-CIDR,192.168.0.0/16,DIRECT,no-resolve
+  - IP-CIDR,100.64.0.0/10,DIRECT,no-resolve
+  - IP-CIDR,169.254.0.0/16,DIRECT,no-resolve
+  - IP-CIDR,224.0.0.0/4,DIRECT,no-resolve
+  - IP-CIDR6,::1/128,DIRECT,no-resolve
+  - IP-CIDR6,fc00::/7,DIRECT,no-resolve
+  - IP-CIDR6,fe80::/10,DIRECT,no-resolve
+  - RULE-SET,anti-ad,REJECT
+  - RULE-SET,adblock-global,REJECT
+  - DOMAIN-SUFFIX,em.mesl.cloud,DIRECT
+  - DOMAIN-SUFFIX,meslcloud.com,🚀 默认节点
+  - DOMAIN-SUFFIX,nikke-en.com,🚀 默认节点
+  - DOMAIN-SUFFIX,technews.tw,🚀 默认节点
+  - DOMAIN-SUFFIX,qpzf.cn,🚀 默认节点
+  - DOMAIN-SUFFIX,apple.com.cn,DIRECT
+  - DOMAIN-SUFFIX,icloud.com.cn,DIRECT
+  - DOMAIN-SUFFIX,cn.apple.com,DIRECT
+  - DOMAIN-SUFFIX,minimax.com,DIRECT
+  - DOMAIN,gs-loc-cn.apple.com,DIRECT
+  - DOMAIN,api.smoot.apple.cn,DIRECT
+  - DOMAIN-SUFFIX,cn.ls.apple.com,DIRECT
+  - DOMAIN-SUFFIX,cn-ssl.ls.apple.com,DIRECT
+  - DOMAIN-SUFFIX,gspe19-cn-ssl.ls.apple.com,DIRECT
+  - DOMAIN,csgo.wmsj.cn,DIRECT
+  - DOMAIN,dl.steam.clngaa.com,DIRECT
+  - DOMAIN,dl.steam.ksyna.com,DIRECT
+  - DOMAIN,dota2.wmsj.cn,DIRECT
+  - DOMAIN,st.dl.bscstorage.net,DIRECT
+  - DOMAIN,st.dl.eccdnx.com,DIRECT
+  - DOMAIN,st.dl.pinyuncloud.com,DIRECT
+  - DOMAIN,steampipe.steamcontent.tnkjmec.com,DIRECT
+  - DOMAIN,steampowered.com.8686c.com,DIRECT
+  - DOMAIN,steamstatic.com.8686c.com,DIRECT
+  - DOMAIN,wmsjsteam.com,DIRECT
+  - DOMAIN,xz.pphimalayanrt.com,DIRECT
+  - DOMAIN-SUFFIX,cm.steampowered.com,DIRECT
+  - DOMAIN-SUFFIX,steamchina.com,DIRECT
+  - DOMAIN-SUFFIX,steamcontent.com,DIRECT
+  - DOMAIN-SUFFIX,steamserver.net,DIRECT
+  - DOMAIN-SUFFIX,steamusercontent.com,DIRECT
+  - DOMAIN-SUFFIX,google.cn,DIRECT
+  - DOMAIN-SUFFIX,g.cn,DIRECT
+  - DOMAIN-SUFFIX,gstatic.cn,DIRECT
+  - DOMAIN-SUFFIX,ug.link,DIRECT
+  - DOMAIN-SUFFIX,yuque.com,DIRECT
+  - DOMAIN-SUFFIX,googleapis.cn,DIRECT
+  - DOMAIN-SUFFIX,googleapis-cn.com,DIRECT
+  - DOMAIN-SUFFIX,google-analytics-cn.com,DIRECT
+  - DOMAIN-SUFFIX,googleadservices-cn.com,DIRECT
+  - DOMAIN-SUFFIX,googlesyndication-cn.com,DIRECT
+  - DOMAIN,ai.google.dev,🚀 默认节点
+  - DOMAIN,alkalicore-pa.clients6.google.com,🚀 默认节点
+  - DOMAIN,alkalimakersuite-pa.clients6.google.com,🚀 默认节点
+  - DOMAIN,webchannel-alkalimakersuite-pa.clients6.google.com,🚀 默认节点
+  - DOMAIN,cloudaicompanion.googleapis.com,🚀 默认节点
+  - DOMAIN,cloudcode-pa.googleapis.com,🚀 默认节点
+  - DOMAIN,daily-cloudcode-pa.googleapis.com,🚀 默认节点
+  - DOMAIN,notebooklm-pa.googleapis.com,🚀 默认节点
+  - DOMAIN,notebooklm.googleapis.com,🚀 默认节点
+  - DOMAIN,antigravity-pa.googleapis.com,🚀 默认节点
+  - DOMAIN,antigravity.googleapis.com,🚀 默认节点
+  - DOMAIN-SUFFIX,notebooklm.google,🚀 默认节点
+  - DOMAIN-SUFFIX,deepmind.google,🚀 默认节点
+  - DOMAIN-SUFFIX,antigravity-unleash.goog,🚀 默认节点
+  - DOMAIN-SUFFIX,antigravity.google,🚀 默认节点
+  - DOMAIN-SUFFIX,opal.google,🚀 默认节点
+  - DOMAIN-SUFFIX,flow.google,🚀 默认节点
+  - DOMAIN-SUFFIX,generativeai.google,🚀 默认节点
+  - DOMAIN-SUFFIX,deepmind.com,🚀 默认节点
+  - DOMAIN-SUFFIX,ai.studio,🚀 默认节点
+  - DOMAIN-SUFFIX,labs.google,🚀 默认节点
+  - DOMAIN-SUFFIX,jules.google,🚀 默认节点
+  - DOMAIN-SUFFIX,gemini.google,🚀 默认节点
+  - DOMAIN-SUFFIX,makersuite.google.com,🚀 默认节点
+  - DOMAIN-SUFFIX,robinfrontend-pa.googleapis.com,🚀 默认节点
+  - DOMAIN-SUFFIX,notebook.google.com,🚀 默认节点
+  - DOMAIN-SUFFIX,gemini.google.com,🚀 默认节点
+  - DOMAIN-SUFFIX,notebooklm.google.com,🚀 默认节点
+  - DOMAIN-SUFFIX,bard.google.com,🚀 默认节点
+  - DOMAIN-SUFFIX,jules.google.com,🚀 默认节点
+  - DOMAIN-SUFFIX,aistudio.google.com,🚀 默认节点
+  - DOMAIN-SUFFIX,labs.google.com,🚀 默认节点
+  - DOMAIN-SUFFIX,gemini.gstatic.com,🚀 默认节点
+  - DOMAIN-SUFFIX,aisandbox-pa.googleapis.com,🚀 默认节点
+  - DOMAIN-SUFFIX,aicode.googleapis.com,🚀 默认节点
+  - DOMAIN-SUFFIX,aida.googleapis.com,🚀 默认节点
+  - DOMAIN-SUFFIX,proactivebackend-pa.googleapis.com,🚀 默认节点
+  - DOMAIN-SUFFIX,opal.google.com,🚀 默认节点
+  - DOMAIN-SUFFIX,generativelanguage.googleapis.com,🚀 默认节点
+  - DOMAIN-SUFFIX,geller-pa.googleapis.com,🚀 默认节点
+  - DOMAIN-SUFFIX,stitch.withgoogle.com,🚀 默认节点
+  - DOMAIN,openaiapi-site.azureedge.net,🚀 默认节点
+  - DOMAIN,openaiassets.blob.core.windows.net,🚀 默认节点
+  - DOMAIN,openaicom-api-bdcpf8c6d2e9atf6.z01.azurefd.net,🚀 默认节点
+  - DOMAIN,openaicom.imgix.net,🚀 默认节点
+  - DOMAIN,openaicomproductionae4b.blob.core.windows.net,🚀 默认节点
+  - DOMAIN,production-openaicom-storage.azureedge.net,🚀 默认节点
+  - DOMAIN,ppl-ai-file-upload.s3.amazonaws.com,🚀 默认节点
+  - DOMAIN,pplx-res.cloudinary.com,🚀 默认节点
+  - DOMAIN,servd-anthropic-website.b-cdn.net,🚀 默认节点
+  - DOMAIN,copilot-proxy.githubusercontent.com,🚀 默认节点
+  - DOMAIN,copilot-workspace.githubnext.com,🚀 默认节点
+  - DOMAIN,copilotprodattachments.blob.core.windows.net,🚀 默认节点
+  - DOMAIN,o33249.ingest.sentry.io,🚀 默认节点
+  - DOMAIN,openai.qualtrics.com,🚀 默认节点
+  - DOMAIN,copilot-telemetry-service.githubusercontent.com,🚀 默认节点
+  - DOMAIN,copilot-telemetry.githubusercontent.com,🚀 默认节点
+  - DOMAIN-SUFFIX,oaiusercontent.com,🚀 默认节点
+  - DOMAIN-SUFFIX,chatgpt.com,🚀 默认节点
+  - DOMAIN-SUFFIX,chatgpt.site,🚀 默认节点
+  - DOMAIN-SUFFIX,crixet.com,🚀 默认节点
+  - DOMAIN-SUFFIX,oaistatic.com,🚀 默认节点
+  - DOMAIN-SUFFIX,oaistatsig.com,🚀 默认节点
+  - DOMAIN-SUFFIX,chat.com,🚀 默认节点
+  - DOMAIN-SUFFIX,openai.com,🚀 默认节点
+  - DOMAIN-SUFFIX,sora.com,🚀 默认节点
+  - DOMAIN-SUFFIX,chatgpt.livekit.cloud,🚀 默认节点
+  - DOMAIN-SUFFIX,host.livekit.cloud,🚀 默认节点
+  - DOMAIN-SUFFIX,turn.livekit.cloud,🚀 默认节点
+  - DOMAIN-SUFFIX,openai.com.cdn.cloudflare.net,🚀 默认节点
+  - DOMAIN-SUFFIX,anthropic.com,🚀 默认节点
+  - DOMAIN-SUFFIX,clau.de,🚀 默认节点
+  - DOMAIN-SUFFIX,claude.ai,🚀 默认节点
+  - DOMAIN-SUFFIX,claude.com,🚀 默认节点
+  - DOMAIN-SUFFIX,claudemcpclient.com,🚀 默认节点
+  - DOMAIN-SUFFIX,claudemcpcontent.com,🚀 默认节点
+  - DOMAIN-SUFFIX,claudeusercontent.com,🚀 默认节点
+  - DOMAIN-SUFFIX,perplexity.ai,🚀 默认节点
+  - DOMAIN-SUFFIX,perplexity.com,🚀 默认节点
+  - DOMAIN-SUFFIX,pplx.ai,🚀 默认节点
+  - DOMAIN-SUFFIX,grok.com,🚀 默认节点
+  - DOMAIN-SUFFIX,grokipedia.com,🚀 默认节点
+  - DOMAIN-SUFFIX,x.ai,🚀 默认节点
+  - DOMAIN-SUFFIX,grok.x.com,🚀 默认节点
+  - DOMAIN-SUFFIX,openrouter.ai,🚀 默认节点
+  - DOMAIN-SUFFIX,cursor-cdn.com,🚀 默认节点
+  - DOMAIN-SUFFIX,cursor.com,🚀 默认节点
+  - DOMAIN-SUFFIX,cursor.sh,🚀 默认节点
+  - DOMAIN-SUFFIX,cursorapi.com,🚀 默认节点
+  - DOMAIN-SUFFIX,githubcopilot.com,🚀 默认节点
+  - DOMAIN-SUFFIX,poe.com,🚀 默认节点
+  - DOMAIN-SUFFIX,poecdn.net,🚀 默认节点
+  - DOMAIN-SUFFIX,codeium.com,🚀 默认节点
+  - DOMAIN-SUFFIX,codeiumdata.com,🚀 默认节点
+  - DOMAIN-SUFFIX,windsurf.build,🚀 默认节点
+  - DOMAIN-SUFFIX,windsurf.com,🚀 默认节点
+  - DOMAIN-SUFFIX,elevenlabs.com,🚀 默认节点
+  - DOMAIN-SUFFIX,elevenlabs.io,🚀 默认节点
+  - DOMAIN-SUFFIX,hf.co,🚀 默认节点
+  - DOMAIN-SUFFIX,hf.space,🚀 默认节点
+  - DOMAIN-SUFFIX,huggingface.co,🚀 默认节点
+  - DOMAIN-SUFFIX,cohere.com,🚀 默认节点
+  - DOMAIN-SUFFIX,cohere.ai,🚀 默认节点
+  - DOMAIN-SUFFIX,groq.com,🚀 默认节点
+  - DOMAIN-SUFFIX,mistral.ai,🚀 默认节点
+  - DOMAIN-SUFFIX,meta.ai,🚀 默认节点
+  - DOMAIN-SUFFIX,midjourney.com,🚀 默认节点
+  - DOMAIN-SUFFIX,jasper.ai,🚀 默认节点
+  - DOMAIN-SUFFIX,clipdrop.co,🚀 默认节点
+  - DOMAIN-SUFFIX,agentclientprotocol.com,🚀 默认节点
+  - DOMAIN-SUFFIX,anythingllm.com,🚀 默认节点
+  - DOMAIN-SUFFIX,arena.ai,🚀 默认节点
+  - DOMAIN-SUFFIX,chutes.ai,🚀 默认节点
+  - DOMAIN-SUFFIX,clawhub.ai,🚀 默认节点
+  - DOMAIN-SUFFIX,crewai.com,🚀 默认节点
+  - DOMAIN-SUFFIX,devin.ai,🚀 默认节点
+  - DOMAIN-SUFFIX,diabrowser.com,🚀 默认节点
+  - DOMAIN-SUFFIX,diabrowser.engineering,🚀 默认节点
+  - DOMAIN-SUFFIX,dify.ai,🚀 默认节点
+  - DOMAIN-SUFFIX,duck.ai,🚀 默认节点
+  - DOMAIN-SUFFIX,h2o.ai,🚀 默认节点
+  - DOMAIN-SUFFIX,jetbrains.ai,🚀 默认节点
+  - DOMAIN-SUFFIX,grazie.ai,🚀 默认节点
+  - DOMAIN-SUFFIX,kiro.dev,🚀 默认节点
+  - DOMAIN-SUFFIX,langchain.com,🚀 默认节点
+  - DOMAIN-SUFFIX,lmstudio.ai,🚀 默认节点
+  - DOMAIN-SUFFIX,lovart.ai,🚀 默认节点
+  - DOMAIN-SUFFIX,minimax.io,🚀 默认节点
+  - DOMAIN-SUFFIX,mozilla.ai,🚀 默认节点
+  - DOMAIN-SUFFIX,ollama.com,🚀 默认节点
+  - DOMAIN-SUFFIX,openart.ai,🚀 默认节点
+  - DOMAIN-SUFFIX,openclaw.ai,🚀 默认节点
+  - DOMAIN-SUFFIX,openspec.dev,🚀 默认节点
+  - DOMAIN-SUFFIX,plannotator.ai,🚀 默认节点
+  - DOMAIN-SUFFIX,qoder.com,🚀 默认节点
+  - DOMAIN-SUFFIX,sider.ai,🚀 默认节点
+  - DOMAIN-SUFFIX,spicywriter.com,🚀 默认节点
+  - DOMAIN-SUFFIX,tapnow.ai,🚀 默认节点
+  - DOMAIN-SUFFIX,tripo3d.ai,🚀 默认节点
+  - DOMAIN-SUFFIX,manus.im,🚀 默认节点
+  - DOMAIN-SUFFIX,manuscdn.com,🚀 默认节点
+  - DOMAIN-SUFFIX,youmind.ai,🚀 默认节点
+  - DOMAIN-SUFFIX,youmind.com,🚀 默认节点
+  - DOMAIN-SUFFIX,youmind.site,🚀 默认节点
+  - DOMAIN-SUFFIX,cerebras.ai,🚀 默认节点
+  - DOMAIN-SUFFIX,coderabbit.ai,🚀 默认节点
+  - DOMAIN-SUFFIX,comfyci.org,🚀 默认节点
+  - DOMAIN-SUFFIX,comfyregistry.org,🚀 默认节点
+  - DOMAIN-SUFFIX,comfy.org,🚀 默认节点
+  - DOMAIN-SUFFIX,copilot-stg.com,🚀 默认节点
+  - DOMAIN-SUFFIX,copilot.com,🚀 默认节点
+  - DOMAIN-SUFFIX,copilot.cloud.microsoft,🚀 默认节点
+  - DOMAIN-SUFFIX,copilot.microsoft.com,🚀 默认节点
+  - DOMAIN-SUFFIX,deepwiki.com,🚀 默认节点
+  - DOMAIN-SUFFIX,deepwiki.org,🚀 默认节点
+  - DOMAIN-SUFFIX,gateway.ai.cloudflare.com,🚀 默认节点
+  - DOMAIN-SUFFIX,grazie.aws.intellij.net,🚀 默认节点
+  - DOMAIN-SUFFIX,coze.com,🚀 默认节点
+  - DOMAIN-SUFFIX,marscode.com,🚀 默认节点
+  - DOMAIN-SUFFIX,trae.ai,🚀 默认节点
+  - DOMAIN-SUFFIX,cici.com,🚀 默认节点
+  - DOMAIN-SUFFIX,ciciai.com,🚀 默认节点
+  - DOMAIN-SUFFIX,ciciaicdn.com,🚀 默认节点
+  - DOMAIN-SUFFIX,dola.com,🚀 默认节点
+  - DOMAIN-SUFFIX,bilibili.tv,DIRECT
+  - DOMAIN-SUFFIX,biliintl.com,DIRECT
+  - DOMAIN-SUFFIX,biliintl.co,DIRECT
+  - DOMAIN-SUFFIX,bstarstatic.com,DIRECT
+  - DOMAIN,p-bstarstatic.akamaized.net,DIRECT
+  - DOMAIN,upos-bstar-mirrorakam.akamaized.net,DIRECT
+  - DOMAIN,upos-bstar1-mirrorakam.akamaized.net,DIRECT
+  - DOMAIN-SUFFIX,bilibili.com,DIRECT
+  - DOMAIN-SUFFIX,bilibili.net,DIRECT
+  - DOMAIN-SUFFIX,bilibili.cn,DIRECT
+  - DOMAIN-SUFFIX,b23.tv,DIRECT
+  - DOMAIN-SUFFIX,biliapi.com,DIRECT
+  - DOMAIN-SUFFIX,biliapi.net,DIRECT
+  - DOMAIN-SUFFIX,bilivideo.com,DIRECT
+  - DOMAIN-SUFFIX,bilivideo.net,DIRECT
+  - DOMAIN-SUFFIX,bilivideo.cn,DIRECT
+  - DOMAIN-SUFFIX,biliimg.com,DIRECT
+  - DOMAIN-SUFFIX,hdslb.com,DIRECT
+  - DOMAIN-SUFFIX,hdslb.net,DIRECT
+  - DOMAIN-SUFFIX,acg.tv,DIRECT
+  - DOMAIN-SUFFIX,acgvideo.com,DIRECT
+  - DOMAIN-SUFFIX,bilibiligame.com,DIRECT
+  - DOMAIN-SUFFIX,biligame.com,DIRECT
+  - DOMAIN,apd-pcdnwxlogin.teg.tencent-cloud.net,DIRECT
+  - DOMAIN,btrace.qq.com,DIRECT
+  - DOMAIN,dldir1.qq.com,DIRECT
+  - DOMAIN,soup.v.qq.com,DIRECT
+  - DOMAIN,vweixinf.tc.qq.com,DIRECT
+  - DOMAIN,weixin110.qq.com,DIRECT
+  - DOMAIN,wup.imtt.qq.com,DIRECT
+  - DOMAIN-SUFFIX,iot-tencent.com,DIRECT
+  - DOMAIN-SUFFIX,gtimg.com,DIRECT
+  - DOMAIN-SUFFIX,qlogo.cn,DIRECT
+  - DOMAIN-SUFFIX,qpic.cn,DIRECT
+  - DOMAIN-SUFFIX,servicewechat.com,DIRECT
+  - DOMAIN-SUFFIX,tenpay.com,DIRECT
+  - DOMAIN-SUFFIX,wechat.com,DIRECT
+  - DOMAIN-SUFFIX,wechatlegal.net,DIRECT
+  - DOMAIN-SUFFIX,wechatos.net,DIRECT
+  - DOMAIN-SUFFIX,wechatpay.com,DIRECT
+  - DOMAIN-SUFFIX,weixin.com,DIRECT
+  - DOMAIN-SUFFIX,weixin.qq.com,DIRECT
+  - DOMAIN-SUFFIX,weixinbridge.com,DIRECT
+  - DOMAIN-SUFFIX,wx.qq.com,DIRECT
+  - DOMAIN-SUFFIX,qq.com,DIRECT
+  - DOMAIN-SUFFIX,qqurl.com,DIRECT
+  - DOMAIN-SUFFIX,126.com,DIRECT
+  - DOMAIN-SUFFIX,126.net,DIRECT
+  - DOMAIN-SUFFIX,127.net,DIRECT
+  - DOMAIN-SUFFIX,163.com,DIRECT
+  - DOMAIN-SUFFIX,netease.com,DIRECT
+  - DOMAIN-SUFFIX,360buyimg.com,DIRECT
+  - DOMAIN-SUFFIX,jd.com,DIRECT
+  - DOMAIN-SUFFIX,36kr.com,DIRECT
+  - DOMAIN-SUFFIX,acfun.tv,DIRECT
+  - DOMAIN-SUFFIX,aixifan.com,DIRECT
+  - DOMAIN-SUFFIX,alicdn.com,DIRECT
+  - DOMAIN-SUFFIX,alipay.com,DIRECT
+  - DOMAIN-SUFFIX,taobao.com,DIRECT
+  - DOMAIN-SUFFIX,tmall.com,DIRECT
+  - DOMAIN-SUFFIX,aliyun.com,DIRECT
+  - DOMAIN-SUFFIX,aliyuncs.com,DIRECT
+  - DOMAIN-SUFFIX,amap.com,DIRECT
+  - DOMAIN-SUFFIX,autonavi.com,DIRECT
+  - DOMAIN-SUFFIX,baidu.com,DIRECT
+  - DOMAIN-SUFFIX,baidubce.com,DIRECT
+  - DOMAIN-SUFFIX,bdimg.com,DIRECT
+  - DOMAIN-SUFFIX,bdstatic.com,DIRECT
+  - DOMAIN-SUFFIX,caiyunapp.com,DIRECT
+  - DOMAIN-SUFFIX,clouddn.com,DIRECT
+  - DOMAIN-SUFFIX,cnbeta.com,DIRECT
+  - DOMAIN-SUFFIX,cnbetacdn.com,DIRECT
+  - DOMAIN-SUFFIX,csdn.net,DIRECT
+  - DOMAIN-SUFFIX,ctrip.com,DIRECT
+  - DOMAIN-SUFFIX,dianping.com,DIRECT
+  - DOMAIN-SUFFIX,douban.com,DIRECT
+  - DOMAIN-SUFFIX,doubanio.com,DIRECT
+  - DOMAIN-SUFFIX,ele.me,DIRECT
+  - DOMAIN-SUFFIX,g-cores.com,DIRECT
+  - DOMAIN-SUFFIX,ifeng.com,DIRECT
+  - DOMAIN-SUFFIX,ifengimg.com,DIRECT
+  - DOMAIN-SUFFIX,ipip.net,DIRECT
+  - DOMAIN-SUFFIX,iqiyi.com,DIRECT
+  - DOMAIN-SUFFIX,qiyi.com,DIRECT
+  - DOMAIN-SUFFIX,qiyipic.com,DIRECT
+  - DOMAIN-SUFFIX,jianshu.com,DIRECT
+  - DOMAIN-SUFFIX,meituan.com,DIRECT
+  - DOMAIN-SUFFIX,meituan.net,DIRECT
+  - DOMAIN-SUFFIX,mi.com,DIRECT
+  - DOMAIN-SUFFIX,miui.com,DIRECT
+  - DOMAIN-SUFFIX,miwifi.com,DIRECT
+  - DOMAIN-SUFFIX,oschina.net,DIRECT
+  - DOMAIN-SUFFIX,pstatp.com,DIRECT
+  - DOMAIN-SUFFIX,byteimg.com,DIRECT
+  - DOMAIN-SUFFIX,bytedance.com,DIRECT
+  - DOMAIN-SUFFIX,douyin.com,DIRECT
+  - DOMAIN-SUFFIX,toutiao.com,DIRECT
+  - DOMAIN-SUFFIX,qcloud.com,DIRECT
+  - DOMAIN-SUFFIX,myqcloud.com,DIRECT
+  - DOMAIN-SUFFIX,tencent.com,DIRECT
+  - DOMAIN-SUFFIX,qhimg.com,DIRECT
+  - DOMAIN-SUFFIX,qhres.com,DIRECT
+  - DOMAIN-SUFFIX,qihucdn.com,DIRECT
+  - DOMAIN-SUFFIX,qiniu.com,DIRECT
+  - DOMAIN-SUFFIX,qiniucdn.com,DIRECT
+  - DOMAIN-SUFFIX,segmentfault.com,DIRECT
+  - DOMAIN-SUFFIX,sina.com,DIRECT
+  - DOMAIN-SUFFIX,sinaapp.com,DIRECT
+  - DOMAIN-SUFFIX,weibo.com,DIRECT
+  - DOMAIN-SUFFIX,smzdm.com,DIRECT
+  - DOMAIN-SUFFIX,sogou.com,DIRECT
+  - DOMAIN-SUFFIX,sogoucdn.com,DIRECT
+  - DOMAIN-SUFFIX,sohu.com,DIRECT
+  - DOMAIN-SUFFIX,sspai.com,DIRECT
+  - DOMAIN-SUFFIX,suning.com,DIRECT
+  - DOMAIN-SUFFIX,tianyancha.com,DIRECT
+  - DOMAIN-SUFFIX,tudou.com,DIRECT
+  - DOMAIN-SUFFIX,upaiyun.com,DIRECT
+  - DOMAIN-SUFFIX,upyun.com,DIRECT
+  - DOMAIN-SUFFIX,ximalaya.com,DIRECT
+  - DOMAIN-SUFFIX,xmcdn.com,DIRECT
+  - DOMAIN-SUFFIX,xunlei.com,DIRECT
+  - DOMAIN-SUFFIX,youdao.com,DIRECT
+  - DOMAIN-SUFFIX,youku.com,DIRECT
+  - DOMAIN-SUFFIX,ykimg.com,DIRECT
+  - DOMAIN-SUFFIX,zhihu.com,DIRECT
+  - DOMAIN-SUFFIX,zhimg.com,DIRECT
+  - DOMAIN-SUFFIX,speedtest.cn,DIRECT
+  - DOMAIN-SUFFIX,12306.cn,DIRECT
+  - DOMAIN-SUFFIX,cn,DIRECT
+  - RULE-SET,geosite-cn,DIRECT
+  - RULE-SET,geosite-not-cn,🚀 默认节点
+  - RULE-SET,geoip-cn,DIRECT
+  - MATCH,🚀 默认节点

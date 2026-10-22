@@ -668,5 +668,21 @@
   "currentProxy": "Current proxy",
   "appearance": "Appearance",
   "networkAndCore": "Network & core",
-  "tunAuthorizationFallbackTip": "TUN was not authorized, so po0-clash switched to the system proxy. Turn TUN on again to retry the authorization."
+  "tunAuthorizationFallbackTip": "TUN was not authorized, so po0-clash switched to the system proxy. Turn TUN on again to retry the authorization.",
+  "shareLinks": "Share links",
+  "shareLinksDesc": "Import vmess, vless, trojan, ss, hysteria2 and other node links",
+  "shareLinksHint": "One link per line; base64 subscription text works too",
+  "shareLinksInvalid": "No supported node links found",
+  "manualNodes": "Manual nodes",
+  "nodes": "Nodes",
+  "noNodes": "No nodes yet",
+  "manualNodesEmptyDesc": "Paste or scan share links and the nodes show up here",
+  "manualNodesTip": "This profile is built from the bundled template and rewritten whenever nodes change, so edits made to the file directly are not kept. Use Override to change rules.",
+  "nodesImported": "Imported {count} nodes",
+  "nodesImportedSkipped": "Imported {count} nodes, skipped {skipped} duplicates",
+  "nodesAlreadyExist": "These nodes are already in the list",
+  "nodeName": "Node name",
+  "nodeNameDuplicate": "A node or proxy group already uses this name",
+  "rename": "Rename",
+  "node": "node"
 }

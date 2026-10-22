@@ -114,6 +114,7 @@ const (
 	setupConfigMethod              CoreMethod = "setupConfig"
 	getConfigMethod                CoreMethod = "getConfig"
 	clearEffectMethod              CoreMethod = "clearEffect"
+	convertShareLinksMethod        CoreMethod = "convertShareLinks"
 )
 
 type CoreMethod string
