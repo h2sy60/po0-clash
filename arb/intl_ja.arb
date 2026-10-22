@@ -668,5 +668,21 @@
   "currentProxy": "現在のノード",
   "appearance": "外観",
   "networkAndCore": "ネットワークとコア",
-  "tunAuthorizationFallbackTip": "TUN が許可されなかったため、システムプロキシに切り替えました。TUN を再度オンにすると許可を求め直します。"
+  "tunAuthorizationFallbackTip": "TUN が許可されなかったため、システムプロキシに切り替えました。TUN を再度オンにすると許可を求め直します。",
+  "shareLinks": "共有リンク",
+  "shareLinksDesc": "vmess・vless・trojan・ss・hysteria2 などのノードリンクをインポート",
+  "shareLinksHint": "1 行に 1 つ。base64 のサブスクリプション内容も使えます",
+  "shareLinksInvalid": "対応するノードリンクが見つかりません",
+  "manualNodes": "手動ノード",
+  "nodes": "ノード",
+  "noNodes": "ノードはまだありません",
+  "manualNodesEmptyDesc": "共有リンクを貼り付けるかスキャンすると、ここにノードが表示されます",
+  "manualNodesTip": "このプロファイルは内蔵テンプレートから生成され、ノードを変更するたびにファイル全体が書き直されるため、ファイルへの直接の編集は保持されません。ルールの変更には「上書き」を使ってください。",
+  "nodesImported": "{count} 個のノードをインポートしました",
+  "nodesImportedSkipped": "{count} 個のノードをインポートし、重複 {skipped} 個をスキップしました",
+  "nodesAlreadyExist": "これらのノードはすでにリストにあります",
+  "nodeName": "ノード名",
+  "nodeNameDuplicate": "同じ名前のノードまたはプロキシグループがあります",
+  "rename": "名前を変更",
+  "node": "ノード"
 }

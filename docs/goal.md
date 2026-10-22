@@ -20,7 +20,9 @@
 5. **界面**：三端统一遵循 Android 设计指南（Material 3），动效使用 Material 3 的时长与曲线（[ADR 0008](adr/0008-material3-on-every-platform.md)）。
 6. **独立应用**：以 po0-clash 的身份发布，应用 ID、安装标识、进程 / 服务名、数据目录与官方 FlClash 完全不同，
    两者可在同一设备上同时安装、运行；版本号独立，本仓库从 5.0.0 开始（[ADR 0006](adr/0006-standalone-app-identity.md)）。
-7. **工程化**：代码放在独立的 GitHub 仓库，及时推送；仓库包含 `AGENTS.md` 与 `docs/` 等标准流程结构；
+7. **节点导入**：像 v2rayN 一样直接导入 vmess / vless / trojan / ss / hysteria2 等分享链接，节点统一放进「手动节点」配置，
+   可以删除、重命名（[ADR 0015](adr/0015-share-link-nodes.md)）。
+8. **工程化**：代码放在独立的 GitHub 仓库，及时推送；仓库包含 `AGENTS.md` 与 `docs/` 等标准流程结构；
    format / analyze / test 在构建 VPS 上执行，全部平台的发版产物由 GitHub Actions 在推送版本标签后构建。
 
 ## 非目标

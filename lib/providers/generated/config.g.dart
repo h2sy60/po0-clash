@@ -320,6 +320,58 @@ abstract class _$CurrentProfileId extends $Notifier<int?> {
   }
 }
 
+@ProviderFor(NodeProfileId)
+final nodeProfileIdProvider = NodeProfileIdProvider._();
+
+final class NodeProfileIdProvider
+    extends $NotifierProvider<NodeProfileId, int?> {
+  NodeProfileIdProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'nodeProfileIdProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$nodeProfileIdHash();
+
+  @$internal
+  @override
+  NodeProfileId create() => NodeProfileId();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(int? value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<int?>(value),
+    );
+  }
+}
+
+String _$nodeProfileIdHash() => r'325aa666b905bdac6c15c536bbef77bfa49b0a16';
+
+abstract class _$NodeProfileId extends $Notifier<int?> {
+  int? build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<int?, int?>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<int?, int?>,
+              int?,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
 @ProviderFor(DavSetting)
 final davSettingProvider = DavSettingProvider._();
 
@@ -723,4 +775,4 @@ final class _ConfigProvider extends $FunctionalProvider<Config, Config, Config>
   }
 }
 
-String _$_configHash() => r'086453adc679b9c5831caf18a377ad308d13e8a6';
+String _$_configHash() => r'a3eae67ebc982344efd3a7229d4c6642b9616d2a';

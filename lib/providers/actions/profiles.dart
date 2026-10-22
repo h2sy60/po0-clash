@@ -121,6 +121,12 @@ class ProfilesAction extends _$ProfilesAction {
       globalState.navigatorKey.currentState?.popUntil((route) => route.isFirst);
     }
     ref.read(currentPageLabelProvider.notifier).value = PageLabel.profiles;
+    if (isShareLinkText(url)) {
+      await ref
+          .read(nodeProfileActionProvider.notifier)
+          .importWithFeedback(url);
+      return;
+    }
     final profile = await globalState.loadingRun(
       tag: LoadingTag.profiles,
       () async {

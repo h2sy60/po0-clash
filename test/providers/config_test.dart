@@ -450,14 +450,16 @@ void main() {
         themeProps: ThemeProps(),
         currentProfileId: 7,
         overrideDns: true,
+        nodeProfileId: 9,
       );
       final overrides = buildConfigOverrides(config);
-      expect(overrides.length, 13);
+      expect(overrides.length, 14);
 
       final overrideContainer = ProviderContainer(overrides: overrides);
       addTearDown(overrideContainer.dispose);
 
       expect(overrideContainer.read(currentProfileIdProvider), 7);
+      expect(overrideContainer.read(nodeProfileIdProvider), 9);
       expect(overrideContainer.read(overrideDnsProvider), true);
       expect(
         overrideContainer.read(patchClashConfigProvider),

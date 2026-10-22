@@ -79,5 +79,6 @@ class BackupAction extends _$BackupAction {
     ref.read(hotKeyActionsProvider.notifier).value = config.hotKeyActions;
     ref.read(po0FirewallSettingProvider.notifier).value =
         config.po0FirewallProps;
+    ref.read(nodeProfileIdProvider.notifier).value = config.nodeProfileId;
   }
 }

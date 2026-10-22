@@ -67,45 +67,50 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m21(count) => "${count} か月前";
 
-  static String m22(label) => "${label}はまだありません";
+  static String m22(count) => "${count} 個のノードをインポートしました";
 
-  static String m23(label) => "${label}は数値である必要があります";
+  static String m23(count, skipped) =>
+      "${count} 個のノードをインポートし、重複 ${skipped} 個をスキップしました";
 
-  static String m24(ip) => "出口 ${ip}";
+  static String m24(label) => "${label}はまだありません";
 
-  static String m25(min, max) => "${min}～${max} 秒で入力してください";
+  static String m25(label) => "${label}は数値である必要があります";
 
-  static String m26(ip) => "出口 ${ip} は許可済み";
+  static String m26(ip) => "出口 ${ip}";
 
-  static String m27(message) => "リクエスト失敗：${message}";
+  static String m27(min, max) => "${min}～${max} 秒で入力してください";
 
-  static String m28(ip) => "出口 ${ip} は許可されていません";
+  static String m28(ip) => "出口 ${ip} は許可済み";
 
-  static String m29(message) => "拒否されました：${message}";
+  static String m29(message) => "リクエスト失敗：${message}";
 
-  static String m30(ok, total) => "${ok}/${total} 許可済み";
+  static String m30(ip) => "出口 ${ip} は許可されていません";
 
-  static String m31(used, limit) => "${used}/${limit} 使用中";
+  static String m31(message) => "拒否されました：${message}";
 
-  static String m32(label) => "${label} は 1024〜49151 の範囲で指定してください";
+  static String m32(ok, total) => "${ok}/${total} 許可済み";
 
-  static String m33(count) => "プロキシ ${count} 件";
+  static String m33(used, limit) => "${used}/${limit} 使用中";
 
-  static String m34(count) => "ルール ${count} 件";
+  static String m34(label) => "${label} は 1024〜49151 の範囲で指定してください";
 
-  static String m35(count) => "${count} 秒";
+  static String m35(count) => "プロキシ ${count} 件";
 
-  static String m36(count) => "${count} 件選択中";
+  static String m36(count) => "ルール ${count} 件";
 
-  static String m37(label) => "${label}はURLである必要があります";
+  static String m37(count) => "${count} 秒";
 
-  static String m38(seconds) => "ggy は ${seconds} 秒ごとに追加";
+  static String m38(count) => "${count} 件選択中";
 
-  static String m39(time) => "ggy の最終追加：${time}";
+  static String m39(label) => "${label}はURLである必要があります";
 
-  static String m40(time) => "po0 の最終確認：${time}";
+  static String m40(seconds) => "ggy は ${seconds} 秒ごとに追加";
 
-  static String m41(count) => "${count} 年前";
+  static String m41(time) => "ggy の最終追加：${time}";
+
+  static String m42(time) => "po0 の最終確認：${time}";
+
+  static String m43(count) => "${count} 年前";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -551,6 +556,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "loopback": MessageLookupByLibrary.simpleMessage("ループバック解除ツール"),
     "loopbackDesc": MessageLookupByLibrary.simpleMessage("UWPのループバック解除に使用します"),
     "loose": MessageLookupByLibrary.simpleMessage("ゆったり"),
+    "manualNodes": MessageLookupByLibrary.simpleMessage("手動ノード"),
+    "manualNodesEmptyDesc": MessageLookupByLibrary.simpleMessage(
+      "共有リンクを貼り付けるかスキャンすると、ここにノードが表示されます",
+    ),
+    "manualNodesTip": MessageLookupByLibrary.simpleMessage(
+      "このプロファイルは内蔵テンプレートから生成され、ノードを変更するたびにファイル全体が書き直されるため、ファイルへの直接の編集は保持されません。ルールの変更には「上書き」を使ってください。",
+    ),
     "matchSourceIp": MessageLookupByLibrary.simpleMessage("送信元IPにマッチ"),
     "matchTarget": MessageLookupByLibrary.simpleMessage("MATCH-TARGET"),
     "matchTargetDesc": MessageLookupByLibrary.simpleMessage(
@@ -602,10 +614,22 @@ class MessageLookup extends MessageLookupByLibrary {
     "noLongerRemind": MessageLookupByLibrary.simpleMessage("今後表示しない"),
     "noNetwork": MessageLookupByLibrary.simpleMessage("ネットワークがありません"),
     "noNetworkApp": MessageLookupByLibrary.simpleMessage("ネットワーク不使用アプリ"),
+    "noNodes": MessageLookupByLibrary.simpleMessage("ノードはまだありません"),
     "noProxySelected": MessageLookupByLibrary.simpleMessage("ノード未選択"),
     "noRecords": MessageLookupByLibrary.simpleMessage("記録がありません"),
     "noResolve": MessageLookupByLibrary.simpleMessage("IPを解決しない"),
     "noResolveHostname": MessageLookupByLibrary.simpleMessage("ホスト名を解決しない"),
+    "node": MessageLookupByLibrary.simpleMessage("ノード"),
+    "nodeName": MessageLookupByLibrary.simpleMessage("ノード名"),
+    "nodeNameDuplicate": MessageLookupByLibrary.simpleMessage(
+      "同じ名前のノードまたはプロキシグループがあります",
+    ),
+    "nodes": MessageLookupByLibrary.simpleMessage("ノード"),
+    "nodesAlreadyExist": MessageLookupByLibrary.simpleMessage(
+      "これらのノードはすでにリストにあります",
+    ),
+    "nodesImported": m22,
+    "nodesImportedSkipped": m23,
     "none": MessageLookupByLibrary.simpleMessage("なし"),
     "notSelectedTip": MessageLookupByLibrary.simpleMessage(
       "現在のプロキシグループは選択できません",
@@ -613,8 +637,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "nullProfileDesc": MessageLookupByLibrary.simpleMessage(
       "プロファイルがありません。先にプロファイルを追加してください",
     ),
-    "nullTip": m22,
-    "numberTip": m23,
+    "nullTip": m24,
+    "numberTip": m25,
     "onDemand": MessageLookupByLibrary.simpleMessage("オンデマンド"),
     "onDemandDesc": MessageLookupByLibrary.simpleMessage(
       "特定のシナリオでのアプリの実行状態を設定します",
@@ -664,19 +688,19 @@ class MessageLookup extends MessageLookupByLibrary {
       "許可リストへの登録リクエストは物理ネットワークから送信されます。プロキシ実行中はコアの DIRECT 専用リスナーを経由するため、ルール・グローバルモード・TUN の影響を受けません。停止中は直接接続します。これによりプロキシではなく実際の出口が許可されます。",
     ),
     "po0EditToken": MessageLookupByLibrary.simpleMessage("トークンを編集"),
-    "po0Exit": m24,
-    "po0PollIntervalRange": m25,
-    "po0ResultApplied": m26,
+    "po0Exit": m26,
+    "po0PollIntervalRange": m27,
+    "po0ResultApplied": m28,
     "po0ResultDisabled": MessageLookupByLibrary.simpleMessage(
       "このサーバーではファイアウォールが無効です",
     ),
-    "po0ResultError": m27,
-    "po0ResultNotApplied": m28,
-    "po0ResultRejected": m29,
+    "po0ResultError": m29,
+    "po0ResultNotApplied": m30,
+    "po0ResultRejected": m31,
     "po0Running": MessageLookupByLibrary.simpleMessage("実行中…"),
     "po0StatusApplied": MessageLookupByLibrary.simpleMessage("出口は許可済み"),
     "po0StatusOff": MessageLookupByLibrary.simpleMessage("自動許可はオフです"),
-    "po0StatusPartial": m30,
+    "po0StatusPartial": m32,
     "po0StatusWaiting": MessageLookupByLibrary.simpleMessage("初回実行を待機中"),
     "po0TokenDuplicate": MessageLookupByLibrary.simpleMessage(
       "このトークンは既にリストにあります",
@@ -686,12 +710,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "po0TokensInvalid": MessageLookupByLibrary.simpleMessage(
       "トークンは pgnfw_ で始まり、空白や区切り文字を含められません",
     ),
-    "po0Usage": m31,
+    "po0Usage": m33,
     "po0Whitelist": MessageLookupByLibrary.simpleMessage("許可リスト"),
     "po0WhitelistNow": MessageLookupByLibrary.simpleMessage("今すぐ許可"),
     "port": MessageLookupByLibrary.simpleMessage("ポート"),
     "portConflictTip": MessageLookupByLibrary.simpleMessage("別のポートを入力してください"),
-    "portTip": m32,
+    "portTip": m34,
     "preferH3Desc": MessageLookupByLibrary.simpleMessage("DoHでHTTP/3を優先します"),
     "prerequisites": MessageLookupByLibrary.simpleMessage("前提条件"),
     "pressKeyboard": MessageLookupByLibrary.simpleMessage("キーを押してください"),
@@ -720,7 +744,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "project": MessageLookupByLibrary.simpleMessage("プロジェクト"),
     "providers": MessageLookupByLibrary.simpleMessage("外部リソース"),
     "proxies": MessageLookupByLibrary.simpleMessage("プロキシ"),
-    "proxiesCount": m33,
+    "proxiesCount": m35,
     "proxiesEmpty": MessageLookupByLibrary.simpleMessage("プロキシが空です"),
     "proxyChains": MessageLookupByLibrary.simpleMessage("プロキシチェーン"),
     "proxyDetectedAbnormal": MessageLookupByLibrary.simpleMessage(
@@ -770,6 +794,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "remoteDestination": MessageLookupByLibrary.simpleMessage("リモート宛先"),
     "remove": MessageLookupByLibrary.simpleMessage("削除"),
+    "rename": MessageLookupByLibrary.simpleMessage("名前を変更"),
     "request": MessageLookupByLibrary.simpleMessage("リクエスト"),
     "requests": MessageLookupByLibrary.simpleMessage("リクエスト"),
     "requestsDesc": MessageLookupByLibrary.simpleMessage("最近のリクエスト記録を表示します"),
@@ -915,7 +940,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "ruleSet": MessageLookupByLibrary.simpleMessage("ルールセット"),
     "ruleTarget": MessageLookupByLibrary.simpleMessage("ルールターゲット"),
     "rules": MessageLookupByLibrary.simpleMessage("ルール"),
-    "rulesCount": m34,
+    "rulesCount": m36,
     "save": MessageLookupByLibrary.simpleMessage("保存"),
     "saveChanges": MessageLookupByLibrary.simpleMessage("変更を保存しますか？"),
     "script": MessageLookupByLibrary.simpleMessage("スクリプト"),
@@ -925,7 +950,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "scrollToSelected": MessageLookupByLibrary.simpleMessage("選択項目へスクロール"),
     "search": MessageLookupByLibrary.simpleMessage("検索"),
     "seconds": MessageLookupByLibrary.simpleMessage("秒"),
-    "secondsCount": m35,
+    "secondsCount": m37,
     "selectAll": MessageLookupByLibrary.simpleMessage("すべて選択"),
     "selectMatchTarget": MessageLookupByLibrary.simpleMessage(
       "MATCH-TARGET を選択",
@@ -940,8 +965,18 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "selectSubRule": MessageLookupByLibrary.simpleMessage("サブルールを選択してください"),
     "selected": MessageLookupByLibrary.simpleMessage("選択済み"),
-    "selectedCountTitle": m36,
+    "selectedCountTitle": m38,
     "settings": MessageLookupByLibrary.simpleMessage("設定"),
+    "shareLinks": MessageLookupByLibrary.simpleMessage("共有リンク"),
+    "shareLinksDesc": MessageLookupByLibrary.simpleMessage(
+      "vmess・vless・trojan・ss・hysteria2 などのノードリンクをインポート",
+    ),
+    "shareLinksHint": MessageLookupByLibrary.simpleMessage(
+      "1 行に 1 つ。base64 のサブスクリプション内容も使えます",
+    ),
+    "shareLinksInvalid": MessageLookupByLibrary.simpleMessage(
+      "対応するノードリンクが見つかりません",
+    ),
     "show": MessageLookupByLibrary.simpleMessage("表示"),
     "showLess": MessageLookupByLibrary.simpleMessage("折りたたむ"),
     "showMore": MessageLookupByLibrary.simpleMessage("展開"),
@@ -1043,7 +1078,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "upload": MessageLookupByLibrary.simpleMessage("アップロード"),
     "url": MessageLookupByLibrary.simpleMessage("URL"),
     "urlDesc": MessageLookupByLibrary.simpleMessage("URLからプロファイルを取得します"),
-    "urlTip": m37,
+    "urlTip": m39,
     "useHosts": MessageLookupByLibrary.simpleMessage("Hostsを使用"),
     "useSystemHosts": MessageLookupByLibrary.simpleMessage("システムのHostsを使用"),
     "usedTraffic": MessageLookupByLibrary.simpleMessage("使用済みトラフィック"),
@@ -1069,10 +1104,10 @@ class MessageLookup extends MessageLookupByLibrary {
       "po0 token または ggy の完全なリンクを追加してください。各項目は個別に実行されます",
     ),
     "whitelistEntryType": MessageLookupByLibrary.simpleMessage("種類"),
-    "whitelistGgyInterval": m38,
+    "whitelistGgyInterval": m40,
     "whitelistGgyLink": MessageLookupByLibrary.simpleMessage("ggy リンク"),
-    "whitelistLastGgy": m39,
-    "whitelistLastPo0": m40,
+    "whitelistLastGgy": m41,
+    "whitelistLastPo0": m42,
     "whitelistMode": MessageLookupByLibrary.simpleMessage("ホワイトリストモード"),
     "whitelistNav": MessageLookupByLibrary.simpleMessage("ホワイトリスト"),
     "whitelistNoEntries": MessageLookupByLibrary.simpleMessage(
@@ -1082,7 +1117,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "whitelistPo0Token": MessageLookupByLibrary.simpleMessage("po0 token"),
     "whitelistQueryPo0": MessageLookupByLibrary.simpleMessage("po0 の状態を確認"),
     "whitelistTitle": MessageLookupByLibrary.simpleMessage("ホワイトリスト"),
-    "yearsAgo": m41,
+    "yearsAgo": m43,
     "zhCN": MessageLookupByLibrary.simpleMessage("簡体字中国語"),
   };
 }

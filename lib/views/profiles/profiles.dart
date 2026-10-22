@@ -14,6 +14,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'add.dart';
 import 'edit.dart';
+import 'nodes.dart';
 import 'preview.dart';
 
 class ProfilesView extends ConsumerStatefulWidget {
@@ -329,7 +330,16 @@ class ProfileItem extends ConsumerWidget {
     final subscriptionInfo = profile.subscriptionInfo;
     final hasSubscriptionInfo =
         isUrl && subscriptionInfo != null && subscriptionInfo.total > 0;
+    final isNodeProfile = ref.watch(nodeProfileIdProvider) == profile.id;
     return [
+      if (isNodeProfile)
+        CommonPopupMenuItem(
+          icon: Icons.dns_outlined,
+          label: appLocalizations.nodes,
+          onPressed: () {
+            BaseNavigator.push(context, const NodesView());
+          },
+        ),
       CommonPopupMenuItem(
         icon: Icons.edit_outlined,
         label: appLocalizations.edit,

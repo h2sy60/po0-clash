@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/common/node_profile.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
@@ -50,7 +51,7 @@ class Picker {
       formats: [BarcodeFormat.qrCode],
     );
     final result = capture?.barcodes.first.rawValue;
-    if (result == null || !result.isUrl) {
+    if (result == null || !(result.isUrl || isShareLinkText(result))) {
       throw MessageException(currentAppLocalizations.pleaseUploadValidQrcode);
     }
     return result;

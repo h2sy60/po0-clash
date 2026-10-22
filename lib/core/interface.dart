@@ -72,6 +72,8 @@ mixin CoreInterface {
 
   FutureOr<String> clearEffect(int profileId);
 
+  Future<List<Map<String, dynamic>>> convertShareLinks(String data);
+
   FutureOr<bool> closeConnections();
 
   FutureOr<bool> resetConnections();
@@ -314,6 +316,20 @@ abstract class CoreHandlerInterface with CoreInterface {
   @override
   Future<String> clearEffect(int profileId) async {
     return _invokeMessage(method: CoreMethod.clearEffect, arguments: profileId);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> convertShareLinks(String data) async {
+    // Bypasses _invokeMethod, which logs its arguments: share links carry
+    // UUIDs and passwords.
+    final result = await invokeMethod<List<dynamic>>(
+      method: CoreMethod.convertShareLinks,
+      arguments: data,
+    );
+    return [
+      for (final proxy in result ?? const [])
+        Map<String, dynamic>.from(proxy as Map),
+    ];
   }
 
   @override

@@ -3,9 +3,13 @@ import 'dart:async';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/pages/scan.dart';
 import 'package:fl_clash/providers/action.dart';
+import 'package:fl_clash/providers/node_profile.dart';
+import 'package:fl_clash/state.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'nodes.dart';
 
 class AddProfileView extends ConsumerWidget {
   final BuildContext context;
@@ -56,6 +60,16 @@ class AddProfileView extends ConsumerWidget {
     }
   }
 
+  Future<void> _toImportShareLinks(WidgetRef ref) async {
+    final action = ref.read(nodeProfileActionProvider.notifier);
+    final text = await showShareLinksDialog();
+    if (text == null) {
+      return;
+    }
+    globalState.navigatorKey.currentState?.popUntil((route) => route.isFirst);
+    unawaited(action.importWithFeedback(text));
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final appLocalizations = context.appLocalizations;
@@ -78,6 +92,12 @@ class AddProfileView extends ConsumerWidget {
           title: Text(appLocalizations.url),
           subtitle: Text(appLocalizations.urlDesc),
           onTap: () => _toAdd(ref),
+        ),
+        ListItem(
+          leading: const Icon(Icons.link_sharp),
+          title: Text(appLocalizations.shareLinks),
+          subtitle: Text(appLocalizations.shareLinksDesc),
+          onTap: () => _toImportShareLinks(ref),
         ),
       ],
     );
