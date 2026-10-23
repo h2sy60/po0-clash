@@ -51,5 +51,8 @@ export 'system.dart';
 export 'task.dart';
 export 'task_pool.dart';
 export 'text.dart';
+export 'typography.dart';
 export 'webdav.dart';
 export 'yaml.dart';
+export 'upstream_color.dart' show ColorStyle, ColorSchemeExtension;
+export '../widgets/upstream_surface.dart';

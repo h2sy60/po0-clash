@@ -9,6 +9,9 @@ object ServiceState {
 
     val runState = machine.runState
 
+    val hasFlutterEngine: Boolean
+        get() = AndroidServiceStateHost.hasFlutterEngine
+
     fun attachFlutterEngine(engine: FlutterEngine) =
         AndroidServiceStateHost.attachFlutterEngine(engine)
 

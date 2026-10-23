@@ -1,8 +1,11 @@
 import 'package:fl_clash/models/config.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:fl_clash/widgets/glyphs/glyphs.dart';
 
 import 'glass.dart';
+import 'upstream_color.dart' as upstream;
 import 'shape.dart';
+import 'typography.dart';
 
 ThemeData buildAppTheme({
   required Brightness brightness,
@@ -11,26 +14,21 @@ ThemeData buildAppTheme({
   required ThemeProps themeProps,
 }) {
   final pureBlack = brightness == Brightness.dark && themeProps.pureBlack;
-  final dark = brightness == Brightness.dark;
-  final scheme = materialScheme.copyWith(
-    surface: pureBlack ? Colors.black : Color(dark ? 0xFF101012 : 0xFFF5F5F7),
-    surfaceContainerLowest: Color(dark ? 0xFF171719 : 0xFFFFFFFF),
-    surfaceContainerLow: Color(dark ? 0xFF1C1C1E : 0xFFFFFFFF),
-    surfaceContainer: Color(dark ? 0xFF232325 : 0xFFEFEFF2),
-    surfaceContainerHigh: Color(dark ? 0xFF2C2C2E : 0xFFE8E8ED),
-    surfaceContainerHighest: Color(dark ? 0xFF363638 : 0xFFE2E2E7),
-    onSurface: Color(dark ? 0xFFF5F5F7 : 0xFF1D1D1F),
-    onSurfaceVariant: Color(dark ? 0xFFABABB0 : 0xFF6E6E73),
-    outline: const Color(0xFF86868B),
-    outlineVariant: Color(dark ? 0xFF38383A : 0xFFD2D2D7),
-  );
+  final scheme = upstream.ColorSchemeExtension(
+    materialScheme,
+  ).toPureBlack(pureBlack);
   final surfaces = GlassStyle.of(scheme, pureBlack: pureBlack);
   final base = ThemeData(
     useMaterial3: true,
     colorScheme: scheme,
     pageTransitionsTheme: pageTransitionsTheme,
+    actionIconTheme: ActionIconThemeData(
+      backButtonIconBuilder: (context) =>
+          GlyphIcon(AppGlyphs.backFor(Theme.of(context).platform)),
+      closeButtonIconBuilder: (_) => const GlyphIcon(AppGlyphs.close),
+    ),
     extensions: [surfaces],
-  );
+  ).withAppShapes.withAppTypography;
   final text = base.textTheme;
   return base.copyWith(
     scaffoldBackgroundColor: surfaces.background,
@@ -42,33 +40,34 @@ ThemeData buildAppTheme({
       elevation: 0,
       scrolledUnderElevation: 0,
       centerTitle: false,
-      titleTextStyle: text.titleLarge?.copyWith(
-        color: scheme.onSurface,
-        fontWeight: FontWeight.w600,
-      ),
+      titleTextStyle: AppTextStyle.pageTitle
+          .ofTheme(text)
+          .copyWith(color: scheme.onSurface, fontWeight: FontWeight.w600),
     ),
     cardTheme: CardThemeData(
       color: surfaces.card,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       margin: EdgeInsets.zero,
-      shape: AppShape.extraLarge,
+      shape: AppShape.medium,
     ),
     navigationBarTheme: NavigationBarThemeData(
-      backgroundColor: scheme.surfaceContainerLow,
+      backgroundColor: surfaces.card,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
-      indicatorColor: Colors.transparent,
+      indicatorColor: surfaces.fill,
       iconTheme: WidgetStateProperty.resolveWith(
         (states) => IconThemeData(
           color: states.contains(WidgetState.selected)
               ? scheme.primary
               : scheme.onSurfaceVariant,
-          size: 22,
+          size: 24,
         ),
       ),
       labelTextStyle: WidgetStateProperty.resolveWith(
         (states) => text.labelSmall?.copyWith(
+          fontSize: 10,
+          height: 1.45,
           color: states.contains(WidgetState.selected)
               ? scheme.primary
               : scheme.onSurfaceVariant,
@@ -87,7 +86,7 @@ ThemeData buildAppTheme({
       backgroundColor: surfaces.glassStrong,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
-      shape: AppShape.extraLarge,
+      shape: AppShape.all(AppCorner.alert),
       barrierColor: scheme.modalScrim,
     ),
     bottomSheetTheme: BottomSheetThemeData(
@@ -102,8 +101,8 @@ ThemeData buildAppTheme({
     inputDecorationTheme: InputDecorationThemeData(
       filled: true,
       fillColor: scheme.surfaceContainer,
-      border: AppShape.input,
-      enabledBorder: AppShape.input,
+      border: AppShape.input.copyWith(borderSide: BorderSide.none),
+      enabledBorder: AppShape.input.copyWith(borderSide: BorderSide.none),
       focusedBorder: AppShape.input.copyWith(
         borderSide: BorderSide(color: scheme.primary, width: 2),
       ),
@@ -181,25 +180,19 @@ ThemeData buildAppTheme({
   );
 }
 
-extension AppSchemeExt on ColorScheme {
-  Color get modalScrim => scrim.withValues(alpha: 0.32);
-}
-
 ColorScheme seededColorScheme(
   Color seed,
   Brightness brightness,
   DynamicSchemeVariant variant,
 ) {
-  final scheme = ColorScheme.fromSeed(
+  return upstream.seededColorScheme(
     seedColor: seed,
     brightness: brightness,
-    dynamicSchemeVariant: variant,
-  );
-  if (seed.toARGB32() != 0xFF007AFF) return scheme;
-  return scheme.copyWith(
-    primary: Color(brightness == Brightness.dark ? 0xFF2997FF : 0xFF0071E3),
-    onPrimary: brightness == Brightness.dark
-        ? const Color(0xFF001B3D)
-        : Colors.white,
+    style: switch (variant) {
+      DynamicSchemeVariant.tonalSpot => upstream.ColorStyle.soft,
+      DynamicSchemeVariant.monochrome => upstream.ColorStyle.monochrome,
+      DynamicSchemeVariant.expressive => upstream.ColorStyle.tinted,
+      _ => upstream.ColorStyle.vivid,
+    },
   );
 }

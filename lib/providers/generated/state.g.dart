@@ -428,7 +428,7 @@ final class SharedStateProvider
   }
 }
 
-String _$sharedStateHash() => r'024507d9ee9cde0abb9b8b8bfe9231b0228433c1';
+String _$sharedStateHash() => r'7f5201f9f320c776a790bb36f7abdacb457b6932';
 
 @ProviderFor(AccessControlState)
 final accessControlStateProvider = AccessControlStateProvider._();
@@ -2755,7 +2755,7 @@ final class OverlayTopOffsetProvider
   }
 }
 
-String _$overlayTopOffsetHash() => r'b42152f4cf4919bed9143d1cb0749581c9f692ca';
+String _$overlayTopOffsetHash() => r'44c3b3c9f8f3af5e10ba91e0f2514f52f3c6ddac';
 
 @ProviderFor(profilesState)
 final profilesStateProvider = ProfilesStateProvider._();

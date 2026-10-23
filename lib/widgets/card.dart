@@ -97,12 +97,14 @@ class CommonCard extends StatelessWidget {
     this.shape,
     this.isError = false,
     this.enterActionsOnRight = false,
+    this.fillsSelection = false,
     this.skipTraversal = false,
     required this.child,
   }) : isSelected = isSelected ?? false;
 
   final bool enterAnimated;
   final bool enterActionsOnRight;
+  final bool fillsSelection;
   final bool skipTraversal;
   final bool isSelected;
   final bool isError;
@@ -140,6 +142,9 @@ class CommonCard extends StatelessWidget {
       return BorderSide.none;
     }
     if (isSelected || states.contains(WidgetState.focused)) {
+      if (fillsSelection && !states.contains(WidgetState.focused)) {
+        return BorderSide.none;
+      }
       return BorderSide(color: colorScheme.primary, width: 1.5);
     }
     return BorderSide.none;
@@ -148,6 +153,7 @@ class CommonCard extends StatelessWidget {
   Color? _buildBackgroundColor(BuildContext context) {
     final glass = context.glass;
     if (isSelected) {
+      if (fillsSelection) return context.colorScheme.primary;
       return Color.alphaBlend(
         context.colorScheme.primary.withValues(alpha: glass.isDark ? 0.2 : 0.1),
         glass.card,
@@ -168,7 +174,7 @@ class CommonCard extends StatelessWidget {
       return colorScheme.onSurfaceVariant;
     }
     if (isSelected) {
-      return colorScheme.onSecondaryContainer;
+      return fillsSelection ? colorScheme.onPrimary : colorScheme.onSurface;
     }
     return colorScheme.onSurfaceVariant;
   }

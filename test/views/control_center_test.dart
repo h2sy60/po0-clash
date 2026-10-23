@@ -4,7 +4,7 @@ import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/control/control_center.dart';
 import 'package:fl_clash/views/control/tiles.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:fl_clash/views/dashboard/widgets/current_outbound.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -28,11 +28,24 @@ void main() {
       overrides: [
         profilesProvider.overrideWith(TestProfiles.new),
         networkDetectionProvider.overrideWith(_Detected.new),
+        ipQualityProvider('154.17.22.108').overrideWith(
+          (ref) async => const IpQuality(
+            ip: '154.17.22.108',
+            source: IpQualitySource.identMe,
+            type: IpType.residential,
+          ),
+        ),
       ],
     );
     globalState.container = container;
     container.listen(networkSettingProvider, (_, _) {});
     container.listen(patchClashConfigProvider, (_, _) {});
+    container
+        .read(networkSettingProvider.notifier)
+        .update((state) => state.copyWith(systemProxy: false));
+    container
+        .read(patchClashConfigProvider.notifier)
+        .update((state) => state.copyWith.tun(enable: true));
     container
         .read(viewSizeProvider.notifier)
         .update((_) => const Size(1000, 900));
@@ -65,7 +78,7 @@ void main() {
   }
 
   testWidgets('TUN and the system proxy exclude each other', (tester) async {
-    await pump(tester, const QuickToggles());
+    await pump(tester, const NetworkTakeoverCard());
 
     await tester.tap(find.text('System proxy'));
     await tester.pump();
@@ -77,37 +90,35 @@ void main() {
 
     await tester.tap(find.text('TUN'));
     await tester.pump();
-    expect(route(), (tun: true, systemProxy: false), reason: 'never both off');
+    expect(route(), (
+      tun: false,
+      systemProxy: true,
+    ), reason: 'disabling TUN selects the system proxy');
   });
 
   testWidgets('the exit IP stays readable and rechecks on tap', (tester) async {
-    await pump(tester, const IpDetectionChip());
+    await pump(tester, const CurrentOutboundCard());
     final ip = find.text('154.17.22.108');
     expect(ip, findsOneWidget);
 
     final before = container.read(checkIpNumProvider);
-    await tester.tap(ip);
+    await tester.tap(find.byTooltip('Retry'));
     await tester.pump();
     expect(container.read(checkIpNumProvider), before + 1);
   });
 
-  testWidgets('narrow rows drop the option buttons but keep the labels', (
+  testWidgets('narrow takeover cards retain both switches and labels', (
     tester,
   ) async {
-    await pump(tester, const QuickToggles());
-    expect(find.byType(GlassIconButton), findsNWidgets(2));
-
-    await pump(tester, const QuickToggles(), width: 360);
-    expect(find.byType(GlassIconButton), findsNothing);
+    await pump(tester, const NetworkTakeoverCard(), width: 320);
+    expect(find.byType(Switch), findsNWidgets(2));
     expect(find.text('TUN'), findsOneWidget);
-
-    await tester.longPress(find.text('TUN'));
-    await tester.pumpAndSettle();
-    expect(find.byType(AdaptiveSheetScaffold), findsOneWidget);
+    expect(find.text('System proxy'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('the sidebar route switch drives the same rule', (tester) async {
-    await pump(tester, const DesktopRouteSwitch());
+    await pump(tester, const NetworkTakeoverCard());
     await tester.tap(find.text('System proxy'));
     await tester.pumpAndSettle();
     expect(route(), (tun: false, systemProxy: true));
@@ -135,13 +146,13 @@ void main() {
           );
 
       setEntries(po0: true, ggy: true);
-      await pump(tester, const WhitelistStatusCard());
+      await pump(tester, const WhitelistCard());
       expect(find.text('Whitelist', findRichText: true), findsOneWidget);
       await tester.pump(const Duration(seconds: 10));
       await tester.pumpAndSettle();
       expect(find.text('Whitelist', findRichText: true), findsOneWidget);
 
-      await tester.tap(find.byType(WhitelistStatusCard));
+      await tester.tap(find.byType(WhitelistCard));
       expect(container.read(currentPageLabelProvider), PageLabel.whitelist);
 
       for (final (po0, ggy) in [(false, false), (false, true), (true, false)]) {
@@ -151,7 +162,7 @@ void main() {
         await tester.pump(const Duration(seconds: 10));
         await tester.pumpAndSettle();
         expect(find.text('Whitelist', findRichText: true), findsOneWidget);
-        await tester.tap(find.byType(WhitelistStatusCard));
+        await tester.tap(find.byType(WhitelistCard));
         expect(container.read(currentPageLabelProvider), PageLabel.whitelist);
       }
     },
@@ -161,7 +172,7 @@ void main() {
     for (final width in [380.0, 820.0]) {
       await pump(tester, const ControlCenterView(), width: width);
       await tester.pump();
-      expect(find.byType(QuickToggles), findsOneWidget);
+      expect(find.text('System proxy'), findsOneWidget);
       expect(find.text('Add profile'), findsOneWidget);
       expect(tester.takeException(), isNull, reason: 'width $width');
     }

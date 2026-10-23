@@ -1,5 +1,6 @@
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
+import 'glyphs/glyphs.dart';
 import 'package:material_ui/material_ui.dart';
 
 class AppFloor extends StatelessWidget {
@@ -55,7 +56,7 @@ class GlassSurface extends StatelessWidget {
     bool circle = false,
   }) => circle
       ? const CircleBorder()
-      : RoundedRectangleBorder(borderRadius: borderRadius ?? radiusOf(kind));
+      : AppShape.of(borderRadius ?? radiusOf(kind));
 
   @override
   Widget build(BuildContext context) {
@@ -192,7 +193,7 @@ class GlassIconBadge extends StatelessWidget {
       ),
       child: SizedBox.square(
         dimension: size,
-        child: Icon(icon, size: size * 0.6, color: accent),
+        child: AppIcon(icon, size: size * 0.6, color: accent),
       ),
     );
   }
@@ -263,7 +264,7 @@ class GlassPill extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (icon != null) ...[
-              Icon(icon, size: 14, color: accent),
+              AppIcon(icon, size: 14, color: accent),
               const SizedBox(width: 4),
             ],
             Text(
@@ -303,7 +304,7 @@ class GlassIconButton extends StatelessWidget {
     return IconButton(
       tooltip: tooltip,
       onPressed: onPressed,
-      icon: Icon(icon, size: size * 0.56),
+      icon: AppIcon(icon, size: size * 0.56),
       style: IconButton.styleFrom(
         fixedSize: Size.square(size),
         minimumSize: Size.square(size),

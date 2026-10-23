@@ -132,7 +132,7 @@ class _ThemeModeItem extends ConsumerWidget {
                     mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      Flexible(child: Icon(themeModeItem.iconData)),
+                      Flexible(child: AppIcon(themeModeItem.iconData)),
                       const SizedBox(width: 8),
                       Flexible(child: Text(themeModeItem.label)),
                     ],
@@ -319,7 +319,7 @@ class _PrimaryColorItemState extends ConsumerState<_PrimaryColorItem> {
                 padding: const EdgeInsets.all(4),
                 visualDensity: VisualDensity.compact,
                 onPressed: _handleReset,
-                icon: const Icon(Icons.replay),
+                icon: const AppIcon(Icons.replay),
               ),
           ], space: 8),
           child: Container(
@@ -454,7 +454,7 @@ class _PrimaryColorTile extends StatelessWidget {
                 onPressed: onDelete,
                 padding: const EdgeInsets.all(12),
                 iconSize: 30,
-                icon: Icon(color: context.colorScheme.primary, Icons.delete),
+                icon: AppIcon(color: context.colorScheme.primary, Icons.delete),
               ),
             ),
         ],
@@ -479,7 +479,7 @@ class _AddPrimaryColorTile extends StatelessWidget {
         tooltip: context.appLocalizations.add,
         onPressed: onPressed,
         iconSize: 32,
-        icon: Icon(color: context.colorScheme.primary, Icons.add),
+        icon: AppIcon(color: context.colorScheme.primary, Icons.add),
       ),
     );
   }
@@ -496,7 +496,7 @@ class _PrueBlackItem extends ConsumerWidget {
     );
     return SliverToBoxAdapter(
       child: ListItem.toggle(
-        leading: const Icon(Icons.contrast),
+        leading: const AppIcon(Icons.contrast),
         horizontalTitleGap: 12,
         title: Text(
           appLocalizations.pureBlackMode,
@@ -532,7 +532,7 @@ class _TextScaleFactorItem extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: ListItem.toggle(
-              leading: const Icon(Icons.text_fields),
+              leading: const AppIcon(Icons.text_fields),
               horizontalTitleGap: 12,
               title: Text(
                 appLocalizations.textScale,

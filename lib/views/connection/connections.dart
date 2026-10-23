@@ -121,20 +121,30 @@ class _ConnectionsViewState extends ConsumerState<ConnectionsView>
               label: appLocalizations.nullTip(appLocalizations.connections),
               illustration: NullStatusIllustration.connections,
             ),
-            child: TrackerInfoAnimatedList(
-              controller: _scrollController,
-              trackerInfos: connections,
-              detailTitle: appLocalizations.details(
-                appLocalizations.connection,
-              ),
-              trailingBuilder: (trackerInfo) => IconButton(
-                tooltip: appLocalizations.blockConnection,
-                visualDensity: VisualDensity.compact,
-                icon: const Icon(Icons.block, size: 20),
-                onPressed: () {
-                  _handleBlockConnection(trackerInfo.id);
-                },
-              ),
+            child: LayoutBuilder(
+              builder: (_, constraints) => constraints.maxWidth >= 900
+                  ? TrackerInfoTable(
+                      trackerInfos: connections,
+                      detailTitle: appLocalizations.details(
+                        appLocalizations.connection,
+                      ),
+                      onClose: _handleBlockConnection,
+                    )
+                  : TrackerInfoAnimatedList(
+                      controller: _scrollController,
+                      trackerInfos: connections,
+                      detailTitle: appLocalizations.details(
+                        appLocalizations.connection,
+                      ),
+                      trailingBuilder: (trackerInfo) => IconButton(
+                        tooltip: appLocalizations.blockConnection,
+                        visualDensity: VisualDensity.compact,
+                        icon: const Icon(Icons.block, size: 20),
+                        onPressed: () {
+                          _handleBlockConnection(trackerInfo.id);
+                        },
+                      ),
+                    ),
             ),
           );
         },

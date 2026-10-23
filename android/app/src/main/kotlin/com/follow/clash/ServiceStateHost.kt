@@ -62,6 +62,9 @@ internal object AndroidServiceStateHost : ServiceStateHost {
     @Volatile
     private var flutterEngine: FlutterEngine? = null
 
+    val hasFlutterEngine: Boolean
+        get() = flutterEngine != null
+
     override val scope: CoroutineScope
         get() = GlobalState
 

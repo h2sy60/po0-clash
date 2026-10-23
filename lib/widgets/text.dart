@@ -111,7 +111,7 @@ class EmojiText extends StatelessWidget {
     this.style,
   });
 
-  List<TextSpan> _buildTextSpans(String emojis) {
+  static TextSpan spanOf(String text, TextStyle? style) {
     final List<TextSpan> spans = [];
     final matches = emojiRegex().allMatches(text);
 
@@ -128,7 +128,9 @@ class EmojiText extends StatelessWidget {
       spans.add(
         TextSpan(
           text: match.group(0),
-          style: style?.copyWith(fontFamily: FontFamily.twEmoji.value),
+          style: (style ?? const TextStyle()).copyWith(
+            fontFamily: FontFamily.twEmoji.value,
+          ),
         ),
       );
       lastMatchEnd = match.end;
@@ -137,16 +139,36 @@ class EmojiText extends StatelessWidget {
       spans.add(TextSpan(text: text.substring(lastMatchEnd), style: style));
     }
 
-    return spans;
+    return TextSpan(children: spans);
+  }
+
+  static double widthOf(BuildContext context, String text, TextStyle style) {
+    final painter = TextPainter(
+      text: TextSpan(
+        style: MediaQuery.boldTextOf(context)
+            ? style.merge(const TextStyle(fontWeight: FontWeight.bold))
+            : style,
+        children: [spanOf(text, null)],
+      ),
+      textDirection: Directionality.of(context),
+      textScaler: MediaQuery.textScalerOf(context),
+      locale: Localizations.maybeLocaleOf(context),
+      maxLines: 1,
+    )..layout();
+    try {
+      return painter.maxIntrinsicWidth;
+    } finally {
+      painter.dispose();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return RichText(
-      textScaler: MediaQuery.textScalerOf(context),
+    return Text.rich(
+      spanOf(text, style),
+      style: style,
       maxLines: maxLines,
       overflow: overflow ?? TextOverflow.clip,
-      text: TextSpan(children: _buildTextSpans(text)),
     );
   }
 }

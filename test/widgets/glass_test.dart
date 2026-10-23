@@ -36,7 +36,7 @@ void main() {
       final b = tester.getRect(
         find.ancestor(of: find.text('B'), matching: find.byType(InkWell)),
       );
-      expect(b.height, track.height, reason: 'the segment fills the track');
+      expect(b.height, track.height - 8, reason: 'the pill keeps a 4 dp inset');
       expect(b.center.dy, closeTo(track.center.dy, 0.5));
 
       await tester.tapAt(b.bottomCenter - const Offset(0, 2));
@@ -170,7 +170,7 @@ void main() {
     );
     expect(
       box.color,
-      Theme.of(tester.element(find.text('floor'))).colorScheme.surface,
+      Theme.of(tester.element(find.text('floor'))).colorScheme.surfaceContainer,
     );
   });
 

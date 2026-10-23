@@ -41,6 +41,19 @@ class App {
     return methodChannel.invokeMethod<bool>('moveTaskToBack');
   }
 
+  Future<bool> isWhitelistBootstrap() async =>
+      await methodChannel.invokeMethod<bool>('isWhitelistBootstrap') ?? false;
+
+  Future<void> finishWhitelistBootstrap({
+    bool background = true,
+    bool ready = true,
+  }) async {
+    await methodChannel.invokeMethod<bool>('finishWhitelistBootstrap', {
+      'background': background,
+      'ready': ready,
+    });
+  }
+
   Future<List<Package>> getPackages() async {
     final packagesString = await methodChannel.invokeMethod<String>(
       'getPackages',

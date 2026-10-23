@@ -6,7 +6,7 @@ import 'card.dart';
 
 class CommonFloatingActionButton extends StatelessWidget {
   final VoidCallback? onPressed;
-  final Icon icon;
+  final Widget icon;
   final String label;
 
   const CommonFloatingActionButton({

@@ -120,7 +120,10 @@ void main() {
       matching: find.byType(ListItem),
     );
     await tester.tap(
-      find.descendant(of: profileItem, matching: find.byIcon(Icons.more_vert)),
+      find.descendant(
+        of: profileItem,
+        matching: find.byTooltip(currentAppLocalizations.more),
+      ),
     );
     await tester.pumpAndSettle();
 

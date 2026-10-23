@@ -11,6 +11,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'card.dart';
 import 'common.dart';
+import 'group_tabs.dart';
 
 typedef ProxyGroupViewKeyMap =
     Map<String, GlobalObjectKey<_ProxyGroupViewState>>;
@@ -27,7 +28,6 @@ class ProxiesTabView extends ConsumerStatefulWidget {
 class ProxiesTabViewState extends ConsumerState<ProxiesTabView>
     with TickerProviderStateMixin {
   TabController? _tabController;
-  final _hasMoreButtonNotifier = ValueNotifier<bool>(false);
   ProxyGroupViewKeyMap _keyMap = {};
 
   @override
@@ -49,7 +49,6 @@ class ProxiesTabViewState extends ConsumerState<ProxiesTabView>
   @override
   void dispose() {
     _destroyTabController();
-    _hasMoreButtonNotifier.dispose();
     super.dispose();
   }
 
@@ -81,69 +80,6 @@ class ProxiesTabViewState extends ConsumerState<ProxiesTabView>
       return null;
     }
     return groups[index];
-  }
-
-  Widget _buildMoreButton() {
-    return Consumer(
-      builder: (_, ref, _) {
-        final isMobileView = ref.watch(isMobileViewProvider);
-        return IconButton(
-          tooltip: context.appLocalizations.more,
-          onPressed: _showMoreMenu,
-          icon: isMobileView
-              ? const Icon(Icons.expand_more)
-              : const Icon(Icons.chevron_right),
-        );
-      },
-    );
-  }
-
-  void _showMoreMenu() {
-    showSheet(
-      context: context,
-      props: const SheetProps(isScrollControlled: false),
-      builder: (_) {
-        return AdaptiveSheetScaffold(
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Consumer(
-              builder: (_, ref, _) {
-                final state = ref.watch(proxiesTabControllerStateProvider);
-                final groupNames = state.groupNames;
-                final currentGroupName = state.currentGroupName;
-                return SizedBox(
-                  width: double.infinity,
-                  child: Wrap(
-                    alignment: WrapAlignment.center,
-                    runSpacing: 8,
-                    spacing: 8,
-                    children: [
-                      for (final groupName in groupNames)
-                        SettingTextCard(
-                          groupName,
-                          onPressed: () {
-                            final index = groupNames.indexWhere(
-                              (item) => item == groupName,
-                            );
-                            if (index == -1) return;
-                            _tabController?.animateTo(index);
-                            ref
-                                .read(proxiesActionProvider.notifier)
-                                .updateCurrentGroupName(groupName);
-                            Navigator.of(context).pop();
-                          },
-                          isSelected: groupName == currentGroupName,
-                        ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ),
-          title: context.appLocalizations.proxyGroup,
-        );
-      },
-    );
   }
 
   void _tabControllerListener([int? index]) {
@@ -205,62 +141,9 @@ class ProxiesTabViewState extends ConsumerState<ProxiesTabView>
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          NotificationListener<ScrollMetricsNotification>(
-            onNotification: (scrollNotification) {
-              _hasMoreButtonNotifier.value =
-                  scrollNotification.metrics.maxScrollExtent > 0;
-              return false;
-            },
-            child: ValueListenableBuilder(
-              valueListenable: _hasMoreButtonNotifier,
-              builder: (_, value, child) {
-                return Stack(
-                  alignment: AlignmentDirectional.centerStart,
-                  children: [
-                    TabBar(
-                      controller: _tabController,
-                      padding: EdgeInsets.only(
-                        left: 16,
-                        right: 16 + (value ? 16 : 0),
-                      ),
-                      dividerColor: Colors.transparent,
-                      indicatorPadding: const EdgeInsets.symmetric(vertical: 6),
-                      isScrollable: true,
-                      tabAlignment: TabAlignment.start,
-                      tabs: [
-                        for (final group in groups)
-                          Tab(
-                            child: Builder(
-                              builder: (context) {
-                                return EmojiText(
-                                  group.name,
-                                  style: DefaultTextStyle.of(context).style,
-                                );
-                              },
-                            ),
-                          ),
-                      ],
-                    ),
-                    if (value) Positioned(right: 0, child: child!),
-                  ],
-                );
-              },
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                    colors: [
-                      context.colorScheme.surface.opacity10,
-                      context.colorScheme.surface,
-                    ],
-                    stops: const [0.0, 0.1],
-                  ),
-                ),
-                child: _buildMoreButton(),
-              ),
-            ),
-          ),
+          if (_tabController != null)
+            GroupTabs(controller: _tabController!, groups: groups),
+          const SizedBox(height: 12),
           Expanded(
             child: LayoutBuilder(
               builder: (_, constraints) {

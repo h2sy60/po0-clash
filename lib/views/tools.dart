@@ -269,7 +269,7 @@ class _SettingTile extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(
+            AppIcon(
               Icons.chevron_right_rounded,
               color: glass.secondaryLabel.withValues(alpha: 0.5),
             ),

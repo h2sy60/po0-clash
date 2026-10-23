@@ -1,9 +1,22 @@
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
+import 'package:fl_clash/widgets/glyphs/glyphs.dart';
 import 'package:material_ui/material_ui.dart';
 
 typedef OnDestinationSelected = void Function(PageLabel label);
+
+Glyph destinationGlyph(PageLabel label) => switch (label) {
+  PageLabel.dashboard => AppGlyphs.dashboard,
+  PageLabel.proxies => AppGlyphs.proxies,
+  PageLabel.profiles => AppGlyphs.profiles,
+  PageLabel.whitelist => AppGlyphs.vpn,
+  PageLabel.activity || PageLabel.connections => AppGlyphs.connections,
+  PageLabel.requests => AppGlyphs.requests,
+  PageLabel.logs => AppGlyphs.logs,
+  PageLabel.resources => AppGlyphs.resources,
+  PageLabel.tools => AppGlyphs.tools,
+};
 
 class GlassDock extends StatelessWidget {
   const GlassDock({
@@ -13,7 +26,7 @@ class GlassDock extends StatelessWidget {
     required this.onSelected,
   });
 
-  static const height = 80.0;
+  static const height = 62.0;
 
   final List<NavigationItem> items;
   final int currentIndex;
@@ -22,14 +35,39 @@ class GlassDock extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (items.isEmpty) return const SizedBox.shrink();
-    return NavigationBar(
-      height: height,
-      selectedIndex: currentIndex,
-      onDestinationSelected: (index) => onSelected(items[index].label),
-      destinations: [
-        for (final item in items)
-          NavigationDestination(icon: item.icon, label: item.label.label),
-      ],
+    return SafeArea(
+      top: false,
+      minimum: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+      child: DecoratedBox(
+        decoration: ShapeDecoration(
+          shape: AppShape.full,
+          shadows: [
+            BoxShadow(
+              color: context.colorScheme.shadow.withValues(alpha: 0.12),
+              blurRadius: 24,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: ClipPath(
+          clipper: const ShapeBorderClipper(shape: AppShape.full),
+          child: NavigationBar(
+            height: height,
+            selectedIndex: currentIndex,
+            onDestinationSelected: (index) => onSelected(items[index].label),
+            destinations: [
+              for (final (index, item) in items.indexed)
+                NavigationDestination(
+                  icon: AnimatedGlyph(
+                    glyph: destinationGlyph(item.label),
+                    filled: index == currentIndex,
+                  ),
+                  label: item.label.label,
+                ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -40,20 +78,20 @@ class GlassRail extends StatelessWidget {
     required this.items,
     required this.currentIndex,
     required this.onSelected,
+    this.onToggle,
   });
-
-  static const width = 88.0;
-
+  static const width = 80.0;
   final List<NavigationItem> items;
   final int currentIndex;
   final OnDestinationSelected onSelected;
-
+  final VoidCallback? onToggle;
   @override
   Widget build(BuildContext context) => _NavigationRail(
     items: items,
     currentIndex: currentIndex,
     onSelected: onSelected,
     extended: false,
+    onToggle: onToggle,
   );
 }
 
@@ -64,15 +102,14 @@ class ControlSidebar extends StatelessWidget {
     required this.currentIndex,
     required this.onSelected,
     this.topInset = 0,
+    this.onToggle,
   });
-
-  static const width = 216.0;
-
+  static const width = 224.0;
   final List<NavigationItem> items;
   final int currentIndex;
   final OnDestinationSelected onSelected;
   final double topInset;
-
+  final VoidCallback? onToggle;
   @override
   Widget build(BuildContext context) => Padding(
     padding: EdgeInsets.only(top: topInset),
@@ -81,6 +118,7 @@ class ControlSidebar extends StatelessWidget {
       currentIndex: currentIndex,
       onSelected: onSelected,
       extended: true,
+      onToggle: onToggle,
     ),
   );
 }
@@ -91,89 +129,95 @@ class _NavigationRail extends StatelessWidget {
     required this.currentIndex,
     required this.onSelected,
     required this.extended,
+    this.onToggle,
   });
-
   final List<NavigationItem> items;
   final int currentIndex;
   final OnDestinationSelected onSelected;
   final bool extended;
-
+  final VoidCallback? onToggle;
   @override
   Widget build(BuildContext context) {
-    final width = extended ? ControlSidebar.width : GlassRail.width;
-    if (items.isEmpty) return SizedBox(width: width);
     final scheme = context.colorScheme;
     return Material(
-      color: scheme.surfaceContainerLow,
+      color: scheme.brightness == Brightness.dark
+          ? scheme.surfaceContainerLow
+          : scheme.surfaceContainerHighest,
       child: SizedBox(
-        width: width,
+        width: extended ? ControlSidebar.width : GlassRail.width,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 28),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 24),
           child: Column(
+            crossAxisAlignment: extended
+                ? CrossAxisAlignment.start
+                : CrossAxisAlignment.center,
             children: [
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Row(
-                  mainAxisAlignment: extended
-                      ? MainAxisAlignment.start
-                      : MainAxisAlignment.center,
-                  children: [
-                    ClipRRect(
-                      borderRadius: AppRadius.small,
-                      child: Image.asset(
-                        'assets/images/icon.png',
-                        width: 30,
-                        height: 30,
-                      ),
-                    ),
-                    if (extended) ...[
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          appName,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: context.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ],
+                padding: const EdgeInsets.only(left: 4),
+                child: IconButton(
+                  tooltip: extended
+                      ? context.appLocalizations.collapseNavigation
+                      : context.appLocalizations.expandNavigation,
+                  onPressed: onToggle,
+                  icon: GlyphIcon(
+                    AppGlyphs.sidebar(extended ? 1 : 0),
+                    size: 22,
+                  ),
                 ),
               ),
-              const SizedBox(height: 36),
+              const SizedBox(height: 20),
               for (final (index, item) in items.indexed)
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: extended
-                      ? ListTile(
-                          selected: index == currentIndex,
-                          selectedTileColor: scheme.primary.withValues(
-                            alpha: 0.08,
-                          ),
-                          selectedColor: scheme.primary,
-                          iconColor: scheme.onSurfaceVariant,
-                          shape: AppShape.medium,
-                          minTileHeight: 48,
-                          leading: IconTheme.merge(
-                            data: const IconThemeData(size: 20),
-                            child: item.icon,
-                          ),
-                          title: Text(
-                            item.label.label,
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          onTap: () => onSelected(item.label),
-                        )
-                      : Semantics(
-                          selected: index == currentIndex,
-                          button: true,
-                          child: InkWell(
-                            borderRadius: AppRadius.medium,
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: Semantics(
+                    selected: index == currentIndex,
+                    child: extended
+                        ? Stack(
+                            children: [
+                              ListTile(
+                                selected: index == currentIndex,
+                                selectedTileColor: scheme.onSurface.withValues(
+                                  alpha: 0.08,
+                                ),
+                                selectedColor: scheme.onSurface,
+                                iconColor: scheme.onSurfaceVariant,
+                                shape: AppShape.md,
+                                minTileHeight: 40,
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                ),
+                                leading: AnimatedGlyph(
+                                  glyph: destinationGlyph(item.label),
+                                  filled: index == currentIndex,
+                                ),
+                                title: Text(
+                                  item.label.label,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: AppTextStyle.footnote.of(
+                                    context,
+                                    emphasized: true,
+                                  ),
+                                ),
+                                onTap: () => onSelected(item.label),
+                              ),
+                              if (index == currentIndex)
+                                PositionedDirectional(
+                                  start: 0,
+                                  top: 10,
+                                  bottom: 10,
+                                  width: 3,
+                                  child: DecoratedBox(
+                                    decoration: ShapeDecoration(
+                                      color: scheme.primary,
+                                      shape: AppShape.full,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          )
+                        : InkWell(
+                            borderRadius: AppRadius.md,
                             onTap: () => onSelected(item.label),
                             child: Padding(
                               padding: const EdgeInsets.symmetric(vertical: 12),
@@ -181,28 +225,28 @@ class _NavigationRail extends StatelessWidget {
                                 children: [
                                   IconTheme(
                                     data: IconThemeData(
-                                      size: 22,
+                                      size: 24,
                                       color: index == currentIndex
                                           ? scheme.primary
                                           : scheme.onSurfaceVariant,
                                     ),
-                                    child: item.icon,
+                                    child: AnimatedGlyph(
+                                      glyph: destinationGlyph(item.label),
+                                      filled: index == currentIndex,
+                                    ),
                                   ),
-                                  const SizedBox(height: 6),
+                                  const SizedBox(height: 4),
                                   Text(
                                     item.label.label,
-                                    style: context.textTheme.labelSmall
-                                        ?.copyWith(
-                                          color: index == currentIndex
-                                              ? scheme.primary
-                                              : scheme.onSurfaceVariant,
-                                        ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: context.textTheme.labelSmall,
                                   ),
                                 ],
                               ),
                             ),
                           ),
-                        ),
+                  ),
                 ),
             ],
           ),

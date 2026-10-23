@@ -2,6 +2,7 @@ package com.follow.clash
 
 import android.annotation.SuppressLint
 import android.os.Build
+import android.graphics.drawable.Icon
 import android.service.quicksettings.Tile
 import com.follow.clash.common.QuickAction
 import com.follow.clash.common.quickIntent
@@ -42,6 +43,7 @@ class TileService : android.service.quicksettings.TileService() {
 
     private fun updateTile(runState: RunState) {
         qsTile?.apply {
+            icon = Icon.createWithResource(this@TileService, R.drawable.ic_launcher_monochrome)
             state = when (runState) {
                 RunState.STARTED -> Tile.STATE_ACTIVE
                 RunState.STARTING, RunState.STOPPING -> Tile.STATE_UNAVAILABLE

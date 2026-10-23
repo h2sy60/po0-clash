@@ -95,47 +95,31 @@ class _CoreStatusButtonState extends ConsumerState<CoreStatusButton> {
       CoreStatus.connected => appLocalizations.connected,
       CoreStatus.disconnected => appLocalizations.disconnected,
     };
-    return FadeScaleBox(
-      alignment: Alignment.centerRight,
-      child: GlassButton(
-        key: ValueKey(coreStatus),
-        tooltip: appLocalizations.coreStatus,
-        borderRadius: AppRadius.full,
-        color: color.withValues(alpha: context.glass.isDark ? 0.18 : 0.12),
-        rimColor: Colors.transparent,
-        padding: const EdgeInsets.fromLTRB(8, 5, 12, 5),
-        onTap: _handleConnection,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SizedBox.square(
-              dimension: 16,
-              child: switch (coreStatus) {
-                CoreStatus.connecting => Padding(
-                  padding: const EdgeInsets.all(2),
-                  child: CommonCircleLoading(color: color),
-                ),
-                CoreStatus.connected => Icon(
-                  Icons.check,
-                  size: 16,
-                  color: color,
-                ),
-                CoreStatus.disconnected => Icon(
-                  Icons.restart_alt_sharp,
-                  size: 16,
-                  color: color,
-                ),
-              },
-            ),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: context.textTheme.labelMedium?.copyWith(
-                color: color,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ],
+    return Tooltip(
+      message: '$label · ${appLocalizations.coreStatus}',
+      child: Semantics(
+        label: label,
+        button: true,
+        child: SizedBox.square(
+          dimension: 44,
+          child: GlassButton(
+            key: ValueKey(coreStatus),
+            circle: true,
+            color: color.withValues(alpha: context.glass.isDark ? 0.22 : 0.2),
+            onTap: _handleConnection,
+            child: coreStatus == CoreStatus.connecting
+                ? Padding(
+                    padding: const EdgeInsets.all(14),
+                    child: CommonCircleLoading(color: color),
+                  )
+                : Icon(
+                    coreStatus == CoreStatus.connected
+                        ? Icons.check
+                        : Icons.restart_alt_sharp,
+                    size: 22,
+                    color: color,
+                  ),
+          ),
         ),
       ),
     );

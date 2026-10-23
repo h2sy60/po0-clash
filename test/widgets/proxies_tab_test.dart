@@ -5,6 +5,7 @@ import 'package:fl_clash/providers/database.dart';
 import 'package:fl_clash/providers/state.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/proxies/tab.dart';
+import 'package:fl_clash/views/proxies/group_tabs.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -75,8 +76,8 @@ void main() {
 
     expect(key.currentState?.currentGroup?.name, 'B');
 
-    final tabBar = tester.widget<TabBar>(find.byType(TabBar));
-    tabBar.controller?.animateTo(1);
+    final tabBar = tester.widget<GroupTabs>(find.byType(GroupTabs));
+    tabBar.controller.animateTo(1);
     await tester.pumpAndSettle();
 
     expect(key.currentState?.currentGroup?.name, 'C');
@@ -91,8 +92,11 @@ void main() {
       globalContainer.read(_tabStateProvider.notifier).set(_tabState([]));
       await tester.pump();
 
-      expect(find.byType(TabBar), findsOneWidget);
-      await tester.tap(find.byType(Tab).at(1), warnIfMissed: false);
+      expect(find.byType(GroupTabs), findsOneWidget);
+      await tester.tap(
+        find.text('C', findRichText: true).first,
+        warnIfMissed: false,
+      );
       await tester.pump();
 
       expect(tester.takeException(), isNull);
@@ -100,7 +104,7 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.byType(TabBar), findsNothing);
+      expect(find.byType(GroupTabs), findsNothing);
       expect(tester.takeException(), isNull);
     },
   );
@@ -115,8 +119,8 @@ void main() {
         .set(_tabState([_group('A'), _group('B'), _group('C')]));
     await tester.pumpAndSettle();
 
-    final tabBar = tester.widget<TabBar>(find.byType(TabBar));
-    expect(tabBar.controller?.length, 3);
+    final tabBar = tester.widget<GroupTabs>(find.byType(GroupTabs));
+    expect(tabBar.controller.length, 3);
     expect(key.currentState?.currentGroup?.name, 'B');
     expect(tester.takeException(), isNull);
   });

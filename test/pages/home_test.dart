@@ -100,7 +100,7 @@ void main() {
     await tester.tap(
       find.descendant(
         of: find.byType(ControlSidebar),
-        matching: find.text('Settings'),
+        matching: find.text(PageLabel.tools.label),
       ),
     );
     await tester.pumpAndSettle();
@@ -266,10 +266,10 @@ void main() {
     await tester.enterText(find.byType(TextField), 'needle');
     expect(query, 'needle');
 
-    await tester.tap(find.byIcon(Icons.construction));
+    await tester.tap(find.text(PageLabel.tools.label));
     await tester.pumpAndSettle();
     expect(query, isEmpty);
-    await tester.tap(find.byIcon(Icons.space_dashboard));
+    await tester.tap(find.text(PageLabel.dashboard.label));
     await tester.pumpAndSettle();
     expect(find.byType(TextField), findsNothing);
   });
@@ -305,13 +305,16 @@ void main() {
 
     final sidebar = find.byType(ControlSidebar);
     await tester.tap(
-      find.descendant(of: sidebar, matching: find.byIcon(Icons.construction)),
+      find.descendant(of: sidebar, matching: find.text(PageLabel.tools.label)),
     );
     await tester.pumpAndSettle();
     expect(query, isEmpty);
 
     await tester.tap(
-      find.descendant(of: sidebar, matching: find.byIcon(Icons.folder)),
+      find.descendant(
+        of: sidebar,
+        matching: find.text(PageLabel.profiles.label),
+      ),
     );
     await tester.pumpAndSettle();
     expect(find.text('Nested search'), findsOneWidget);

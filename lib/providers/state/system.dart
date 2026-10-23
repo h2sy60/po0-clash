@@ -198,6 +198,7 @@ SharedState sharedState(Ref ref) {
     currentProfileName: currentProfileName,
     onlyStatisticsProxy: onlyStatisticsProxy,
     showStopAction: appSetting.showStopAction,
+    whitelistEnabled: whitelistEnable,
     stopText: currentAppLocalizations.stop,
     crashlytics: crashlytics,
     stopTip: currentAppLocalizations.stopVpn,
