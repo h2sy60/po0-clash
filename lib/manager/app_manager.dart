@@ -131,12 +131,14 @@ class _AppStateManagerState extends ConsumerState<AppStateManager>
   }
 
   void _syncUiVisibility(AppLifecycleState? state) {
-    ref.read(uiVisibleProvider.notifier).value = switch (state) {
+    final visible = switch (state) {
       AppLifecycleState.hidden ||
       AppLifecycleState.paused ||
       AppLifecycleState.detached => false,
-      _ => true,
+      AppLifecycleState.resumed => true,
+      _ => null,
     };
+    if (visible != null) ref.read(uiVisibleProvider.notifier).value = visible;
   }
 
   @override
