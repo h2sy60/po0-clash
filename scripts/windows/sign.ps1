@@ -27,7 +27,9 @@ try {
 
     $signtool = $env:PO0_WINDOWS_SIGNTOOL
     if (-not $signtool) {
-        $sdk = Join-Path ${env:ProgramFiles(x86)} 'Windows Kits\10\bin'
+        $programFilesX86 = [Environment]::GetFolderPath([Environment+SpecialFolder]::ProgramFilesX86)
+        if (-not $programFilesX86) { throw 'The Windows SDK installation directory could not be located.' }
+        $sdk = Join-Path $programFilesX86 'Windows Kits\10\bin'
         $signtool = Get-ChildItem -Path "$sdk\*\x64\signtool.exe" |
             Sort-Object { [version]$_.Directory.Parent.Name } -Descending |
             Select-Object -First 1 -ExpandProperty FullName

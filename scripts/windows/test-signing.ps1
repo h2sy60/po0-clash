@@ -71,7 +71,14 @@ try {
         }
         Copy-Item (Get-Command powershell.exe).Source (Join-Path $bundle 'vendor.exe')
         $signer = Join-Path $env:PO0_SIGNING_FIXTURE_ROOT 'scripts/windows/sign.ps1'
-        & $signer -Path (Join-Path $bundle 'Po0ClashCore.exe')
+        $programFilesX86 = [Environment]::GetEnvironmentVariable('ProgramFiles(x86)')
+        try {
+            [Environment]::SetEnvironmentVariable('ProgramFiles(x86)', $null)
+            & powershell.exe -NoProfile -NonInteractive -File $signer -Path (Join-Path $bundle 'Po0ClashCore.exe')
+            Assert-That ($LASTEXITCODE -eq 0) 'Signing failed without the ProgramFiles(x86) environment variable.'
+        } finally {
+            [Environment]::SetEnvironmentVariable('ProgramFiles(x86)', $programFilesX86)
+        }
         & $signer -Path (Join-Path $bundle 'Po0ClashHelperService.exe')
         $hash = (Get-FileHash (Join-Path $bundle 'Po0ClashCore.exe') -Algorithm SHA256).Hash.ToLowerInvariant()
         @{coreSha256 = $hash} | ConvertTo-Json | Set-Content (Join-Path $bundle 'manifest.json')
