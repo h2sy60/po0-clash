@@ -1,0 +1,25 @@
+po0-clash Windows 签名与启动问题
+
+本项目使用固定的自签名代码签名证书。自签名用于验证文件完整性和发布者连续性，
+不代表微软或受信任的证书机构认证，也不会自动通过 SmartScreen、智能应用控制或杀毒检测。
+安装程序不会修改系统信任存储、添加杀毒排除项或关闭任何安全策略。
+
+请从项目发布页下载程序，并核对随发布提供的 SHA-256 校验值和证书指纹：
+https://github.com/yuuuki-creation/po0-clash/releases
+po0-clash-signing.cer 是公钥证书；无需为了核对文件而将它导入系统根证书存储。
+
+核心启动失败时，请保留错误码：
+225 / 226：安全软件检测到病毒或潜在不需要的软件。查看 Windows 安全中心的保护历史，记录检测名称。
+577：数字签名验证失败。查看事件查看器 → 应用程序和服务日志 → Microsoft → Windows → CodeIntegrity → Operational。
+1260：组策略或应用控制策略阻止执行。由设备管理员检查 AppLocker / 应用控制日志。
+即使证书与文件完整性校验通过，自签名程序仍可能不符合设备的运行策略。
+反馈时请附版本、安装版/便携版、错误码和相关检测名称；日志中的订阅链接及 token 请先移除。
+
+Windows signing and startup
+
+po0-clash uses a persistent self-signed code-signing certificate. It provides integrity and
+publisher continuity, not public CA trust or automatic approval by SmartScreen, Smart App
+Control, or antivirus software. The installer does not change certificate trust, antivirus
+exclusions, or application control policies. Check release checksums and certificate fingerprints.
+Use Protection history for errors 225/226, CodeIntegrity logs for 577, and your administrator's
+AppLocker/application control logs for 1260. A matching signature does not override device policy.

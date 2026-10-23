@@ -26,6 +26,11 @@ class _AppStateManagerState extends ConsumerState<AppStateManager>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _syncUiVisibility(WidgetsBinding.instance.lifecycleState);
+      }
+    });
     ref.listenManual(checkIpProvider, (prev, next) {
       if (prev != next && next.isInit) {
         ref.read(networkDetectionProvider.notifier).startCheck();
@@ -109,12 +114,13 @@ class _AppStateManagerState extends ConsumerState<AppStateManager>
 
   @override
   Future<void> didChangeAppLifecycleState(AppLifecycleState state) async {
+    _syncUiVisibility(state);
     commonPrint.log('$state');
     if (state == AppLifecycleState.resumed) {
       permissions.check(ref.read);
       render?.resume();
-      ref.read(po0FirewallProvider.notifier).pollNow();
-      ref.read(ggyFirewallProvider.notifier).pollNow();
+      ref.read(po0FirewallProvider.notifier).pollIfDue();
+      ref.read(ggyFirewallProvider.notifier).pollIfDue();
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) {
           return;
@@ -124,6 +130,15 @@ class _AppStateManagerState extends ConsumerState<AppStateManager>
     }
   }
 
+  void _syncUiVisibility(AppLifecycleState? state) {
+    ref.read(uiVisibleProvider.notifier).value = switch (state) {
+      AppLifecycleState.hidden ||
+      AppLifecycleState.paused ||
+      AppLifecycleState.detached => false,
+      _ => true,
+    };
+  }
+
   @override
   void didChangePlatformBrightness() {
     ref.read(themeActionProvider.notifier).updateBrightness();
@@ -131,11 +146,14 @@ class _AppStateManagerState extends ConsumerState<AppStateManager>
 
   @override
   Widget build(BuildContext context) {
-    return Listener(
-      onPointerHover: (_) {
+    return MouseRegion(
+      onEnter: (_) {
         render?.resume();
       },
-      child: widget.child,
+      child: TickerMode(
+        enabled: ref.watch(uiVisibleProvider),
+        child: widget.child,
+      ),
     );
   }
 }

@@ -40,7 +40,9 @@ mixin ActivePollingMixin<T extends StatefulWidget>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final isPageActive = PageActivityScope.isActiveOf(context);
+    final isPageActive =
+        PageActivityScope.isActiveOf(context) &&
+        TickerMode.valuesOf(context).enabled;
     if (_isPageActive == isPageActive) {
       return;
     }

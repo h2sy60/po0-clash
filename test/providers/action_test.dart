@@ -463,35 +463,41 @@ void main() {
 
   group('SetupAction', () {
     group('rapid status changes', () {
-      test('updates runtime and traffic while core start is pending', () async {
-        final startCompleter = Completer<bool>();
-        final container = ProviderContainer(
-          overrides: [
-            initProvider.overrideWithBuild((_, _) => true),
-            commonActionProvider.overrideWith(_RaceCommonAction.new),
-            setupActionProvider.overrideWith(_RaceSetupAction.new),
-          ],
-        );
-        addTearDown(container.dispose);
-        final action =
-            container.read(setupActionProvider.notifier) as _RaceSetupAction;
-        final commonAction =
-            container.read(commonActionProvider.notifier) as _RaceCommonAction;
-        action.startCompleter = startCompleter;
+      test(
+        'updates statistics while the connected core starts its listener',
+        () async {
+          final startCompleter = Completer<bool>();
+          final container = ProviderContainer(
+            overrides: [
+              initProvider.overrideWithBuild((_, _) => true),
+              commonActionProvider.overrideWith(_RaceCommonAction.new),
+              setupActionProvider.overrideWith(_RaceSetupAction.new),
+            ],
+          );
+          addTearDown(container.dispose);
+          container.read(coreStatusProvider.notifier).value =
+              CoreStatus.connected;
+          final action =
+              container.read(setupActionProvider.notifier) as _RaceSetupAction;
+          final commonAction =
+              container.read(commonActionProvider.notifier)
+                  as _RaceCommonAction;
+          action.startCompleter = startCompleter;
 
-        final startFuture = action.setRunning(true);
-        final initialRunTime = container.read(runTimeProvider)!;
-        await Future<void>.delayed(const Duration(milliseconds: 1100));
+          final startFuture = action.setRunning(true);
+          final initialRunTime = container.read(runTimeProvider)!;
+          await Future<void>.delayed(const Duration(milliseconds: 1100));
 
-        expect(container.read(runTimeProvider), greaterThan(initialRunTime));
-        expect(commonAction.updateTrafficCount, greaterThanOrEqualTo(2));
+          expect(container.read(runTimeProvider), greaterThan(initialRunTime));
+          expect(commonAction.updateTrafficCount, greaterThanOrEqualTo(2));
 
-        startCompleter.complete(true);
-        await startFuture;
+          startCompleter.complete(true);
+          await startFuture;
 
-        expect(action.transitions, [true]);
-        await action.setRunning(false);
-      });
+          expect(action.transitions, [true]);
+          await action.setRunning(false);
+        },
+      );
 
       test('serializes listener changes while latest start owns UI', () async {
         final stopCompleter = Completer<bool>();

@@ -57,6 +57,7 @@ class _WindowContainerState extends ConsumerState<WindowManager>
   @override
   void onWindowFocus() {
     super.onWindowFocus();
+    ref.read(uiVisibleProvider.notifier).value = true;
     commonPrint.log('focus');
     render?.resume();
   }
@@ -169,6 +170,7 @@ class _WindowContainerState extends ConsumerState<WindowManager>
   @override
   void onWindowMinimize() async {
     _invalidateWindowGeometryCapture();
+    ref.read(uiVisibleProvider.notifier).value = false;
     ref.read(storeActionProvider.notifier).savePreferencesDebounce();
     commonPrint.log('minimize');
     render?.pause();
@@ -177,6 +179,7 @@ class _WindowContainerState extends ConsumerState<WindowManager>
 
   @override
   void onWindowRestore() {
+    ref.read(uiVisibleProvider.notifier).value = true;
     commonPrint.log('restore');
     render?.resume();
     super.onWindowRestore();

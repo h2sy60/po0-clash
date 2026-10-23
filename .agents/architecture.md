@@ -333,6 +333,14 @@ directly: the barrel's closure must contain no `lib/views` file. Data the
 provider layer needs from the UI layer goes through a port in
 `lib/common/app_ports.dart` rather than an import in the other direction.
 
+### UI Statistics Visibility
+
+`uiVisibleProvider` reflects application lifecycle and desktop minimize/restore/focus events. `SetupAction` samples
+UI runtime and traffic only while the dashboard is visible, with an explicit exception for enabled macOS tray speed.
+Sampling never changes Core/proxy running intent. Resume derives elapsed time from the original start time and reads
+current native totals; the interrupted chart history is cleared. `ActivePollingMixin` also honors `TickerMode`, so
+hidden or inactive pages stop their own timers.
+
 ### High-Frequency Buffers
 
 `logsProvider`, `requestsProvider` and `trafficsProvider` hold a `FixedList`

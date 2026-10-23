@@ -1,5 +1,5 @@
 name: fl_clash
-description: A multi-platform proxy client based on ClashMeta, simple and easy to use, open-source and ad-free.
+description: po0-clash is a cross-platform ClashMeta client with automatic po0 and ggy whitelisting, share-link node import, and subscription management.
 publish_to: 'none'
 version: 6.2.1+2026102201
 environment:

@@ -4,15 +4,12 @@ import 'package:fl_clash/core/desktop/helper_client.dart';
 import 'package:fl_clash/core/desktop/model.dart';
 import 'package:win32_registry/win32_registry.dart';
 
-/// CreateProcess reports these when a policy, not the file, refused the image:
-/// ERROR_VIRUS_INFECTED, ERROR_INVALID_IMAGE_HASH, ERROR_ACCESS_DISABLED_BY_POLICY.
-const policyBlockedOsErrors = {225, 577, 1260};
+enum CoreLaunchBlockReason { antivirus, signature, policy }
 
 enum SmartAppControlState { off, on, evaluation, unknown }
 
 typedef SmartAppControlStateReader = SmartAppControlState Function();
 
-/// Swapped out by tests; the real reader needs a Windows registry.
 SmartAppControlStateReader smartAppControlStateReader =
     readSmartAppControlState;
 
@@ -51,8 +48,13 @@ int? launchOsError(Object? error) {
   };
 }
 
-bool isPolicyBlockedLaunch(Object? error) {
-  return policyBlockedOsErrors.contains(launchOsError(error));
+CoreLaunchBlockReason? coreLaunchBlockReason(Object? error) {
+  return switch (launchOsError(error)) {
+    225 || 226 => CoreLaunchBlockReason.antivirus,
+    577 => CoreLaunchBlockReason.signature,
+    1260 => CoreLaunchBlockReason.policy,
+    _ => null,
+  };
 }
 
 int? _helperOsError(HelperException error) {

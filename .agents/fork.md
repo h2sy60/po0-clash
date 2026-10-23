@@ -15,15 +15,15 @@ fork. Human-facing documentation lives in `docs/` (Chinese).
   from `assets/data/node_profile_template.yaml`, `lib/providers/node_profile.dart` owns import / rename / delete, and
   `lib/views/profiles/nodes.dart` is the node page. The profile's `proxies` list is the only node store and every change
   rewrites the file from the template; `Config.nodeProfileId` records which profile it is.
-- One Liquid Glass UI on every platform (ADR 0009 for the structure, ADR 0010 for the look,
-  `docs/features/glass-ui.md`): neutral backgrounds and opaque content cells, glass only on floating controls, tokens in
-  `lib/common/glass.dart`, widgets in `lib/widgets/glass.dart`, and a control sidebar / rail / floating dock chosen by
-  window width. Widgets never branch on the platform for their look.
+- One minimal UI built with Material components on every platform (ADR 0016, `docs/features/glass-ui.md`): neutral opaque surfaces, generous spacing, blue primary actions,
+  a bottom navigation bar / simple sidebar, and a dedicated dashboard on every window width. Existing `Glass*`
+  interfaces now render Material components. UI statistics pause off the visible dashboard unless macOS tray speed is
+  enabled; this never changes proxy or whitelist intent. Widgets never branch on the platform for their look.
 - Its own app identity (`docs/adr/0006-standalone-app-identity.md`): app id `io.github.yuuukicreation.po0clash`, executable
   and display name `po0-clash`, `Po0ClashCore` / `Po0ClashHelperService`, its own Inno Setup `AppId`, IPC names, data
   directory and `po0clash://` scheme. No Firebase.
 - Build and release plumbing: `.github/workflows/release.yaml`, `scripts/check-release-tag.sh`,
-  `scripts/install-macos.sh`, `scripts/vps/*`.
+  `scripts/install-macos.sh`, `scripts/vps/*`, and `.github/workflows/windows-validation.yaml`.
 
 ## Rules
 
@@ -48,7 +48,7 @@ fork. Human-facing documentation lives in `docs/` (Chinese).
   when the exit is missing (ADR 0004, 0005). po0 tokens live in `Po0FirewallProps.tokenEntries` and ggy links in
   `ggyEntries`; `po0TokensOf` / `ggyLinksOf` are the only way to turn them into requests. A master-switch change routes
   through `WhitelistCoordinator` (one profile reload for both schedulers, ADR 0014); other code only signals both
-  (`start`, `pollNow`, `onNetworkChanged`, `setScreenOn`); it must not grow another timer or call the client directly.
+  (`start`, `pollNow`, `pollIfDue`, `onNetworkChanged`, `setScreenOn`); it must not grow another timer or call the client directly.
   On Android the screen state comes from `Po0ScreenPlugin` (`lib/plugins/po0_screen.dart`).
 - On desktop exactly one of TUN and the system proxy is on (ADR 0011). Route changes go through
   `SystemAction.useRoute`; the `AppStateManager` listener runs `reconcileDesktopRoute` for every other writer, and a
@@ -70,4 +70,7 @@ fork. Human-facing documentation lives in `docs/` (Chinese).
   `scripts/vps/verify.sh` is the CI-equivalent gate.
 - Release packages for Android, Windows and macOS are built by `.github/workflows/release.yaml` on GitHub runners, only
   on a `v[0-9]*` tag push or a manual dispatch; see `docs/development/release.md`.
+- `windows-validation.yaml` runs on relevant same-repository PRs and manual requests. It tests setup hooks and native
+  Windows Rust code, and validates signing / install / uninstall with fixture binaries. It does not build or publish
+  release applications; fork PRs do not receive signing Secrets.
 - Upstream `build.yaml` is manual-only in this fork and is not used for releases.

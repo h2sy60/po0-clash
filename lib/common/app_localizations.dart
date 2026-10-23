@@ -27,13 +27,20 @@ String? coreLaunchBlockedMessage(
   Object error,
   AppLocalizations appLocalizations,
 ) {
-  if (!isPolicyBlockedLaunch(error)) {
-    return null;
-  }
-  return switch (smartAppControlStateReader()) {
-    SmartAppControlState.on || SmartAppControlState.evaluation =>
-      appLocalizations.coreBlockedBySmartAppControlTip,
-    _ => appLocalizations.coreBlockedByPolicyTip(launchOsError(error)!),
+  final code = launchOsError(error);
+  return switch (coreLaunchBlockReason(error)) {
+    CoreLaunchBlockReason.antivirus =>
+      appLocalizations.coreBlockedByAntivirusTip(code!),
+    CoreLaunchBlockReason.signature
+        when smartAppControlStateReader() == SmartAppControlState.on =>
+      appLocalizations.coreBlockedBySmartAppControlTip(code!),
+    CoreLaunchBlockReason.signature => appLocalizations.coreSignatureInvalidTip(
+      code!,
+    ),
+    CoreLaunchBlockReason.policy => appLocalizations.coreBlockedByPolicyTip(
+      code!,
+    ),
+    null => null,
   };
 }
 

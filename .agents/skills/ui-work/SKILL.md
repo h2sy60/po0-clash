@@ -12,9 +12,9 @@ Use this for user-facing Flutter UI changes in `lib/`, including widgets, screen
 ## Workflow
 
 1. Locate existing nearby widgets and reuse their patterns before adding new abstractions.
-2. Follow the Liquid Glass language on every platform (`docs/features/glass-ui.md`); the look never branches on the
-   platform. Content is opaque cells, glass is for floating controls only; build them from `GlassSurface` /
-   `GlassButton` and take colors from `context.glass` and `GlassTone`.
+2. Follow the minimal visual language (`docs/features/glass-ui.md`, ADR 0016): neutral opaque surfaces, generous
+   spacing, large connection status and restrained blue primary actions. Use shared shapes and `ColorScheme` roles. Existing `Glass*` wrappers are compatibility
+   interfaces; do not reintroduce blur or specular effects. Appearance does not branch on the platform.
 3. Use existing providers, notifiers, and helpers where possible.
 4. Keep `child:` last in widget constructors.
 5. Prefer `const` constructors and final locals.
@@ -38,20 +38,19 @@ All corner radii come from `lib/common/shape.dart`; never write a radius literal
 
 | Token | Value | Use |
 | --- | --- | --- |
-| `extraSmall` | 8 | small blocks inside a surface |
-| `small` | 12 | text fields, badges, swatches |
-| `medium` | 18 | tiles and cards (`GlassSurface` default, `CommonCard`, `SurfaceCard`) |
-| `large` | 24 | hero panels |
-| `extraLarge` | 32 | workspace and sidebar panels, dialogs, sheets |
+| `extraSmall` | 4 | small blocks inside a surface |
+| `small` | 8 | text fields, badges, swatches |
+| `medium` | 12 | compact controls and navigation rows |
+| `large` | 16 | content tiles (`GlassSurface` default) |
+| `extraLarge` | 28 | hero panels, dialogs, sheets |
 | `full` | 1000 | pills, segmented tracks, the dock |
 
-`AppShape` gives continuous corners (`RoundedSuperellipseBorder`); `AppRadius` stays circular for clips and
+`AppShape` uses `RoundedRectangleBorder`; `AppRadius` supplies matching radii for clips and
 decorations. Nested radii are derived, never tokens: `outer = inner + inset`.
 
 ## Motion
 
-Use `Durations.*` and `Easing.*` only; see `.agents/rules.md` ("Glass Shapes and Motion"). No endless animations:
-any repaint makes every backdrop blur redraw.
+Use `Durations.*` and `Easing.*` only; see `.agents/rules.md` ("Shapes and Motion"). Avoid decorative continuous animations; hidden pages and unchanged charts should be idle.
 
 ## Pitfalls
 

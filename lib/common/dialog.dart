@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ui';
 
 import 'package:animations/animations.dart';
 import 'package:fl_clash/common/common.dart';
@@ -27,12 +26,7 @@ class Dialogs {
         barrierColor: Theme.of(target).colorScheme.modalScrim,
         barrierDismissible: dismissible ?? true,
       ),
-      builder: (_) => Stack(
-        children: [
-          const Positioned.fill(child: IgnorePointer(child: _DialogFrost())),
-          child,
-        ],
-      ),
+      builder: (_) => child,
     );
   }
 
@@ -191,16 +185,3 @@ class _UpdatingMessageItem extends StatelessWidget {
 }
 
 final dialogs = Dialogs._();
-
-/// Frosts the window behind a dialog so the glass panel reads on its own.
-class _DialogFrost extends StatelessWidget {
-  const _DialogFrost();
-
-  @override
-  Widget build(BuildContext context) {
-    return BackdropFilter(
-      filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-      child: const SizedBox.expand(),
-    );
-  }
-}

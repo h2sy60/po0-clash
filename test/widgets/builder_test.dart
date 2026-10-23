@@ -4,6 +4,27 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  testWidgets('a hidden ticker scope also stops polling work', (tester) async {
+    Widget app(bool visible) => MaterialApp(
+      home: TickerMode(
+        enabled: visible,
+        child: TickBuilder(
+          duration: const Duration(seconds: 1),
+          builder: (_, tick) => Text('tick: $tick'),
+        ),
+      ),
+    );
+    await tester.pumpWidget(app(true));
+    await tester.pump(const Duration(seconds: 1));
+    expect(find.text('tick: 1'), findsOneWidget);
+    await tester.pumpWidget(app(false));
+    await tester.pump(const Duration(minutes: 1));
+    expect(find.text('tick: 1'), findsOneWidget);
+    await tester.pumpWidget(app(true));
+    await tester.pump(const Duration(seconds: 1));
+    expect(find.text('tick: 2'), findsOneWidget);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
   testWidgets('TickBuilder rebuilds on the configured interval', (
     tester,
   ) async {

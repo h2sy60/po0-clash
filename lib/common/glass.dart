@@ -1,9 +1,5 @@
 import 'package:material_ui/material_ui.dart';
 
-/// The Liquid Glass palette. Content sits on neutral, opaque grouped cells;
-/// only floating controls (sidebar, dock, segmented tracks, toolbars and
-/// dialogs) are glass, which blurs and saturates what lies beneath it and
-/// carries a specular rim.
 @immutable
 class GlassStyle extends ThemeExtension<GlassStyle> {
   const GlassStyle({
@@ -14,13 +10,9 @@ class GlassStyle extends ThemeExtension<GlassStyle> {
     required this.thumb,
     required this.glass,
     required this.glassStrong,
-    required this.rimLight,
-    required this.rimShade,
     required this.separator,
-    required this.shadow,
     required this.selected,
     required this.secondaryLabel,
-    required this.blurSigma,
   });
 
   final Brightness brightness;
@@ -30,83 +22,49 @@ class GlassStyle extends ThemeExtension<GlassStyle> {
   final Color thumb;
   final Color glass;
   final Color glassStrong;
-  final Color rimLight;
-  final Color rimShade;
   final Color separator;
-  final Color shadow;
   final Color selected;
   final Color secondaryLabel;
-  final double blurSigma;
 
   bool get isDark => brightness == Brightness.dark;
 
-  static const saturation = 1.8;
-
-  /// Dark mode follows macOS unless [pureBlack] asks for iOS's OLED black.
   factory GlassStyle.of(ColorScheme scheme, {bool pureBlack = false}) {
-    if (scheme.brightness == Brightness.dark) {
-      return GlassStyle(
-        brightness: Brightness.dark,
-        background: pureBlack ? Colors.black : const Color(0xFF1C1C1E),
-        card: pureBlack ? const Color(0xFF1C1C1E) : const Color(0xFF2C2C2E),
-        fill: const Color(0x3D767680),
-        thumb: const Color(0xFF636366),
-        glass: pureBlack ? const Color(0x8C1E1E20) : const Color(0x99343437),
-        glassStrong: pureBlack
-            ? const Color(0xE62C2C2E)
-            : const Color(0xEB38383B),
-        rimLight: Colors.white.withValues(alpha: 0.26),
-        rimShade: Colors.white.withValues(alpha: 0.06),
-        separator: const Color(0x99545458),
-        shadow: Colors.black.withValues(alpha: 0.5),
-        selected: Colors.white.withValues(alpha: 0.1),
-        secondaryLabel: const Color(0x99EBEBF5),
-        blurSigma: 24,
-      );
-    }
+    final black = pureBlack && scheme.brightness == Brightness.dark;
     return GlassStyle(
-      brightness: Brightness.light,
-      background: const Color(0xFFF2F2F7),
-      card: Colors.white,
-      fill: const Color(0x1F767680),
-      thumb: Colors.white,
-      glass: Colors.white.withValues(alpha: 0.62),
-      glassStrong: const Color(0xEBF9F9FB),
-      rimLight: Colors.white.withValues(alpha: 0.95),
-      rimShade: Colors.white.withValues(alpha: 0.4),
-      separator: const Color(0x2E3C3C43),
-      shadow: Colors.black.withValues(alpha: 0.1),
-      selected: Colors.black.withValues(alpha: 0.06),
-      secondaryLabel: const Color(0x993C3C43),
-      blurSigma: 24,
+      brightness: scheme.brightness,
+      background: black ? Colors.black : scheme.surface,
+      card: scheme.brightness == Brightness.dark
+          ? scheme.surfaceContainerLow
+          : scheme.surfaceContainerLowest,
+      fill: scheme.surfaceContainerHighest,
+      thumb: scheme.secondaryContainer,
+      glass: scheme.surfaceContainerLow,
+      glassStrong: scheme.surfaceContainerHigh,
+      separator: scheme.outlineVariant,
+      selected: scheme.secondaryContainer,
+      secondaryLabel: scheme.onSurfaceVariant,
     );
   }
 
   @override
-  GlassStyle copyWith({double? blurSigma}) {
+  GlassStyle copyWith({Color? background, Color? card}) {
     return GlassStyle(
       brightness: brightness,
-      background: background,
-      card: card,
+      background: background ?? this.background,
+      card: card ?? this.card,
       fill: fill,
       thumb: thumb,
       glass: glass,
       glassStrong: glassStrong,
-      rimLight: rimLight,
-      rimShade: rimShade,
       separator: separator,
-      shadow: shadow,
       selected: selected,
       secondaryLabel: secondaryLabel,
-      blurSigma: blurSigma ?? this.blurSigma,
     );
   }
 
   @override
   GlassStyle lerp(covariant GlassStyle? other, double t) {
-    if (other == null) {
-      return this;
-    }
+    if (other == null) return this;
     Color mix(Color a, Color b) => Color.lerp(a, b, t)!;
     return GlassStyle(
       brightness: t < 0.5 ? brightness : other.brightness,
@@ -116,13 +74,9 @@ class GlassStyle extends ThemeExtension<GlassStyle> {
       thumb: mix(thumb, other.thumb),
       glass: mix(glass, other.glass),
       glassStrong: mix(glassStrong, other.glassStrong),
-      rimLight: mix(rimLight, other.rimLight),
-      rimShade: mix(rimShade, other.rimShade),
       separator: mix(separator, other.separator),
-      shadow: mix(shadow, other.shadow),
       selected: mix(selected, other.selected),
       secondaryLabel: mix(secondaryLabel, other.secondaryLabel),
-      blurSigma: blurSigma + (other.blurSigma - blurSigma) * t,
     );
   }
 }
@@ -133,7 +87,6 @@ extension GlassContextExt on BuildContext {
       GlassStyle.of(Theme.of(this).colorScheme);
 }
 
-/// Apple's system colors, for states and the settings icons.
 enum GlassTone {
   accent,
   success,

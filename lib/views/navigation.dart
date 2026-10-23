@@ -19,7 +19,6 @@ class Navigation implements NavigationPort {
         label: PageLabel.dashboard,
         builder: (_) =>
             const ControlCenterView(key: GlobalObjectKey(PageLabel.dashboard)),
-        modes: const [NavigationItemMode.mobile, NavigationItemMode.laptop],
       ),
       NavigationItem(
         icon: const Icon(Icons.hub_rounded),

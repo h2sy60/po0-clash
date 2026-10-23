@@ -14,7 +14,7 @@ void main() {
     );
 
     expect(launchOsError(error), 577);
-    expect(isPolicyBlockedLaunch(error), isTrue);
+    expect(coreLaunchBlockReason(error), CoreLaunchBlockReason.signature);
   });
 
   test('falls back to the code embedded in an older Helper message', () {
@@ -24,7 +24,7 @@ void main() {
     );
 
     expect(launchOsError(error), 1260);
-    expect(isPolicyBlockedLaunch(error), isTrue);
+    expect(coreLaunchBlockReason(error), CoreLaunchBlockReason.policy);
   });
 
   test('ignores Helper failures that happened before the spawn', () {
@@ -34,14 +34,14 @@ void main() {
     );
 
     expect(launchOsError(error), isNull);
-    expect(isPolicyBlockedLaunch(error), isFalse);
+    expect(coreLaunchBlockReason(error), isNull);
   });
 
   test('reads the OS error from a direct launch failure', () {
-    const error = ProcessException('FlClashCore.exe', [], 'refused', 225);
+    const error = ProcessException('Po0ClashCore.exe', [], 'refused', 225);
 
     expect(launchOsError(error), 225);
-    expect(isPolicyBlockedLaunch(error), isTrue);
+    expect(coreLaunchBlockReason(error), CoreLaunchBlockReason.antivirus);
   });
 
   test('looks through the lifecycle failure to its cause', () {
@@ -49,22 +49,22 @@ void main() {
       code: 'start_failed',
       phase: DesktopCorePhase.starting,
       revision: 1,
-      cause: ProcessException('FlClashCore.exe', [], 'refused', 577),
+      cause: ProcessException('Po0ClashCore.exe', [], 'refused', 577),
     );
 
     expect(launchOsError(failure), 577);
-    expect(isPolicyBlockedLaunch(failure), isTrue);
+    expect(coreLaunchBlockReason(failure), CoreLaunchBlockReason.signature);
   });
 
   test('a missing file or a plain crash is not a policy block', () {
     expect(
-      isPolicyBlockedLaunch(
-        const ProcessException('FlClashCore.exe', [], 'not found', 2),
+      coreLaunchBlockReason(
+        const ProcessException('Po0ClashCore.exe', [], 'not found', 2),
       ),
-      isFalse,
+      isNull,
     );
     expect(
-      isPolicyBlockedLaunch(
+      coreLaunchBlockReason(
         const DesktopCoreFailure(
           code: 'start_failed',
           phase: DesktopCorePhase.starting,
@@ -72,9 +72,9 @@ void main() {
           cause: 'receive timeout',
         ),
       ),
-      isFalse,
+      isNull,
     );
-    expect(isPolicyBlockedLaunch(null), isFalse);
+    expect(coreLaunchBlockReason(null), isNull);
   });
 
   test('the registry state is unknown off Windows', () {

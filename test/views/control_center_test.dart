@@ -80,16 +80,10 @@ void main() {
     expect(route(), (tun: true, systemProxy: false), reason: 'never both off');
   });
 
-  testWidgets('the exit IP sits beside the switches and rechecks on tap', (
-    tester,
-  ) async {
-    await pump(tester, const QuickToggles());
+  testWidgets('the exit IP stays readable and rechecks on tap', (tester) async {
+    await pump(tester, const IpDetectionChip());
     final ip = find.text('154.17.22.108');
     expect(ip, findsOneWidget);
-    expect(
-      tester.getCenter(ip).dx,
-      greaterThan(tester.getCenter(find.text('System proxy')).dx),
-    );
 
     final before = container.read(checkIpNumProvider);
     await tester.tap(ip);

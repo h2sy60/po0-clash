@@ -27,9 +27,10 @@
 | [0007](0007-remove-fixed-slots.md) | 去掉固定槽位 | 已采纳 |
 | [0008](0008-material3-on-every-platform.md) | 三端统一使用 Material 3 | 已取代（见 0009） |
 | [0009](0009-frosted-glass-ui.md) | 磨砂玻璃界面与新的操作结构 | 已采纳，视觉部分已取代（见 0010） |
-| [0010](0010-liquid-glass.md) | 改为苹果液态玻璃风格 | 已采纳 |
+| [0010](0010-liquid-glass.md) | 改为苹果液态玻璃风格 | 已取代（见 0016） |
 | [0011](0011-exclusive-desktop-route.md) | 桌面端虚拟网卡与系统代理二选一 | 已采纳 |
 | [0012](0012-direct-listener-and-ggy.md) | 内核专用直连入口与 ggy 加白链接 | 已采纳，ggy 入口与轮询部分已取代（见 0013） |
 | [0013](0013-ggy-page.md) | ggy 作为独立页面，固定 11 秒轮询 | 已采纳，独立页面与独立开关部分已取代（见 0014） |
 | [0014](0014-unified-whitelist.md) | po0 与 ggy 合并为统一加白入口 | 已采纳 |
 | [0015](0015-share-link-nodes.md) | 用分享链接导入单个节点 | 已采纳 |
+| [0016](0016-material3-performance.md) | 简洁界面与按需统计刷新 | 已采纳 |

@@ -230,6 +230,11 @@ mixin WhitelistScheduler {
 
   void pollNow() => unawaited(_run(Po0RunKind.poll));
 
+  void pollIfDue() {
+    if (_inFlight || (_timer?.isActive ?? false)) return;
+    pollNow();
+  }
+
   void setScreenOn(bool value) {
     if (_screenOn == value) {
       return;

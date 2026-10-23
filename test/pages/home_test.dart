@@ -109,7 +109,7 @@ void main() {
     expect(find.text('page:tools').hitTestable(), findsOneWidget);
   });
 
-  testWidgets('the rail highlight sits exactly on the chosen destination', (
+  testWidgets('compact navigation keeps the selected destination in sync', (
     tester,
   ) async {
     final container = _container(tester, const Size(700, 800));
@@ -126,25 +126,20 @@ void main() {
       await tester.pumpAndSettle();
       expect(container.read(currentPageLabelProvider), label);
 
-      final highlight = tester.getRect(
-        find.descendant(
-          of: find.byType(GlassRail),
-          matching: find.byType(AnimatedPositioned),
-        ),
-      );
-      final destination = tester.getRect(
+      final semantics = tester.widgetList<Semantics>(
         find.ancestor(
-          of: find.text(label.label),
-          matching: find.byType(InkWell),
+          of: find.descendant(
+            of: find.byType(GlassRail),
+            matching: find.text(label.label),
+          ),
+          matching: find.byType(Semantics),
         ),
       );
-      expect(highlight.center.dx, closeTo(destination.center.dx, 0.5));
-      expect(highlight.center.dy, closeTo(destination.center.dy, 0.5));
       expect(
-        destination.width,
-        greaterThanOrEqualTo(highlight.width),
-        reason: 'the whole highlighted area must answer taps',
+        semantics.any((widget) => widget.properties.selected == true),
+        isTrue,
       );
+      expect(find.byType(BackdropFilter), findsNothing);
     }
   });
 
@@ -159,16 +154,21 @@ void main() {
     final inset = BottomInsetScope.of(
       tester.element(find.text('page:dashboard')),
     );
-    expect(inset, greaterThanOrEqualTo(GlassDock.height));
+    expect(inset, 0);
 
     final dock = tester.getRect(find.byType(GlassDock));
+    expect(
+      tester.getRect(find.byType(PageView).first).bottom,
+      lessThanOrEqualTo(dock.top),
+    );
     final tools = tester.getRect(
-      find.ancestor(
-        of: find.descendant(
-          of: find.byType(GlassDock),
-          matching: find.byIcon(Icons.construction),
+      find.descendant(
+        of: find.byType(GlassDock),
+        matching: find.byWidgetPredicate(
+          (widget) =>
+              widget is NavigationDestination &&
+              widget.label == PageLabel.tools.label,
         ),
-        matching: find.byType(InkWell),
       ),
     );
     expect(tools.center.dy, closeTo(dock.center.dy, 12));

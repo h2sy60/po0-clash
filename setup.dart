@@ -166,6 +166,23 @@ Future<int> _package(
   final file = File(p.join(rootDir, 'env.json'));
   await file.writeAsString(jsonEncode(createBuildEnvironment(env)));
 
+  if (platform == 'windows') {
+    final result = await Process.start('powershell.exe', [
+      '-NoProfile',
+      '-NonInteractive',
+      '-File',
+      p.join(rootDir, 'scripts', 'windows', 'package.ps1'),
+      '-AppEnvironment',
+      env,
+      '-Targets',
+      targets,
+      '-Architecture',
+      arch,
+      if (verbose) '-VerboseBuild',
+    ], mode: ProcessStartMode.inheritStdio);
+    return result.exitCode;
+  }
+
   final flutterBuildArgs = createFlutterBuildArgs(
     platform: platform,
     verbose: verbose,

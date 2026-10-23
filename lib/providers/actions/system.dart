@@ -113,6 +113,7 @@ class SystemAction extends _$SystemAction {
       }
       await system.back();
       await windowPort?.hide();
+      ref.read(uiVisibleProvider.notifier).value = false;
     } else {
       await handleExit();
     }

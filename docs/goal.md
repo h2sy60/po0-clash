@@ -17,7 +17,7 @@
    - Android：提供 APK 安装包。
    - iOS：不支持，不做。
    - Linux：不在交付范围内（代码保持可构建即可）。
-5. **界面**：三端统一遵循 Android 设计指南（Material 3），动效使用 Material 3 的时长与曲线（[ADR 0008](adr/0008-material3-on-every-platform.md)）。
+5. **界面**：三端统一采用苹果官网式的简洁排版，使用中性表面、清晰字体和克制配色，由 Material 组件实现；避免模糊和持续装饰动画（[ADR 0016](adr/0016-material3-performance.md)）。
 6. **独立应用**：以 po0-clash 的身份发布，应用 ID、安装标识、进程 / 服务名、数据目录与官方 FlClash 完全不同，
    两者可在同一设备上同时安装、运行；版本号独立，本仓库从 5.0.0 开始（[ADR 0006](adr/0006-standalone-app-identity.md)）。
 7. **节点导入**：像 v2rayN 一样直接导入 vmess / vless / trojan / ss / hysteria2 等分享链接，节点统一放进「手动节点」配置，

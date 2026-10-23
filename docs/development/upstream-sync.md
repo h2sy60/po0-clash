@@ -30,7 +30,8 @@ git merge upstream/main
 | `lib/widgets/widgets.dart` | 导出 `surface_card.dart` |
 | `lib/common/constant.dart` | `repository` 指向本仓库，`upstreamRepository`；应用身份常量（见下节） |
 | `lib/common/package.dart` | `compareVersions` 按语义化版本比较（含预发布版本） |
-| `lib/common/request.dart` / `lib/views/about.dart` | 检查更新直接比较 `pubspec` 版本；「关于」页链接本仓库与上游 |
+| `lib/common/request.dart` / `lib/views/about.dart` | 检查更新直接比较 `pubspec` 版本；「关于」页介绍 po0-clash，上游来源集中在「开源致谢」 |
+| `lib/common/app_localizations.dart` / `lib/core/desktop/launch_policy.dart` | 按原始 Windows 错误码区分杀毒检测、签名验证和策略拦截；智能应用控制评估状态不参与归因 |
 | `lib/application.dart` / `lib/common/app_theme.dart` | 主题由 `buildAppTheme` 构建，页面转场用 `appPageTransitionsTheme` |
 | `lib/manager/app_manager.dart` / `lib/common/layout.dart` | Material 3 导航侧栏（顶部菜单按钮、可展开）与窗口宽度分级 |
 | `lib/common/shape.dart` / `lib/widgets/card.dart` | Material 3 圆角档位；`CommonCard` 的描边 / 填充卡片样式 |
@@ -43,6 +44,25 @@ git merge upstream/main
 | `README.md` / `README_zh_CN.md` | 整体改写为 po0-clash 说明，合并时保留本分支版本 |
 | `assets_source/images/icon/` 及生成的桌面、Android、托盘图标 | po0 的扁平 P / 斜杠零标志，源 SVG 由 `tool/generate_app_icons.sh` 转换为各平台产物 |
 | `android/app/src/main/res/drawable/ic_launcher_monochrome.xml` / `android/app/src/main/res/values/splash.xml` | Android 主题图标沿用同一轮廓，启动背景匹配图标底色 |
+
+## 简洁界面与性能（ADR 0016）
+
+| 文件 | 本分支改动 |
+|---|---|
+| `lib/common/glass.dart` / `app_theme.dart` / `shape.dart` / `dialog.dart` | 中性色表面、蓝色主操作和圆角矩形；去掉模糊与玻璃装饰 |
+| `lib/widgets/glass.dart` / `glass_segmented.dart` | 不透明 Material 表面与标准分段按钮；沿用现有接口 |
+| `lib/pages/home.dart` / `shell.dart` / `lib/views/navigation.dart` | 标准底栏和侧栏，桌面也有首页，内容不被底栏覆盖 |
+| `lib/views/control/` | 首页的连接、配置、统计分组；流量图重绘隔离 |
+| `lib/providers/app.dart` / `actions/setup.dart` / `actions/system.dart` | UI 可见性与主页统计采样；托盘网速例外，保留 Core 计数与运行意图 |
+| `lib/manager/app_manager.dart` / `window_manager.dart` | 生命周期、最小化与恢复驱动 UI 可见性；重新聚焦不额外加白 |
+| `lib/widgets/active_polling.dart` / `line_chart.dart` / `lib/views/po0_firewall.dart` | 不可见时停轮询；相同图表数据不重启动画 |
+| `lib/providers/state/system.dart` / `proxies.dart` | 隐藏托盘网速时不订阅流量；节点规范化复用未变对象 |
+| `core/server.go` | 有上限的每连接接收缓冲区复用，异步分发前复制 JSON 参数 |
+| `plugins/rust_api/rust/src/ipc/{server,queue,frame}.rs` | 消息/关闭驱动发送，接收时预留事件字节以免再次复制整帧 |
+
+## Windows 签名验证
+
+`.github/workflows/windows-validation.yaml` 与 `scripts/windows/test-signing.ps1` 在 Windows runner 上验证签名、打包、安装和卸载，测试程序替代 Flutter 产物生成，不触发正式发版。
 
 ## 应用身份（ADR 0006）
 
@@ -60,7 +80,7 @@ po0-clash 的值。上游改动这些文件时，**保留本分支的标识**，
 | `android/.gitignore` | 放行已入库的 `app/keystore.jks` |
 | `android/**/AndroidManifest.xml`、`strings.xml`、用到自身包名的 Kotlin 文件 | 应用名与运行时 `packageName`（不再用 namespace 充当应用 ID） |
 | `windows/CMakeLists.txt` / `windows/runner/Runner.rc` / `windows/runner/main.cpp` | `BINARY_NAME` `po0-clash`、版本资源的公司 / 产品名、窗口标题 |
-| `windows/packaging/exe/make_config.yaml` / `inno_setup.iss` | Inno Setup `AppId`、发布者、可执行文件名、要结束 / 卸载的进程与服务名 |
+| `windows/packaging/exe/inno_setup.iss` | 原生 Inno Setup 脚本；保留独立应用身份与升级清理，签名安装和卸载程序；旧 distributor 配置已移除 |
 | `macos/Runner/Configs/*.xcconfig` / `Runner.xcodeproj/project.pbxproj` / `Info.plist` / `xcschemes` | `PRODUCT_NAME`、bundle id（含 debug 与 RunnerTests）、URL scheme |
 | `macos/packaging/dmg/make_config.yaml` | dmg 中的 `.app` 名 |
 | `linux/CMakeLists.txt` / `linux/runner/my_application.cc` / `linux/packaging/*/make_config.yaml` | `BINARY_NAME`、`APPLICATION_ID`、窗口标题、包名与桌面文件 |
@@ -73,7 +93,8 @@ po0-clash 的值。上游改动这些文件时，**保留本分支的标识**，
 | `pubspec.yaml` | `yaml` 从 dev 依赖改为正式依赖（读取节点配置模板） |
 | `build_config.yaml` | `core_name` `Po0ClashCore`、`helper_name` `Po0ClashHelperService` |
 | `distribute_options.yaml` | `app_name` `po0-clash`（决定产物文件名） |
-| `plugins/setup/**` | 内核 / helper 构建产物名 |
+| `plugins/setup/**` | 内核 / helper 构建产物名；Windows Core 签名后再计算并内嵌 SHA-256，签名配置纳入缓存输入 |
+| `setup.dart` | Windows 委托 `scripts/windows/package.ps1` 构建、签名和打包，其余平台继续使用 distributor |
 | `lib/common/constant.dart` | `appName`、helper 服务名、TUN 设备名、IPC socket / 管道前缀、helper socket 与协议头 |
 | `lib/common/path.dart` | 内核可执行文件名、单实例锁文件名 |
 | `lib/common/protocol.dart` | URL scheme `po0clash://` 与 Linux URL handler 桌面文件 |

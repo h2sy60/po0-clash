@@ -1,19 +1,27 @@
 part of '../state.dart';
 
+Group _withoutRuntimeSelection(Group group) {
+  final all = group.all;
+  final changed = all.any((proxy) => (proxy.now?.isNotEmpty ?? false));
+  if ((group.now?.isEmpty ?? true) && !changed) return group;
+  return group.copyWith(
+    now: '',
+    all: changed
+        ? [
+            for (final proxy in all)
+              (proxy.now?.isEmpty ?? true) ? proxy : proxy.copyWith(now: ''),
+          ]
+        : all,
+  );
+}
+
 @riverpod
 GroupsState currentGroupsState(Ref ref) {
   final mode = ref.watch(
     patchClashConfigProvider.select((state) => state.mode),
   );
   final groups = ref.watch(
-    groupsProvider.select(
-      (state) => state.map((item) {
-        return item.copyWith(
-          now: '',
-          all: item.all.map((proxy) => proxy.copyWith(now: '')).toList(),
-        );
-      }),
-    ),
+    groupsProvider.select((state) => state.map(_withoutRuntimeSelection)),
   );
   return GroupsState(
     value: switch (mode) {

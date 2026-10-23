@@ -94,6 +94,7 @@ pub fn write_frame(
 
 #[derive(Default)]
 pub struct FrameReader {
+    prefix: Option<u8>,
     header: [u8; 4],
     header_read: usize,
     payload: Vec<u8>,
@@ -101,6 +102,13 @@ pub struct FrameReader {
 }
 
 impl FrameReader {
+    pub fn with_prefix(prefix: u8) -> Self {
+        Self {
+            prefix: Some(prefix),
+            ..Self::default()
+        }
+    }
+
     pub fn poll(&mut self, reader: &mut impl Read) -> io::Result<Option<Vec<u8>>> {
         loop {
             if self.header_read < self.header.len() {
@@ -119,9 +127,14 @@ impl FrameReader {
                 validate_frame_len(len)?;
                 if len == 0 {
                     self.reset();
-                    return Ok(Some(Vec::new()));
+                    return Ok(Some(self.prefix.into_iter().collect()));
                 }
-                self.payload = vec![0; len];
+                let prefix_len = usize::from(self.prefix.is_some());
+                self.payload = vec![0; len + prefix_len];
+                self.payload_read = prefix_len;
+                if let Some(prefix) = self.prefix {
+                    self.payload[0] = prefix;
+                }
             }
 
             match reader.read(&mut self.payload[self.payload_read..]) {
@@ -192,6 +205,56 @@ mod tests {
             frame_reader.poll(&mut reader).unwrap(),
             Some(payload.to_vec())
         );
+    }
+
+    #[test]
+    fn prefixed_reader_returns_the_dart_event_envelope_directly() {
+        let mut source = Cursor::new(b"\x05\x00\x00\x00hello\x00\x00\x00\x00".to_vec());
+        let mut reader = FrameReader::with_prefix(TYPE_DATA);
+        assert_eq!(
+            reader.poll(&mut source).unwrap(),
+            Some(make_frame(TYPE_DATA, b"hello"))
+        );
+        assert_eq!(
+            reader.poll(&mut source).unwrap(),
+            Some(make_frame(TYPE_DATA, b""))
+        );
+    }
+
+    #[test]
+    fn prefixed_reader_keeps_partial_payloads_and_resets_between_frames() {
+        let mut source = StepReader {
+            steps: VecDeque::from([
+                ReadStep::Data(vec![5, 0]),
+                ReadStep::WouldBlock,
+                ReadStep::Data(vec![0, 0]),
+                ReadStep::Data(b"he".to_vec()),
+                ReadStep::WouldBlock,
+                ReadStep::Data(b"llo\x01\x00\x00\x00x".to_vec()),
+            ]),
+        };
+        let mut reader = FrameReader::with_prefix(TYPE_DATA);
+        assert_eq!(reader.poll(&mut source).unwrap(), None);
+        assert_eq!(reader.poll(&mut source).unwrap(), None);
+        assert_eq!(
+            reader.poll(&mut source).unwrap(),
+            Some(make_frame(TYPE_DATA, b"hello"))
+        );
+        assert_eq!(
+            reader.poll(&mut source).unwrap(),
+            Some(make_frame(TYPE_DATA, b"x"))
+        );
+    }
+
+    #[test]
+    fn event_prefix_does_not_relax_the_payload_limit() {
+        let mut source = Cursor::new((MAX_FRAME_SIZE as u32 + 1).to_le_bytes());
+        let mut reader = FrameReader::with_prefix(TYPE_DATA);
+        assert_eq!(
+            reader.poll(&mut source).unwrap_err().kind(),
+            io::ErrorKind::InvalidData
+        );
+        assert!(reader.payload.is_empty());
     }
 
     #[test]

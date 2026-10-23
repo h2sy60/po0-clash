@@ -19,12 +19,20 @@ class SetupAction extends _$SetupAction {
   CoreController get _core => ref.read(coreHandlerProvider);
 
   Timer? _runtimeTimer;
+  bool _statisticsPaused = false;
   final _setupScheduler = SerialTaskScheduler();
   final _listenerScheduler = SerialTaskScheduler();
   _RunRequest? _latestRunRequest;
   DateTime? _startTime;
 
-  bool get _isRunning => _startTime != null && _startTime!.isBeforeNow;
+  bool get _isRunning =>
+      _startTime != null && _startTime!.isBefore(runtimeNow());
+
+  @protected
+  DateTime runtimeNow() => DateTime.now();
+
+  @protected
+  bool get supportsTrayTraffic => system.isMacOS;
 
   @override
   void build() {
@@ -32,6 +40,13 @@ class SetupAction extends _$SetupAction {
       _runtimeTimer?.cancel();
       _runtimeTimer = null;
     });
+    ref.listen(uiVisibleProvider, (_, _) => _syncRuntimePolling());
+    ref.listen(currentPageLabelProvider, (_, _) => _syncRuntimePolling());
+    ref.listen(coreStatusProvider, (_, _) => _syncRuntimePolling());
+    ref.listen(
+      appSettingProvider.select((state) => state.showTrayTitle),
+      (_, _) => _syncRuntimePolling(),
+    );
   }
 
   SetupParams get _setupParams {
@@ -61,13 +76,38 @@ class SetupAction extends _$SetupAction {
     _runtimeTimer?.cancel();
     _runtimeTimer = null;
     if (!running) {
+      _statisticsPaused = false;
       _startTime = null;
       debouncer.cancel(FunctionTag.applyProfile);
       _updateRunTime();
       return;
     }
 
-    _startTime ??= DateTime.now();
+    _startTime ??= runtimeNow();
+    _updateRunTime();
+    _syncRuntimePolling();
+  }
+
+  void _syncRuntimePolling() {
+    _runtimeTimer?.cancel();
+    _runtimeTimer = null;
+    if (_startTime == null) return;
+    if (ref.read(coreStatusProvider) != CoreStatus.connected) {
+      ref.read(trafficsProvider.notifier).clear();
+      _statisticsPaused = true;
+      return;
+    }
+    final visible = _dashboardVisible;
+    final trayTraffic =
+        supportsTrayTraffic && ref.read(appSettingProvider).showTrayTitle;
+    if (!visible && !trayTraffic) {
+      _statisticsPaused = true;
+      return;
+    }
+    if (_statisticsPaused) {
+      ref.read(trafficsProvider.notifier).clear();
+      _statisticsPaused = false;
+    }
     _refreshRunningState();
     _runtimeTimer = Timer.periodic(
       const Duration(seconds: 1),
@@ -76,15 +116,19 @@ class SetupAction extends _$SetupAction {
   }
 
   void _refreshRunningState() {
-    _updateRunTime();
+    if (_dashboardVisible) _updateRunTime();
     unawaited(ref.read(commonActionProvider.notifier).updateTraffic());
   }
+
+  bool get _dashboardVisible =>
+      ref.read(uiVisibleProvider) &&
+      ref.read(currentPageLabelProvider) == PageLabel.dashboard;
 
   void _updateRunTime() {
     final startTime = _startTime;
     ref.read(runTimeProvider.notifier).value = startTime == null
         ? null
-        : DateTime.now().millisecondsSinceEpoch -
+        : runtimeNow().millisecondsSinceEpoch -
               startTime.millisecondsSinceEpoch;
   }
 

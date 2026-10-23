@@ -830,10 +830,10 @@ class AppLocalizations {
     );
   }
 
-  /// `A multi-platform proxy client based on ClashMeta, simple and easy to use, open-source and ad-free.`
+  /// `po0-clash is a cross-platform ClashMeta client with automatic po0 and ggy whitelisting, share-link node import, and subscription management.`
   String get desc {
     return Intl.message(
-      'A multi-platform proxy client based on ClashMeta, simple and easy to use, open-source and ad-free.',
+      'po0-clash is a cross-platform ClashMeta client with automatic po0 and ggy whitelisting, share-link node import, and subscription management.',
       name: 'desc',
       desc: '',
       args: [],
@@ -3710,23 +3710,23 @@ class AppLocalizations {
     );
   }
 
-  /// `Windows refused to run Po0ClashCore.exe (error {code}). An app control policy such as Smart App Control or AppLocker blocks unsigned programs; allow po0-clash in that policy or turn it off, then try again.`
+  /// `An application control policy prevented Po0ClashCore.exe from running (error {code}). Ask your device administrator to check the AppLocker or application control logs and the policy requirements.`
   String coreBlockedByPolicyTip(Object code) {
     return Intl.message(
-      'Windows refused to run Po0ClashCore.exe (error $code). An app control policy such as Smart App Control or AppLocker blocks unsigned programs; allow po0-clash in that policy or turn it off, then try again.',
+      'An application control policy prevented Po0ClashCore.exe from running (error $code). Ask your device administrator to check the AppLocker or application control logs and the policy requirements.',
       name: 'coreBlockedByPolicyTip',
       desc: '',
       args: [code],
     );
   }
 
-  /// `Windows Smart App Control blocked Po0ClashCore.exe because it is not signed. Open Windows Security → App & browser control → Smart App Control settings, choose Off, then start po0-clash again. Smart App Control cannot be turned back on without reinstalling Windows.`
-  String get coreBlockedBySmartAppControlTip {
+  /// `Windows could not verify the digital signature of Po0ClashCore.exe (error {code}). Smart App Control is enabled on this device and may reject self-signed builds. Check the Windows CodeIntegrity event log to confirm the blocking policy.`
+  String coreBlockedBySmartAppControlTip(Object code) {
     return Intl.message(
-      'Windows Smart App Control blocked Po0ClashCore.exe because it is not signed. Open Windows Security → App & browser control → Smart App Control settings, choose Off, then start po0-clash again. Smart App Control cannot be turned back on without reinstalling Windows.',
+      'Windows could not verify the digital signature of Po0ClashCore.exe (error $code). Smart App Control is enabled on this device and may reject self-signed builds. Check the Windows CodeIntegrity event log to confirm the blocking policy.',
       name: 'coreBlockedBySmartAppControlTip',
       desc: '',
-      args: [],
+      args: [code],
     );
   }
 
@@ -5688,6 +5688,56 @@ class AppLocalizations {
   /// `node`
   String get node {
     return Intl.message('node', name: 'node', desc: '', args: []);
+  }
+
+  /// `Open-source credits`
+  String get openSourceCredits {
+    return Intl.message(
+      'Open-source credits',
+      name: 'openSourceCredits',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Upstream client`
+  String get upstreamProject {
+    return Intl.message(
+      'Upstream client',
+      name: 'upstreamProject',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Upstream contributors`
+  String get upstreamContributors {
+    return Intl.message(
+      'Upstream contributors',
+      name: 'upstreamContributors',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Security software detected a virus or potentially unwanted software in Po0ClashCore.exe (error {code}). Check Windows Security → Protection history, record the detection name, and report it to the po0-clash project.`
+  String coreBlockedByAntivirusTip(Object code) {
+    return Intl.message(
+      'Security software detected a virus or potentially unwanted software in Po0ClashCore.exe (error $code). Check Windows Security → Protection history, record the detection name, and report it to the po0-clash project.',
+      name: 'coreBlockedByAntivirusTip',
+      desc: '',
+      args: [code],
+    );
+  }
+
+  /// `Windows could not verify the digital signature of Po0ClashCore.exe (error {code}). Compare the release checksums and certificate fingerprint, then check the Windows CodeIntegrity event log for the device policy or signature error.`
+  String coreSignatureInvalidTip(Object code) {
+    return Intl.message(
+      'Windows could not verify the digital signature of Po0ClashCore.exe (error $code). Compare the release checksums and certificate fingerprint, then check the Windows CodeIntegrity event log for the device policy or signature error.',
+      name: 'coreSignatureInvalidTip',
+      desc: '',
+      args: [code],
+    );
   }
 }
 

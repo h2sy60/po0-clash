@@ -43,6 +43,10 @@
 
 ## 产物
 
+Windows 使用固定自签名证书，首次发版前须配置两个签名 Secrets，见 [Windows 自签名](windows-signing.md)。
+签名不等于 Windows 信任，发布说明需保留这一限制。安装包与 ZIP 内含公钥证书和安全诊断说明；发布页另附
+`po0-clash-signing.cer` 与 `po0-clash-<ver>-windows-amd64-sha256.txt`，不包含私钥。
+
 | 平台 | 文件 | 安装方式 |
 |---|---|---|
 | Windows x64 | `po0-clash-<ver>-windows-amd64-setup.exe` / `.zip` | 运行安装包，或解压 zip |
