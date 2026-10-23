@@ -76,12 +76,12 @@ class NodesView extends ConsumerWidget {
         IconButton(
           tooltip: appLocalizations.clipboardImport,
           onPressed: () => _importClipboard(ref),
-          icon: const Icon(Icons.content_paste_rounded),
+          icon: const AppIcon(Icons.content_paste_rounded),
         ),
         IconButton(
           tooltip: appLocalizations.qrcode,
           onPressed: () => _scan(context, ref),
-          icon: const Icon(Icons.qr_code_scanner_rounded),
+          icon: const AppIcon(Icons.qr_code_scanner_rounded),
         ),
       ],
       body: Builder(
@@ -103,7 +103,7 @@ class NodesView extends ConsumerWidget {
                       appLocalizations.nodes,
                       trailing: TextButton.icon(
                         onPressed: () => _importInput(ref),
-                        icon: const Icon(Icons.add_rounded, size: 18),
+                        icon: const AppIcon(Icons.add_rounded, size: 18),
                         label: Text(appLocalizations.import),
                       ),
                       padding: const EdgeInsets.fromLTRB(6, 16, 0, 6),
@@ -191,7 +191,7 @@ class _NodeList extends ConsumerWidget {
         onTap: onImport,
         child: Row(
           children: [
-            Icon(
+            AppIcon(
               Icons.dns_outlined,
               color: context.colorScheme.onSurfaceVariant,
             ),
@@ -276,12 +276,12 @@ class _NodeItem extends StatelessWidget {
           IconButton(
             tooltip: appLocalizations.rename,
             onPressed: onRename,
-            icon: const Icon(Icons.edit_outlined),
+            icon: const AppIcon(Icons.edit_outlined),
           ),
           IconButton(
             tooltip: appLocalizations.delete,
             onPressed: onDelete,
-            icon: const Icon(Icons.delete_outline_rounded),
+            icon: const AppIcon(Icons.delete_outline_rounded),
           ),
         ],
       ),
@@ -300,7 +300,7 @@ class _ManualNodesTip extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.info_outline_rounded, size: 16, color: color),
+          AppIcon(Icons.info_outline_rounded, size: 16, color: color),
           const SizedBox(width: 8),
           Expanded(
             child: Text(

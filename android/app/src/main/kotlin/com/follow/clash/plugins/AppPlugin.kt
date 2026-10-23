@@ -18,16 +18,12 @@ import android.provider.Settings
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.getSystemService
-import androidx.core.content.pm.ShortcutInfoCompat
-import androidx.core.content.pm.ShortcutManagerCompat
-import androidx.core.graphics.drawable.IconCompat
 import androidx.core.net.toUri
 import com.follow.clash.R
 import com.follow.clash.common.Components
+import com.follow.clash.LauncherBranding
 import com.follow.clash.common.GlobalState
 import com.follow.clash.common.PendingCallback
-import com.follow.clash.common.QuickAction
-import com.follow.clash.common.quickIntent
 import com.follow.clash.common.registerReceiverCompat
 import com.follow.clash.getPackageIconPath
 import com.follow.clash.packages.PackageResolver
@@ -121,6 +117,15 @@ class AppPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAware 
     override fun onMethodCall(call: MethodCall, rawResult: Result) {
         val result = MainThreadResult(rawResult)
         when (call.method) {
+            "isWhitelistBootstrap" -> result.success(
+                (activity as? com.follow.clash.MainActivity)?.needsWhitelistBootstrap == true,
+            )
+            "finishWhitelistBootstrap" -> result.success(
+                (activity as? com.follow.clash.MainActivity)?.finishWhitelistBootstrap(
+                    call.argument<Boolean>("background") ?: true,
+                    call.argument<Boolean>("ready") ?: true,
+                ) ?: false,
+            )
             "moveTaskToBack" -> {
                 activity?.moveTaskToBack(true)
                 result.success(true)
@@ -209,21 +214,7 @@ class AppPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAware 
     }
 
     private fun initShortcuts(label: String) {
-        val shortcut = with(ShortcutInfoCompat.Builder(GlobalState.application, "toggle")) {
-            setShortLabel(label)
-            setIcon(
-                IconCompat.createWithResource(
-                    GlobalState.application,
-                    R.mipmap.ic_launcher_round,
-                ),
-            )
-            setIntent(QuickAction.TOGGLE.quickIntent)
-            build()
-        }
-        ShortcutManagerCompat.setDynamicShortcuts(
-            GlobalState.application,
-            listOf(shortcut),
-        )
+        LauncherBranding.publishToggle(GlobalState.application, label)
     }
 
     private fun isBatteryOptimizationDisabled(): Boolean {

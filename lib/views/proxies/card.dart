@@ -52,7 +52,7 @@ class ProxyCard extends ConsumerWidget {
                         ? const CommonCircleLoading()
                         : IconButton(
                             tooltip: context.appLocalizations.delayTest,
-                            icon: const Icon(Icons.bolt),
+                            icon: const AppIcon(Icons.bolt),
                             iconSize: globalState.measure.labelSmallHeight,
                             padding: EdgeInsets.zero,
                             onPressed: () => _handleTestCurrentDelay(ref),
@@ -134,6 +134,8 @@ class ProxyCard extends ConsumerWidget {
               selectedProxyNameProvider(groupName),
             );
             return CommonCard(
+              radius: AppCorner.large,
+              enterActionsOnRight: true,
               key: key,
               onPressed: () {
                 _changeProxy(ref);
@@ -149,7 +151,29 @@ class ProxyCard extends ConsumerWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                proxyNameText,
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  spacing: 4,
+                  children: [
+                    Expanded(child: proxyNameText),
+                    Consumer(
+                      builder: (_, ref, _) {
+                        final inUse =
+                            ref.watch(selectedProxyNameProvider(groupName)) ==
+                            proxy.name;
+                        final preferred =
+                            groupType.isComputedSelected &&
+                            ref.watch(proxyNameProvider(groupName)) ==
+                                proxy.name;
+                        return preferred
+                            ? SelectionBadge.preferred(inUse: inUse)
+                            : inUse
+                            ? const SelectionBadge()
+                            : const SizedBox.shrink();
+                      },
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 8),
                 if (type == ProxyCardType.expand) ...[
                   SizedBox(
@@ -190,12 +214,6 @@ class ProxyCard extends ConsumerWidget {
             ),
           ),
         ),
-        if (groupType.isComputedSelected)
-          Positioned(
-            top: 0,
-            right: 0,
-            child: _ProxyComputedMark(groupName: groupName, proxy: proxy),
-          ),
       ],
     );
   }
@@ -214,33 +232,6 @@ class _ProxyDesc extends ConsumerWidget {
       overflow: TextOverflow.ellipsis,
       style: context.textTheme.bodySmall?.copyWith(
         color: context.textTheme.bodySmall?.color?.opacity80,
-      ),
-    );
-  }
-}
-
-class _ProxyComputedMark extends ConsumerWidget {
-  final String groupName;
-  final Proxy proxy;
-
-  const _ProxyComputedMark({required this.groupName, required this.proxy});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final proxyName = ref.watch(proxyNameProvider(groupName));
-    if (proxyName != proxy.name) {
-      return const SizedBox();
-    }
-    return Container(
-      alignment: Alignment.topRight,
-      margin: const EdgeInsets.all(8),
-      child: Container(
-        padding: const EdgeInsets.all(4),
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: Theme.of(context).colorScheme.secondaryContainer,
-        ),
-        child: const SelectIcon(),
       ),
     );
   }

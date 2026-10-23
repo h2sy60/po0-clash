@@ -450,7 +450,13 @@ void main() {
       ),
     );
     expect(find.text('Exit whitelisted'), findsOneWidget);
-    expect(find.byIcon(Icons.verified_user_rounded), findsOneWidget);
+    expect(
+      find.byWidgetPredicate(
+        (widget) =>
+            widget is AppIcon && widget.icon == Icons.verified_user_rounded,
+      ),
+      findsOneWidget,
+    );
   });
 
   testWidgets('stale results of deleted tokens are not rendered', (

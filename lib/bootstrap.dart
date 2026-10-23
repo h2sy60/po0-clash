@@ -15,6 +15,7 @@ import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
+import 'package:fl_clash/plugins/app.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/navigation.dart';
 import 'package:material_ui/material_ui.dart';
@@ -146,11 +147,16 @@ class Bootstrap {
   ProviderContainer get _container => globalState.container;
 
   Future<void> _initApp() async {
+    final whitelistBootstrap = await app?.isWhitelistBootstrap() ?? false;
     unawaited(_container.read(systemActionProvider.notifier).updateTray());
     unawaited(
       _container.read(profilesActionProvider.notifier).autoUpdateProfiles(),
     );
-    unawaited(_container.read(commonActionProvider.notifier).autoCheckUpdate());
+    if (!whitelistBootstrap) {
+      unawaited(
+        _container.read(commonActionProvider.notifier).autoCheckUpdate(),
+      );
+    }
     unawaited(
       autoLaunch?.updateStatus(_container.read(appSettingProvider).autoLaunch),
     );
@@ -160,15 +166,30 @@ class Bootstrap {
       unawaited(window?.hide());
     }
     await _handleFailedPreference();
+    if (whitelistBootstrap &&
+        (!_container.read(appSettingProvider).disclaimerAccepted ||
+            _bootDecision.isDegraded)) {
+      await app?.finishWhitelistBootstrap(background: false, ready: false);
+    }
     await _handlerDisclaimer();
     await _showCrashRecoveryTip();
     await _container.read(coreActionProvider.notifier).startCore();
     if (!_bootDecision.isDegraded) {
-      await _container.read(setupActionProvider.notifier).initStatus();
+      if (whitelistBootstrap) {
+        await _container
+            .read(setupActionProvider.notifier)
+            .attachQuickActionSession();
+      } else {
+        await _container.read(setupActionProvider.notifier).initStatus();
+      }
     }
     _container.read(initProvider.notifier).value = true;
     await bootGuard.markRunning();
-    permissions.check(_container.read);
+    if (whitelistBootstrap) {
+      await app?.finishWhitelistBootstrap();
+    } else {
+      permissions.check(_container.read);
+    }
   }
 
   Future<void> _showCrashRecoveryTip() async {

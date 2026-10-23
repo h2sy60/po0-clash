@@ -46,17 +46,22 @@ class HomePage extends ConsumerWidget {
   }
 }
 
-class _MaterialShell extends ConsumerWidget {
+class _MaterialShell extends ConsumerStatefulWidget {
   const _MaterialShell({required this.child});
-
   final Widget child;
+  @override
+  ConsumerState<_MaterialShell> createState() => _MaterialShellState();
+}
 
+class _MaterialShellState extends ConsumerState<_MaterialShell> {
+  var _collapsed = false;
   void _handleToPage(WidgetRef ref, PageLabel pageLabel) {
     ref.read(currentPageLabelProvider.notifier).toPage(pageLabel);
   }
 
   void _updateSideWidth(WidgetRef ref, double contentWidth) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       ref.read(sideWidthProvider.notifier).value =
           ref.read(viewSizeProvider.select((state) => state.width)) -
           contentWidth;
@@ -67,13 +72,16 @@ class _MaterialShell extends ConsumerWidget {
     return LayoutBuilder(
       builder: (_, constraints) {
         _updateSideWidth(ref, constraints.maxWidth);
-        return FocusTraversalGroup(policy: PageTraversalPolicy(), child: child);
+        return FocusTraversalGroup(
+          policy: PageTraversalPolicy(),
+          child: widget.child,
+        );
       },
     );
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final state = ref.watch(navigationStateProvider);
     final items = state.navigationItems;
     final currentIndex = state.currentIndex;
@@ -86,7 +94,7 @@ class _MaterialShell extends ConsumerWidget {
               inset: 0,
               child: FocusTraversalGroup(
                 policy: PageTraversalPolicy(),
-                child: child,
+                child: widget.child,
               ),
             ),
           ),
@@ -105,16 +113,20 @@ class _MaterialShell extends ConsumerWidget {
       isMobileView: false,
     );
     final topInset = system.isMacOS && !showsHeader ? 24.0 : 0.0;
-    final navigation = state.viewMode == ViewMode.desktop
+    final navigation = state.viewMode == ViewMode.desktop && !_collapsed
         ? ControlSidebar(
             items: items,
             currentIndex: currentIndex,
             onSelected: onSelected,
             topInset: topInset,
+            onToggle: () => setState(() => _collapsed = true),
           )
         : Padding(
             padding: EdgeInsets.only(top: topInset),
             child: GlassRail(
+              onToggle: state.viewMode == ViewMode.desktop
+                  ? () => setState(() => _collapsed = false)
+                  : null,
               items: items,
               currentIndex: currentIndex,
               onSelected: onSelected,

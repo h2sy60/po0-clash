@@ -41,3 +41,10 @@ export 'surface_card.dart';
 export 'text.dart';
 export 'theme.dart';
 export 'wave.dart';
+
+export 'glyphs/glyphs.dart';
+export 'selection_badge.dart';
+export 'elastic_press.dart';
+export 'upstream_surface.dart';
+export 'traffic_chart.dart';
+export 'skeleton.dart';

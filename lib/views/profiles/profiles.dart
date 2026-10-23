@@ -80,7 +80,7 @@ class _ProfilesViewState extends ConsumerState<ProfilesView> {
               onPressed: () {
                 _updateProfiles(profiles);
               },
-              icon: const Icon(Icons.sync),
+              icon: const AppIcon(Icons.sync),
             ),
             IconButton(
               tooltip: context.appLocalizations.profilesSort,
@@ -92,7 +92,7 @@ class _ProfilesViewState extends ConsumerState<ProfilesView> {
                   },
                 );
               },
-              icon: const Icon(Icons.sort),
+              icon: const AppIcon(Icons.sort),
               iconSize: 26,
             ),
           ]
@@ -102,7 +102,7 @@ class _ProfilesViewState extends ConsumerState<ProfilesView> {
   Widget _buildFAB() {
     return CommonFloatingActionButton(
       onPressed: _handleShowAddExtendPage,
-      icon: const Icon(Icons.add),
+      icon: const AppIcon(Icons.add),
       label: context.appLocalizations.addProfile,
     );
   }
@@ -451,7 +451,7 @@ class ProfileItem extends ConsumerWidget {
                             onPressed: () {
                               open();
                             },
-                            icon: const Icon(Icons.more_vert),
+                            icon: const AppIcon(Icons.more_vert),
                           );
                         },
                       ),
@@ -553,7 +553,7 @@ class _ReorderableProfilesSheetState
       child: ReorderableDelayedDragStartListener(
         index: index,
         child: DecorationListItem(
-          trailing: const Icon(Icons.drag_handle),
+          trailing: const AppIcon(Icons.drag_handle),
           title: Text(profile.realLabel),
         ),
       ),

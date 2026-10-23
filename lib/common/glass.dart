@@ -32,14 +32,24 @@ class GlassStyle extends ThemeExtension<GlassStyle> {
     final black = pureBlack && scheme.brightness == Brightness.dark;
     return GlassStyle(
       brightness: scheme.brightness,
-      background: black ? Colors.black : scheme.surface,
+      background: black
+          ? Colors.black
+          : scheme.brightness == Brightness.dark
+          ? scheme.surface
+          : scheme.surfaceContainer,
       card: scheme.brightness == Brightness.dark
-          ? scheme.surfaceContainerLow
-          : scheme.surfaceContainerLowest,
+          ? scheme.surfaceContainer
+          : scheme.surfaceBright,
       fill: scheme.surfaceContainerHighest,
-      thumb: scheme.secondaryContainer,
-      glass: scheme.surfaceContainerLow,
-      glassStrong: scheme.surfaceContainerHigh,
+      thumb: scheme.brightness == Brightness.dark
+          ? scheme.surfaceContainerHighest
+          : scheme.surfaceBright,
+      glass: scheme.brightness == Brightness.dark
+          ? scheme.surfaceContainerHigh
+          : scheme.surfaceBright,
+      glassStrong: scheme.brightness == Brightness.dark
+          ? scheme.surfaceContainerHigh
+          : scheme.surfaceBright,
       separator: scheme.outlineVariant,
       selected: scheme.secondaryContainer,
       secondaryLabel: scheme.onSurfaceVariant,

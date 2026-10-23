@@ -32,14 +32,14 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
           onPressed: () {
             _proxiesTabKey.currentState?.scrollToGroupSelected();
           },
-          icon: const Icon(Icons.adjust, weight: 1),
+          icon: const AppIcon(Icons.adjust, weight: 1),
         ),
       CommonPopupBox(
         targetBuilder: (open) {
           return IconButton(
             tooltip: context.appLocalizations.more,
             onPressed: open,
-            icon: const Icon(Icons.more_vert),
+            icon: const AppIcon(Icons.more_vert),
           );
         },
         items: [

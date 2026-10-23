@@ -151,7 +151,7 @@ class _OverviewPanel extends ConsumerWidget {
                 ? () =>
                       unawaited(ref.read(po0FirewallProvider.notifier).query())
                 : null,
-            icon: const Icon(Icons.travel_explore_rounded, size: 18),
+            icon: const AppIcon(Icons.travel_explore_rounded, size: 18),
             label: Text(appLocalizations.whitelistQueryPo0),
           ),
         FilledButton.icon(
@@ -169,7 +169,7 @@ class _OverviewPanel extends ConsumerWidget {
                   }
                 }
               : null,
-          icon: const Icon(Icons.bolt_rounded, size: 18),
+          icon: const AppIcon(Icons.bolt_rounded, size: 18),
           label: Text(appLocalizations.po0WhitelistNow),
         ),
       ],
@@ -337,7 +337,7 @@ class _StatusBadge extends StatelessWidget {
                         color: accent,
                       ),
                     )
-                  : Icon(icon, color: accent, size: 30),
+                  : AppIcon(icon, color: accent, size: 30),
             ),
           ),
         );
@@ -520,7 +520,7 @@ class _PollIntervalTile extends ConsumerWidget {
               ],
             ),
           ),
-          Icon(
+          AppIcon(
             Icons.edit_rounded,
             size: 18,
             color: context.colorScheme.onSurfaceVariant,
@@ -702,7 +702,7 @@ class _TokensSection extends ConsumerWidget {
           appLocalizations.po0Tokens,
           trailing: TextButton.icon(
             onPressed: () => _edit(ref),
-            icon: const Icon(Icons.add_rounded, size: 18),
+            icon: const AppIcon(Icons.add_rounded, size: 18),
             label: Text(appLocalizations.po0AddToken),
           ),
           padding: const EdgeInsets.fromLTRB(6, 16, 0, 6),
@@ -807,12 +807,12 @@ class _TokenEntryItem extends StatelessWidget {
           IconButton(
             tooltip: appLocalizations.edit,
             onPressed: onEdit,
-            icon: const Icon(Icons.edit_outlined),
+            icon: const AppIcon(Icons.edit_outlined),
           ),
           IconButton(
             tooltip: appLocalizations.delete,
             onPressed: onDelete,
-            icon: const Icon(Icons.delete_outline_rounded),
+            icon: const AppIcon(Icons.delete_outline_rounded),
           ),
         ],
       ),
@@ -1159,7 +1159,7 @@ class _DirectTip extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.info_outline_rounded, size: 16, color: color),
+          AppIcon(Icons.info_outline_rounded, size: 16, color: color),
           const SizedBox(width: 8),
           Expanded(
             child: Text(

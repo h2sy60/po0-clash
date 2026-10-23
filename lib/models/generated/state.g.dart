@@ -19,6 +19,7 @@ _SharedState _$SharedStateFromJson(Map<String, dynamic> json) => _SharedState(
   stopText: json['stopText'] as String,
   onlyStatisticsProxy: json['onlyStatisticsProxy'] as bool,
   showStopAction: json['showStopAction'] as bool? ?? true,
+  whitelistEnabled: json['whitelistEnabled'] as bool? ?? false,
   crashlytics: json['crashlytics'] as bool,
 );
 
@@ -32,5 +33,6 @@ Map<String, dynamic> _$SharedStateToJson(_SharedState instance) =>
       'stopText': instance.stopText,
       'onlyStatisticsProxy': instance.onlyStatisticsProxy,
       'showStopAction': instance.showStopAction,
+      'whitelistEnabled': instance.whitelistEnabled,
       'crashlytics': instance.crashlytics,
     };

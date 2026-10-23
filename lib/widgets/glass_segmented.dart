@@ -21,50 +21,87 @@ class GlassSegmented<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
+    if (values.isEmpty) return const SizedBox.shrink();
+    final scheme = Theme.of(context).colorScheme;
+    final index = values.indexOf(selected);
+    final duration = MediaQuery.disableAnimationsOf(context)
+        ? Duration.zero
+        : Durations.medium1;
+    return Container(
       height: height,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surfaceContainer,
-          borderRadius: AppRadius.medium,
-        ),
-        child: SegmentedButton<T>(
-          segments: [
-            for (final value in values)
-              ButtonSegment(
-                value: value,
-                label: Text(
-                  labelOf(value),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                icon: iconOf == null ? null : Icon(iconOf!(value), size: 18),
+      padding: const EdgeInsets.all(4),
+      decoration: ShapeDecoration(
+        color: scheme.brightness == Brightness.dark
+            ? scheme.surfaceContainerHigh
+            : scheme.surfaceContainer,
+        shape: AppShape.full,
+      ),
+      child: Stack(
+        children: [
+          if (index >= 0)
+            AnimatedAlign(
+              duration: duration,
+              curve: Easing.standardDecelerate,
+              alignment: AlignmentDirectional(
+                values.length == 1 ? 0 : index * 2 / (values.length - 1) - 1,
+                0,
               ),
-          ],
-          selected: {selected},
-          onSelectionChanged: (selection) {
-            if (selection.single != selected) onChanged(selection.single);
-          },
-          showSelectedIcon: false,
-          expandedInsets: EdgeInsets.zero,
-          style: ButtonStyle(
-            side: const WidgetStatePropertyAll(BorderSide.none),
-            shape: const WidgetStatePropertyAll(AppShape.medium),
-            backgroundColor: WidgetStateProperty.resolveWith(
-              (states) => states.contains(WidgetState.selected)
-                  ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)
-                  : Colors.transparent,
+              child: FractionallySizedBox(
+                widthFactor: 1 / values.length,
+                heightFactor: 1,
+                child: DecoratedBox(
+                  decoration: ShapeDecoration(
+                    color: scheme.primary,
+                    shape: AppShape.full,
+                  ),
+                ),
+              ),
             ),
-            foregroundColor: WidgetStateProperty.resolveWith(
-              (states) => states.contains(WidgetState.selected)
-                  ? Theme.of(context).colorScheme.primary
-                  : Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-            visualDensity: VisualDensity.standard,
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            minimumSize: WidgetStatePropertyAll(Size(0, height)),
+          Row(
+            children: [
+              for (final value in values)
+                Expanded(
+                  child: Semantics(
+                    selected: value == selected,
+                    child: TextButton(
+                      onPressed: () {
+                        if (value != selected) onChanged(value);
+                      },
+                      style: TextButton.styleFrom(
+                        foregroundColor: value == selected
+                            ? scheme.onPrimary
+                            : scheme.onSurfaceVariant,
+                        padding: const EdgeInsets.symmetric(horizontal: 6),
+                        minimumSize: Size(0, height - 8),
+                        shape: AppShape.full,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        textStyle: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          if (iconOf != null) ...[
+                            Icon(iconOf!(value), size: 18),
+                            const SizedBox(width: 6),
+                          ],
+                          Flexible(
+                            child: Text(
+                              labelOf(value),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+            ],
           ),
-        ),
+        ],
       ),
     );
   }

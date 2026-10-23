@@ -16,6 +16,19 @@ class SharedStateTest {
     private val gson = Gson()
 
     @Test
+    fun `old shared state keeps the whitelist migration path available`() {
+        assertNull(gson.fromJson("{}", SharedState::class.java).whitelistEnabled)
+    }
+
+    @Test
+    fun `the saved whitelist master switch crosses the Flutter boundary`() {
+        val enabled = gson.fromJson("""{"whitelistEnabled":true}""", SharedState::class.java)
+        val disabled = gson.fromJson("""{"whitelistEnabled":false}""", SharedState::class.java)
+        assertEquals(true, enabled.whitelistEnabled)
+        assertEquals(false, disabled.whitelistEnabled)
+    }
+
+    @Test
     fun `setup params use the kebab-case spelling Flutter writes`() {
         val json = """{"test-url":"https://example.test/204","selected-map":{"GLOBAL":"auto"}}"""
 

@@ -9,6 +9,40 @@ git checkout -b chore/sync-upstream main
 git merge upstream/main
 ```
 
+## 前端基准
+
+2026-10-24 的前端同步以最新稳定版 **v0.9.1**（`8d4f9744948751f1273fe871e1d05276fac09b0e`）为基准，
+不合并上游内核、平台生命周期或应用身份。上游的 `lib/ui/` 在本分支保留现有目录接口：
+
+| 上游实现 | 本分支位置 / 适配 |
+|---|---|
+| `ui/shape.dart`、`ui/typography.dart` | `lib/common/shape.dart`、`typography.dart`；兼容旧圆角名称 |
+| `ui/icons/` | `lib/widgets/glyphs/`；`AppIcon` 将已有 Material 图标参数映射到上游 glyph |
+| `ui/selection_mark.dart` | `lib/widgets/selection_badge.dart`；代理实际选中与固定偏好分别展示 |
+| `views/proxies/group_tabs.dart` | 同路径；复用现有弹出菜单，`lib/widgets/text.dart` 同步 emoji 字体测量 |
+| `ui/surface.dart`、主题与首页卡片 | `lib/common/upstream_color.dart`、`lib/widgets/upstream_surface.dart`、`lib/views/dashboard/` |
+| 连接 / 请求表格 | `lib/features/connection/tracker_info_table.dart`，接现有 `TrackerInfo`，保留窄屏列表 |
+| 上游没有的页面 | `lib/views/po0_firewall.dart`、`lib/views/profiles/nodes.dart`，复用同一视觉组件 |
+
+新增前端接线还涉及 `lib/widgets/button.dart`（图标参数接受 Widget）、`lib/widgets/scaffold.dart`、
+`lib/features/connection/connection.dart`、`lib/views/connection/{connections,requests}.dart`、
+`lib/views/proxies/{card,tab,proxies}.dart`、`lib/views/profiles/{add,profiles}.dart`、`lib/views/theme.dart` 和 `lib/views/tools.dart`。
+`pubspec.yaml` 将 glyph 路径解析所需的 `path_parsing` 声明为直接依赖；它之前已在锁文件中作为传递依赖存在。
+首页还同步了上游的 `layout.dart`、`style.dart`、`widgets/{card,current_outbound,traffic,outbound_mode,network_takeover,intranet_ip}.dart`，
+`lib/widgets/{traffic_chart,elastic_press}.dart` 与上游颜色生成器；数据适配集中在 `lib/views/dashboard/widgets/summaries.dart`。
+`lib/models/ip_quality.dart`、`lib/providers/ip_quality.dart`、`lib/common/ip_quality.dart` 与对应测试沿用上游查询实现。
+
+Android 快捷启动接线涉及 `android/app/.../{QuickActionActivity,MainActivity,ServiceState,ServiceStateHost,Ext}.kt`、
+`plugins/AppPlugin.kt`、`models/State.kt`，以及 `lib/{bootstrap,plugins/app}.dart`、`lib/models/state.dart`、
+`lib/providers/state/system.dart`、`lib/providers/actions/setup.dart`。保留 `ServiceState` 的原生意图仲裁；引擎就绪门控只决定命令接收方。
+旧版共享状态缺少加白标志时，仅从保存的总开关迁移，不复制或记录 token。
+Android 图标升级兼容由 `LauncherBranding.kt`、`LauncherUpdateReceiver.kt`、`FlClashApplication.kt` 与
+`res/values/launcher.xml` 接线：独立资源入口、`roundIcon`、包替换及首次启动刷新、已固定快捷方式更新；
+`TileService.kt` 显式同步当前单色图标。保持 `MainActivity` 组件名不变，刷新时只在默认 / 显式启用状态之间切换，不禁用启动器。
+
+
+界面与保留的性能约定见 [前端界面](../features/glass-ui.md)。
+
 ## 冲突热点
 
 本分支对上游文件的改动刻意保持在少量「接线」位置，合并时重点检查：

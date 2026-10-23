@@ -68,7 +68,7 @@ void main() {
   tearDown(() => container.dispose());
 
   Future<void> pumpConnections(WidgetTester tester) async {
-    tester.view.physicalSize = const Size(1400, 1000);
+    tester.view.physicalSize = const Size(800, 1000);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);

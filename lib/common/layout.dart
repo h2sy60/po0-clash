@@ -5,6 +5,8 @@ import 'package:fl_clash/enum/enum.dart';
 
 import 'constant.dart';
 
+const pageToolbarHeight = 72.0;
+
 double getWindowHeaderHeight({required bool isDesktop, required bool isMacOS}) {
   if (!isDesktop) return 0;
   return isMacOS ? 28 : 32;

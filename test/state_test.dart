@@ -1,4 +1,5 @@
 import 'package:fl_clash/common/constant.dart';
+import 'package:fl_clash/common/app_theme.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -34,19 +35,11 @@ void main() {
 
     expect(
       container.read(genColorSchemeProvider(Brightness.light)),
-      ColorScheme.fromSeed(
-        seedColor: lightSeed,
-        brightness: Brightness.light,
-        dynamicSchemeVariant: variant,
-      ),
+      seededColorScheme(lightSeed, Brightness.light, variant),
     );
     expect(
       container.read(genColorSchemeProvider(Brightness.dark)),
-      ColorScheme.fromSeed(
-        seedColor: darkSeed,
-        brightness: Brightness.dark,
-        dynamicSchemeVariant: variant,
-      ),
+      seededColorScheme(darkSeed, Brightness.dark, variant),
     );
   });
 
@@ -60,12 +53,10 @@ void main() {
 
     expect(
       container.read(genColorSchemeProvider(Brightness.light)),
-      ColorScheme.fromSeed(
-        seedColor: accent,
-        brightness: Brightness.light,
-        dynamicSchemeVariant: container
-            .read(themeSettingProvider)
-            .schemeVariant,
+      seededColorScheme(
+        accent,
+        Brightness.light,
+        container.read(themeSettingProvider).schemeVariant,
       ),
     );
   });

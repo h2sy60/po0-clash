@@ -14,6 +14,7 @@ typedef AppBarSearchStateBuilder =
     AppBarSearchState? Function(AppBarSearchState? state);
 
 class CommonScaffold extends StatefulWidget {
+  static const toolbarHeight = pageToolbarHeight;
   final AppBar? appBar;
   final Widget body;
   final Color? backgroundColor;
@@ -93,10 +94,10 @@ class CommonScaffoldState extends State<CommonScaffold> {
     return Theme(
       data: theme.copyWith(
         appBarTheme: theme.appBarTheme.copyWith(
-          backgroundColor: colorScheme.brightness == Brightness.dark
-              ? Colors.grey[900]
-              : Colors.white,
-          iconTheme: theme.primaryIconTheme.copyWith(color: Colors.grey),
+          backgroundColor: context.glass.card,
+          iconTheme: theme.primaryIconTheme.copyWith(
+            color: colorScheme.onSurfaceVariant,
+          ),
           titleTextStyle: theme.textTheme.titleLarge,
           toolbarTextStyle: theme.textTheme.bodyMedium,
         ),
@@ -267,7 +268,6 @@ class CommonScaffoldState extends State<CommonScaffold> {
     ]);
   }
 
-  /// Toolbar actions share one glass capsule, as Liquid Glass toolbars do.
   List<Widget> _toolbarGroup(List<Widget> actions) {
     if (actions.isEmpty) {
       return const [];
@@ -305,7 +305,7 @@ class CommonScaffoldState extends State<CommonScaffold> {
 
   PreferredSizeWidget _buildAppBar(VoidCallback? backAction) {
     return PreferredSize(
-      preferredSize: const Size.fromHeight(kToolbarHeight),
+      preferredSize: const Size.fromHeight(CommonScaffold.toolbarHeight),
       child: Stack(
         alignment: Alignment.bottomCenter,
         children: [
@@ -315,6 +315,7 @@ class CommonScaffoldState extends State<CommonScaffold> {
                 builder: (_, state, _) {
                   return _buildAppBarWrap(
                     AppBar(
+                      toolbarHeight: CommonScaffold.toolbarHeight,
                       automaticallyImplyLeading: backAction != null
                           ? false
                           : true,
@@ -442,8 +443,6 @@ class CommonScaffoldState extends State<CommonScaffold> {
   }
 }
 
-/// Sizes icon and filled buttons to the platform's icon button height, so a
-/// mix of them lines up inside the toolbar capsule.
 class _ToolbarButtonTheme extends StatelessWidget {
   const _ToolbarButtonTheme({required this.child});
 

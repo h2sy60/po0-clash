@@ -33,6 +33,14 @@ val Application.sharedState: SharedState
         SharedState()
     }
 
+val Application.whitelistEnabled: Boolean
+    get() = sharedState.whitelistEnabled ?: try {
+        val preferences = getSharedPreferences("FlutterSharedPreferences", MODE_PRIVATE)
+        legacyWhitelistEnabled(preferences.getString("flutter.config", null))
+    } catch (_: Exception) {
+        false
+    }
+
 private var lastToast: Toast? = null
 
 fun Application.showToast(text: String?) {

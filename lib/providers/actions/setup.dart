@@ -133,8 +133,11 @@ class SetupAction extends _$SetupAction {
   }
 
   Future<void> _updateStartTime() async {
-    _startTime = await service?.getRunTime();
+    _startTime = await readServiceStartTime();
   }
+
+  @protected
+  Future<DateTime?> readServiceStartTime() async => service?.getRunTime();
 
   Future<void> initStatus() async {
     if (!globalState.needInitStatus) {
@@ -151,6 +154,14 @@ class SetupAction extends _$SetupAction {
     } else {
       await globalState.safeRun(() => applyProfile(force: true));
     }
+  }
+
+  Future<void> attachQuickActionSession() async {
+    await _updateStartTime();
+    _setLocalRunning(_startTime != null);
+    await applyProfile(force: true);
+    await _updateStartTime();
+    _setLocalRunning(_startTime != null);
   }
 
   Future<bool> setRunning(bool running, {bool initialize = false}) {
