@@ -140,6 +140,34 @@ void main() {
 
   tearDown(() => container.dispose());
 
+  testWidgets('focus refreshes preserve the scheduled ggy interval', (
+    tester,
+  ) async {
+    createContainer(_ggyOnly);
+    ggy.start();
+    await tester.pump();
+    expect(client.polled.length, 1);
+    for (var index = 0; index < 20; index++) {
+      ggy.pollIfDue();
+    }
+    await tester.pump(const Duration(seconds: 10));
+    expect(client.polled.length, 1);
+    await tester.pump(const Duration(seconds: 1));
+    expect(client.polled.length, 2);
+    disposeInTest();
+  });
+
+  test('focus refreshes do not queue behind an in-flight poll', () async {
+    createContainer(_enabled);
+    client.gate = Completer<void>();
+    notifier.start();
+    notifier.pollIfDue();
+    notifier.pollIfDue();
+    client.gate!.complete();
+    await settle();
+    expect(client.polled, _tokens);
+  });
+
   test('start polls every token and adds nothing that is listed', () async {
     createContainer(_enabled);
     notifier.start();

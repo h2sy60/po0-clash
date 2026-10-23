@@ -106,7 +106,7 @@
   "project": "プロジェクト",
   "core": "コア",
   "tabAnimation": "タブアニメーション",
-  "desc": "ClashMetaベースのマルチプラットフォーム対応プロキシクライアント。シンプルで使いやすく、オープンソースで広告もありません。",
+  "desc": "po0-clash は ClashMeta ベースのマルチプラットフォーム対応プロキシクライアントです。po0 / ggy のホワイトリスト自動登録、共有リンクからのノード追加、サブスクリプション管理に対応しています。",
   "startVpn": "VPNを起動しています...",
   "stopVpn": "VPNを停止しています...",
   "compatible": "互換モード",
@@ -463,8 +463,8 @@
   "selectProxies": "プロキシを選択",
   "inputProxyGroupName": "プロキシグループ名を入力してください",
   "helperCorruptTip": "Helper サービスが利用できないため、TUN モードを有効にできません。po0-clash を再インストールしてください。",
-  "coreBlockedByPolicyTip": "Windows が Po0ClashCore.exe の実行を拒否しました（エラー {code}）。スマート アプリ コントロールや AppLocker などのアプリ制御ポリシーは未署名のプログラムをブロックします。ポリシーで po0-clash を許可するか、ポリシーを無効にしてから再試行してください。",
-  "coreBlockedBySmartAppControlTip": "Windows のスマート アプリ コントロールが、署名されていない Po0ClashCore.exe をブロックしました。Windows セキュリティ → アプリとブラウザーの制御 → スマート アプリ コントロールの設定で「オフ」を選び、po0-clash を再起動してください。一度オフにすると、Windows を再インストールしない限り再度オンにはできません。",
+  "coreBlockedByPolicyTip": "アプリケーション制御ポリシーが Po0ClashCore.exe の実行をブロックしました（エラー {code}）。デバイス管理者に AppLocker またはアプリケーション制御のログとポリシー要件の確認を依頼してください。",
+  "coreBlockedBySmartAppControlTip": "Windows が Po0ClashCore.exe のデジタル署名を検証できませんでした（エラー {code}）。このデバイスではスマート アプリ コントロールが有効で、自己署名版が拒否される場合があります。CodeIntegrity イベントログでブロックしたポリシーを確認してください。",
   "hideFromList": "リストから隠す",
   "testWhenUsed": "使用時にテスト",
   "disableUDP": "UDPを無効化",
@@ -684,5 +684,10 @@
   "nodeName": "ノード名",
   "nodeNameDuplicate": "同じ名前のノードまたはプロキシグループがあります",
   "rename": "名前を変更",
-  "node": "ノード"
+  "node": "ノード",
+  "openSourceCredits": "オープンソースへの謝辞",
+  "upstreamProject": "派生元のクライアント",
+  "upstreamContributors": "派生元の貢献者",
+  "coreBlockedByAntivirusTip": "セキュリティソフトが Po0ClashCore.exe をウイルスまたは望ましくない可能性のあるソフトウェアとして検出しました（エラー {code}）。Windows セキュリティ → 保護の履歴で検出名を確認し、po0-clash プロジェクトに報告してください。",
+  "coreSignatureInvalidTip": "Windows が Po0ClashCore.exe のデジタル署名を検証できませんでした（エラー {code}）。リリースのチェックサムと証明書の指紋を照合し、CodeIntegrity イベントログで署名エラーまたはデバイスポリシーを確認してください。"
 }

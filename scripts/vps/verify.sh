@@ -3,7 +3,12 @@
 # Extra arguments are passed to `flutter test`.
 set -euo pipefail
 
-source /etc/profile.d/flclash-toolchain.sh
+if [[ -f /etc/profile.d/flclash-toolchain.sh ]]; then
+  source /etc/profile.d/flclash-toolchain.sh
+fi
+if [[ -x /opt/toolchains/flutter/bin/flutter ]]; then
+  export PATH="/opt/toolchains/flutter/bin:/opt/toolchains/go/bin:$PATH"
+fi
 cd "$(dirname "$0")/../.."
 
 backup="$(mktemp)"

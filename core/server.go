@@ -26,8 +26,9 @@ var (
 )
 
 const (
-	maxIPCFrameSize = 64 * 1024 * 1024
-	ipcWriteTimeout = 10 * time.Second
+	maxIPCFrameSize         = 64 * 1024 * 1024
+	maxRetainedIPCFrameSize = 256 * 1024
+	ipcWriteTimeout         = 10 * time.Second
 )
 
 var deliveryFailureReported atomic.Bool
@@ -124,15 +125,31 @@ func writeAll(w io.Writer, data []byte) (int, error) {
 }
 
 func readFrame(r io.Reader) ([]byte, error) {
-	lenBuf := make([]byte, 4)
-	if _, err := io.ReadFull(r, lenBuf); err != nil {
+	return new(ipcFrameReader).read(r)
+}
+
+type ipcFrameReader struct {
+	header [4]byte
+	buffer []byte
+}
+
+func (reader *ipcFrameReader) read(r io.Reader) ([]byte, error) {
+	if _, err := io.ReadFull(r, reader.header[:]); err != nil {
 		return nil, err
 	}
-	length := binary.LittleEndian.Uint32(lenBuf)
+	length := binary.LittleEndian.Uint32(reader.header[:])
 	if length > maxIPCFrameSize {
 		return nil, fmt.Errorf("IPC frame exceeds %d bytes", maxIPCFrameSize)
 	}
-	data := make([]byte, int(length))
+	var data []byte
+	if length > maxRetainedIPCFrameSize {
+		data = make([]byte, int(length))
+	} else {
+		if cap(reader.buffer) < int(length) {
+			reader.buffer = make([]byte, int(length))
+		}
+		data = reader.buffer[:int(length)]
+	}
 	if _, err := io.ReadFull(r, data); err != nil {
 		return nil, err
 	}
@@ -197,8 +214,9 @@ func serve(dialed ipcConn) {
 	deliveryFailureReported.Store(false)
 	connMu.Unlock()
 
+	reader := ipcFrameReader{}
 	for {
-		data, err := readFrame(dialed)
+		data, err := reader.read(dialed)
 		if err != nil {
 			if err != io.EOF {
 				logError("server read error: %v", err)
@@ -207,6 +225,7 @@ func serve(dialed ipcConn) {
 		}
 
 		call := &MethodCall{}
+		// RawMessage copies arguments before the receive buffer is reused.
 		if err := json.Unmarshal(data, call); err != nil {
 			logError("server unmarshal error: %v (data: %q)", err, data)
 			continue

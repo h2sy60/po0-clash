@@ -1,7 +1,7 @@
 # po0-clash 文档
 
 本仓库是 [chen08209/FlClash](https://github.com/chen08209/FlClash) 的二次开发版本，在原版基础上内置
-[po0fw](https://github.com/w0ven/po0fw) 的 po0 防火墙自动加白，三端统一使用苹果液态玻璃风格的界面。
+[po0fw](https://github.com/w0ven/po0fw) 的 po0 防火墙自动加白，各平台统一使用由 Material 组件实现的简洁界面。
 po0-clash 以独立应用的身份发布，可与官方 FlClash 同时安装（见 [ADR 0006](adr/0006-standalone-app-identity.md)）。
 
 上游自带的开发规范（代码风格、测试、生成代码、提交规范）仍然有效，见根目录 [AGENTS.md](../AGENTS.md) 与 [.agents/](../.agents/)。
@@ -15,7 +15,7 @@ po0-clash 以独立应用的身份发布，可与官方 FlClash 同时安装（�
 | [install.md](install.md) | 用户安装说明（Windows 安装包 / macOS 终端安装 / Android APK） |
 | [features/po0-firewall.md](features/po0-firewall.md) | 加白（po0 / ggy 自动加白）：统一入口、总开关迁移、行为与直连路由设计 |
 | [features/share-link-nodes.md](features/share-link-nodes.md) | 分享链接导入节点：「手动节点」配置、模板生成、节点管理 |
-| [features/glass-ui.md](features/glass-ui.md) | 三端统一的液态玻璃界面：设计令牌、玻璃组件、操作结构与图标 |
+| [features/glass-ui.md](features/glass-ui.md) | 统一简洁界面：表面、导航、按需刷新与图标 |
 | [development/build.md](development/build.md) | 构建：VPS（校验）、GitHub Actions（Android / Windows / macOS 发版）、签名、本地开发 |
 | [development/release.md](development/release.md) | 发版流程、版本号与产物命名 |
 | [development/upstream-sync.md](development/upstream-sync.md) | 如何合并上游 FlClash 更新 |

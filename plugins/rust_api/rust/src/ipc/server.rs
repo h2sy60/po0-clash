@@ -3,14 +3,15 @@ use super::frame::{
     TYPE_READY,
 };
 use super::platform;
-use super::queue::{enqueue_message, MessageSender, MAX_PENDING_MESSAGES, SEND_QUEUE_TIMEOUT};
+use super::queue::{
+    enqueue_message, write_messages, MessageSender, MAX_PENDING_MESSAGES, SEND_QUEUE_TIMEOUT,
+};
 use crate::frb_generated::StreamSink;
 use flutter_rust_bridge::for_generated::SseCodec;
 use interprocess::local_socket::prelude::*;
 use interprocess::local_socket::{GenericFilePath, ListenerNonblockingMode, ListenerOptions};
 use std::io;
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::mpsc;
 use std::sync::{Arc, Mutex};
 use std::thread;
 
@@ -45,7 +46,9 @@ fn stop_server_thread() -> Result<(), String> {
     RUNNING.store(false, Ordering::SeqCst);
     let handle = {
         let mut state = STATE.lock().map_err(|e| format!("Lock poisoned: {e}"))?;
-        state.sender = None;
+        if let Some(sender) = state.sender.take() {
+            sender.close();
+        }
         state.handle.take()
     };
     if let Some(handle) = handle {
@@ -104,7 +107,9 @@ fn report_error(sink: &StreamSink<Vec<u8>, SseCodec>, message: impl AsRef<str>) 
 fn finish_server(name: &str) {
     RUNNING.store(false, Ordering::SeqCst);
     if let Ok(mut state) = STATE.lock() {
-        state.sender = None;
+        if let Some(sender) = state.sender.take() {
+            sender.close();
+        }
     }
     if let Err(e) = platform::cleanup_socket(name) {
         ipc_debug!("[IPC] cleanup socket failed: {e}");
@@ -202,28 +207,16 @@ fn io_loop(name: String, sink: StreamSink<Vec<u8>, SseCodec>) {
         let connection_running = Arc::new(AtomicBool::new(true));
         let writer_running = Arc::clone(&connection_running);
         let writer = thread::spawn(move || {
-            let mut error = None;
             let is_running = || writer_running.load(Ordering::SeqCst) && server_active();
-            while is_running() {
-                match rx.recv_timeout(IO_POLL_INTERVAL) {
-                    Ok(data) => {
-                        pending_bytes.fetch_sub(data.len(), Ordering::SeqCst);
-                        if let Err(e) = frame::write_frame(&mut sender, &data, &is_running) {
-                            if e.kind() != io::ErrorKind::Interrupted {
-                                error = Some(format!("write error: {e}"));
-                            }
-                            break;
-                        }
-                    }
-                    Err(mpsc::RecvTimeoutError::Timeout) => continue,
-                    Err(mpsc::RecvTimeoutError::Disconnected) => break,
-                }
-            }
+            let result = write_messages(&mut sender, &rx, &pending_bytes, &is_running);
             writer_running.store(false, Ordering::SeqCst);
-            error
+            result
+                .err()
+                .filter(|error| error.kind() != io::ErrorKind::Interrupted)
+                .map(|error| format!("write error: {error}"))
         });
 
-        let mut frame_reader = FrameReader::default();
+        let mut frame_reader = FrameReader::with_prefix(TYPE_DATA);
         while connection_running.load(Ordering::SeqCst) && server_active() {
             #[cfg(windows)]
             let poll_result = frame_reader.poll(&mut platform::PipeReader {
@@ -234,7 +227,7 @@ fn io_loop(name: String, sink: StreamSink<Vec<u8>, SseCodec>) {
 
             match poll_result {
                 Ok(Some(data)) => {
-                    if sink.add(frame::make_frame(TYPE_DATA, &data)).is_err() {
+                    if sink.add(data).is_err() {
                         break;
                     }
                 }
@@ -251,7 +244,9 @@ fn io_loop(name: String, sink: StreamSink<Vec<u8>, SseCodec>) {
 
         connection_running.store(false, Ordering::SeqCst);
         if let Ok(mut state) = STATE.lock() {
-            state.sender = None;
+            if let Some(sender) = state.sender.take() {
+                sender.close();
+            }
         }
         if let Ok(Some(message)) = writer.join() {
             report_error(&sink, message);

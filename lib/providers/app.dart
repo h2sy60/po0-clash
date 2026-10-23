@@ -152,6 +152,12 @@ class RunTime extends _$RunTime with AutoDisposeNotifierMixin {
 }
 
 @Riverpod(keepAlive: true)
+class UiVisible extends _$UiVisible with AutoDisposeNotifierMixin {
+  @override
+  bool build() => true;
+}
+
+@Riverpod(keepAlive: true)
 class ViewSize extends _$ViewSize with AutoDisposeNotifierMixin {
   @override
   Size build() {

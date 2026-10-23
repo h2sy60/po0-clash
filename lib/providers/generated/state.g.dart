@@ -130,7 +130,7 @@ final class TrayTitleStateProvider
   }
 }
 
-String _$trayTitleStateHash() => r'aacf3779c879f7f1144484a80043679020bf8424';
+String _$trayTitleStateHash() => r'aacef4ae3642d8368b252bfb24e3de288849619e';
 
 @ProviderFor(vpnState)
 final vpnStateProvider = VpnStateProvider._();
@@ -1351,7 +1351,7 @@ final class CurrentGroupsStateProvider
 }
 
 String _$currentGroupsStateHash() =>
-    r'dbf8f02606a31486c99d7b89d19914cd5a1fc496';
+    r'9c0cb38afaeaa8d3665dcfecee7dca2756c15251';
 
 @ProviderFor(proxyState)
 final proxyStateProvider = ProxyStateProvider._();

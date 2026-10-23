@@ -62,6 +62,34 @@ void main() {
     expect(container.read(currentGroupsStateProvider).value, isEmpty);
   });
 
+  test('group normalization reuses unchanged proxy objects', () {
+    const clean = Proxy(name: 'Clean', type: 'Direct');
+    const selected = Proxy(name: 'Selected', type: 'Selector', now: 'runtime');
+    const cleanGroup = Group(
+      name: 'Clean group',
+      type: GroupType.Selector,
+      hidden: false,
+      all: [clean],
+    );
+    const selectedGroup = Group(
+      name: 'Selected group',
+      type: GroupType.Selector,
+      hidden: false,
+      now: 'runtime',
+      all: [clean, selected],
+    );
+    container.read(groupsProvider.notifier).value = [cleanGroup, selectedGroup];
+    container
+        .read(patchClashConfigProvider.notifier)
+        .update((state) => state.copyWith(mode: Mode.rule));
+    final groups = container.read(currentGroupsStateProvider).value;
+    expect(identical(groups.first, cleanGroup), isTrue);
+    expect(identical(groups.last.all.first, clean), isTrue);
+    expect(groups.last.now, isEmpty);
+    expect(groups.last.all.last.now, isEmpty);
+    expect(selected.now, 'runtime');
+  });
+
   test('navigation providers select items for width and current page', () {
     Iterable<PageLabel> labels() => container
         .read(currentNavigationItemsStateProvider)
@@ -92,7 +120,7 @@ void main() {
     container
         .read(viewSizeProvider.notifier)
         .update((_) => const Size(1200, 800));
-    expect(labels(), isNot(contains(PageLabel.dashboard)));
+    expect(labels(), contains(PageLabel.dashboard));
     container
         .read(currentPageLabelProvider.notifier)
         .toPage(PageLabel.activity);

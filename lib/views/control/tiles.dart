@@ -14,19 +14,12 @@ import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-const _tilePadding = EdgeInsets.all(16);
+const _tilePadding = EdgeInsets.all(24);
 
 class _TileHeader extends StatelessWidget {
-  const _TileHeader({
-    required this.icon,
-    required this.label,
-    this.color,
-    this.trailing,
-  });
+  const _TileHeader({required this.label, this.trailing});
 
-  final IconData icon;
   final String label;
-  final Color? color;
   final Widget? trailing;
 
   @override
@@ -34,14 +27,12 @@ class _TileHeader extends StatelessWidget {
     final trailing = this.trailing;
     return Row(
       children: [
-        Icon(icon, size: 18, color: color ?? context.glass.secondaryLabel),
-        const SizedBox(width: 8),
         Expanded(
           child: EmojiText(
             label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: context.textTheme.labelLarge?.copyWith(
+            style: context.textTheme.bodyMedium?.copyWith(
               color: context.colorScheme.onSurfaceVariant,
             ),
           ),
@@ -110,7 +101,6 @@ class CurrentNodeCard extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _TileHeader(
-            icon: Icons.hub_rounded,
             label: group == null || mode == Mode.direct
                 ? appLocalizations.currentProxy
                 : group.name,
@@ -123,7 +113,10 @@ class CurrentNodeCard extends ConsumerWidget {
             title,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: context.textTheme.titleMedium,
+            style: context.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w600,
+              letterSpacing: -0.4,
+            ),
           ),
         ],
       ),
@@ -178,11 +171,8 @@ class TrafficCard extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _TileHeader(
-              icon: Icons.speed_rounded,
-              label: appLocalizations.networkSpeed,
-            ),
-            const SizedBox(height: 14),
+            _TileHeader(label: appLocalizations.networkSpeed),
+            const SizedBox(height: 24),
             Row(
               children: [
                 Expanded(
@@ -196,26 +186,27 @@ class TrafficCard extends ConsumerWidget {
                   child: _SpeedValue(
                     icon: Icons.south_rounded,
                     value: last.down,
-                    color: context.toneColor(GlassTone.teal),
+                    color: colorScheme.primary,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 24),
             SizedBox(
-              height: 56,
-              child: LineChart(
-                gradient: true,
-                color: colorScheme.primary,
-                points: [
-                  const Point(0, 0),
-                  const Point(1, 0),
-                  for (final (index, traffic) in traffics.indexed)
-                    Point(index + 2, traffic.speed.toDouble()),
-                ],
+              height: 60,
+              child: RepaintBoundary(
+                child: LineChart(
+                  color: colorScheme.primary,
+                  points: [
+                    const Point(0, 0),
+                    const Point(1, 0),
+                    for (final (index, traffic) in traffics.indexed)
+                      Point(index + 2, traffic.speed.toDouble()),
+                  ],
+                ),
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 20),
             Text(
               '${appLocalizations.trafficUsage}  ${total.desc}',
               maxLines: 1,
@@ -253,7 +244,9 @@ class _SpeedValue extends StatelessWidget {
           child: Text.rich(
             TextSpan(
               text: show.value,
-              style: context.textTheme.titleLarge?.copyWith(
+              style: context.textTheme.headlineMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+                letterSpacing: -0.8,
                 fontFeatures: const [FontFeature.tabularFigures()],
               ),
               children: [
@@ -283,7 +276,6 @@ class WhitelistStatusCard extends ConsumerWidget {
     final appLocalizations = context.appLocalizations;
     final summary = ref.watch(whitelistSummaryProvider);
     final overview = whitelistOverviewOf(appLocalizations, summary: summary);
-    final color = context.toneColor(overview.tone);
     final exit = whitelistSharedExitOf(summary);
     return GlassButton(
       padding: _tilePadding,
@@ -294,16 +286,21 @@ class WhitelistStatusCard extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _TileHeader(
-            icon: overview.icon,
             label: appLocalizations.whitelistNav,
-            color: color,
+            trailing: Icon(
+              Icons.chevron_right_rounded,
+              size: 18,
+              color: context.colorScheme.onSurfaceVariant,
+            ),
           ),
           const SizedBox(height: 12),
           Text(
             overview.title,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: context.textTheme.titleMedium,
+            style: context.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
           ),
           if (exit != null) ...[
             const SizedBox(height: 4),
@@ -338,15 +335,21 @@ class CurrentProfileCard extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _TileHeader(
-            icon: Icons.layers_rounded,
             label: appLocalizations.profile,
+            trailing: Icon(
+              Icons.chevron_right_rounded,
+              size: 18,
+              color: context.colorScheme.onSurfaceVariant,
+            ),
           ),
           const SizedBox(height: 12),
           Text(
             profile?.realLabel ?? appLocalizations.nullProfileDesc,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: context.textTheme.titleMedium,
+            style: context.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
           ),
           if (profile?.subscriptionInfo case final info?) ...[
             const SizedBox(height: 8),
@@ -394,6 +397,9 @@ class _QuickToggle extends StatelessWidget {
       height: _toggleHeight,
       child: GlassButton(
         selected: selected,
+        color: selected
+            ? colorScheme.primary.withValues(alpha: 0.08)
+            : colorScheme.surfaceContainer,
         rimColor: Colors.transparent,
         padding: const EdgeInsets.fromLTRB(12, 0, 6, 0),
         onTap: onTap,
@@ -432,8 +438,6 @@ class _QuickToggle extends StatelessWidget {
   }
 }
 
-/// The routing switches with the detected exit beside them: on desktop TUN
-/// and the system proxy exclude each other, on Android it is the VPN.
 class QuickToggles extends ConsumerWidget {
   const QuickToggles({super.key});
 
@@ -450,7 +454,7 @@ class QuickToggles extends ConsumerWidget {
     );
   }
 
-  static const _compactWidth = 480.0;
+  static const _compactWidth = 400.0;
 
   Widget _buildRow(
     BuildContext context,
@@ -499,7 +503,6 @@ class QuickToggles extends ConsumerWidget {
           onTap: () => systemAction.useRoute(DesktopRoute.systemProxy),
         ),
       ],
-      const IpDetectionChip(),
     ];
     return Row(
       children: [
@@ -512,7 +515,6 @@ class QuickToggles extends ConsumerWidget {
   }
 }
 
-/// The desktop route as one two-way switch, for the sidebar.
 class DesktopRouteSwitch extends ConsumerWidget {
   const DesktopRouteSwitch({super.key, this.height = 40});
 
@@ -687,7 +689,7 @@ class NetworkCard extends ConsumerWidget {
     final localIp = ref.watch(localIpProvider);
     return _StatTile(
       icon: Icons.devices_rounded,
-      color: context.toneColor(GlassTone.success),
+      color: context.colorScheme.onSurfaceVariant,
       label: appLocalizations.intranetIP,
       value: Text(
         localIp == null
@@ -760,7 +762,7 @@ class _MemoryInfoState extends ConsumerState<MemoryInfo>
   Widget build(BuildContext context) {
     return _StatTile(
       icon: Icons.memory_rounded,
-      color: context.toneColor(GlassTone.warning),
+      color: context.colorScheme.onSurfaceVariant,
       label: context.appLocalizations.memoryInfo,
       onTap: _core.requestGc,
       value: ValueListenableBuilder(

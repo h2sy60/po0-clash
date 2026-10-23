@@ -8,6 +8,7 @@ import 'fingerprint.dart';
 import 'options.dart';
 import 'target.dart';
 import 'util.dart';
+import 'windows_signing.dart';
 
 final _log = Logger('rust_builder');
 
@@ -30,6 +31,9 @@ class RustBuilder {
   String get _outputPath => p.join(rootDir, config.outputDir);
 
   Future<BuildExecution> build(Target target, String coreSha256) async {
+    final signing = target.goos == 'windows'
+        ? WindowsSigning.load(rootDir)
+        : null;
     final triple = target.rustTriple;
     final args = [
       'build',
@@ -61,6 +65,7 @@ class RustBuilder {
         target: target,
         coreSha256: coreSha256,
         args: args,
+        signing: signing,
       ),
       primaryOutput: destPath,
       notice: notice,
@@ -75,7 +80,15 @@ class RustBuilder {
         );
 
         ensureDir(destDir);
-        copyFile(srcPath, destPath);
+        final staged = '$destPath.$pid.staging.exe';
+        try {
+          copyFile(srcPath, staged);
+          await signing?.sign(staged);
+          replaceFile(staged, destPath);
+        } finally {
+          final file = File(staged);
+          if (file.existsSync()) file.deleteSync();
+        }
 
         _log.info('Built: $destPath');
         return [destPath];
@@ -87,6 +100,7 @@ class RustBuilder {
     required Target target,
     required String coreSha256,
     required List<String> args,
+    required WindowsSigning? signing,
   }) async {
     final builder = FingerprintBuilder(rootDir: rootDir)
       ..addValue('cache_schema', BuildCache.schemaVersion)
@@ -110,6 +124,7 @@ class RustBuilder {
       _helperPath,
       excludedDirectories: const {'target', '.git', '.idea'},
     )..addAll(harnessInputs);
+    inputs.addAll(signing?.inputs ?? const []);
     builder.addFiles(inputs);
     return builder.finishWithInputs();
   }

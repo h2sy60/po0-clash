@@ -155,7 +155,9 @@ void main() {
 
     expect(find.byType(AboutView), findsOneWidget);
     expect(find.text('Telegram'), findsNothing);
-    expect(find.text('FlClash'), findsOneWidget);
+    expect(find.text('FlClash'), findsNothing);
+    expect(find.text('po0-clash'), findsOneWidget);
+    expect(find.textContaining('po0 and ggy'), findsOneWidget);
     expect(tester.takeException(), null);
 
     final scrollables = find.byType(Scrollable);

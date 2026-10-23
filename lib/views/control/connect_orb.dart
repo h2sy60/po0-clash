@@ -1,16 +1,11 @@
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/providers/providers.dart';
-import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// The one control that starts and stops the proxy: a round glass button
-/// that fills with the accent while running, labelled underneath.
 class ConnectOrb extends ConsumerWidget {
-  const ConnectOrb({super.key, this.size = 112});
-
-  final double size;
+  const ConnectOrb({super.key});
 
   void _handleTap(WidgetRef ref, bool hasProfile) {
     if (!hasProfile) {
@@ -27,79 +22,69 @@ class ConnectOrb extends ConsumerWidget {
     );
     final isStart = ref.watch(isStartProvider);
     final suspend = ref.watch(suspendProvider);
-    final appLocalizations = context.appLocalizations;
-    final colorScheme = context.colorScheme;
-    final glass = context.glass;
-    final active = isStart && !suspend;
-    final label = !hasProfile
-        ? appLocalizations.addProfile
-        : suspend
-        ? appLocalizations.suspended
+    final strings = context.appLocalizations;
+    final title = !hasProfile
+        ? strings.nullProfileDesc
         : isStart
-        ? appLocalizations.proxyOn
-        : appLocalizations.tapToConnect;
-    final duration = context.motionDuration(Durations.medium2);
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Semantics(
-          button: true,
-          toggled: isStart,
-          label: label,
-          child: SizedBox.square(
-            dimension: size,
-            child: TweenAnimationBuilder<double>(
-              tween: Tween(end: active ? 1 : 0),
-              duration: duration,
-              curve: Easing.standard,
-              builder: (_, t, _) => GlassButton(
-                circle: true,
-                kind: GlassKind.panel,
-                color: Color.lerp(glass.glass, colorScheme.primary, t),
-                onTap: () => _handleTap(ref, hasProfile),
-                child: Center(
-                  child: Icon(
-                    hasProfile
-                        ? Icons.power_settings_new_rounded
-                        : Icons.add_rounded,
-                    size: size * 0.4,
-                    color: Color.lerp(
-                      colorScheme.onSurface,
-                      colorScheme.onPrimary,
-                      t,
-                    ),
+        ? suspend
+              ? strings.suspended
+              : strings.proxyOn
+        : strings.tapToConnect;
+    final label = !hasProfile
+        ? strings.addProfile
+        : isStart
+        ? strings.stop
+        : strings.start;
+    return LayoutBuilder(
+      builder: (_, constraints) {
+        final compact = constraints.maxWidth < 560;
+        final status = Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: context.textTheme.headlineLarge?.copyWith(
+                fontSize: compact ? 32 : 42,
+                fontWeight: FontWeight.w600,
+                letterSpacing: -1,
+                height: 1.2,
+              ),
+            ),
+            if (isStart) ...[
+              const SizedBox(height: 12),
+              Consumer(
+                builder: (_, ref, _) => Text(
+                  getTimeText(ref.watch(runTimeProvider)),
+                  style: context.textTheme.bodyLarge?.copyWith(
+                    color: context.colorScheme.onSurfaceVariant,
+                    fontFeatures: const [FontFeature.tabularFigures()],
                   ),
                 ),
               ),
-            ),
+            ],
+          ],
+        );
+        final action = FilledButton(
+          onPressed: () => _handleTap(ref, hasProfile),
+          style: FilledButton.styleFrom(
+            minimumSize: const Size(112, 48),
+            textStyle: context.textTheme.bodyLarge,
           ),
-        ),
-        const SizedBox(height: 12),
-        FadeBox(
-          child: Text(
-            label,
-            key: ValueKey(label),
-            maxLines: 1,
-            style: context.textTheme.titleMedium,
-          ),
-        ),
-        Consumer(
-          builder: (_, ref, _) {
-            final runTime = ref.watch(runTimeProvider);
-            return AnimatedOpacity(
-              opacity: runTime == null ? 0 : 1,
-              duration: duration,
-              child: Text(
-                getTimeText(runTime),
-                style: context.textTheme.bodySmall?.copyWith(
-                  color: glass.secondaryLabel,
-                  fontFeatures: const [FontFeature.tabularFigures()],
-                ),
-              ),
-            );
-          },
-        ),
-      ],
+          child: Text(label),
+        );
+        return constraints.maxWidth < 280
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [status, const SizedBox(height: 24), action],
+              )
+            : Row(
+                children: [
+                  Expanded(child: status),
+                  SizedBox(width: compact ? 16 : 32),
+                  action,
+                ],
+              );
+      },
     );
   }
 }

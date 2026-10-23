@@ -581,6 +581,57 @@ abstract class _$RunTime extends $Notifier<int?> {
   }
 }
 
+@ProviderFor(UiVisible)
+final uiVisibleProvider = UiVisibleProvider._();
+
+final class UiVisibleProvider extends $NotifierProvider<UiVisible, bool> {
+  UiVisibleProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'uiVisibleProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$uiVisibleHash();
+
+  @$internal
+  @override
+  UiVisible create() => UiVisible();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(bool value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<bool>(value),
+    );
+  }
+}
+
+String _$uiVisibleHash() => r'fbbbe921734a6d84be3221a171bc6826bfd80bac';
+
+abstract class _$UiVisible extends $Notifier<bool> {
+  bool build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<bool, bool>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<bool, bool>,
+              bool,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
 @ProviderFor(ViewSize)
 final viewSizeProvider = ViewSizeProvider._();
 

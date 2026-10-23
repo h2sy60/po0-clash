@@ -11,6 +11,7 @@ import 'fingerprint.dart';
 import 'options.dart';
 import 'target.dart';
 import 'util.dart';
+import 'windows_signing.dart';
 
 final _log = Logger('go_builder');
 
@@ -50,6 +51,9 @@ class GoBuilder {
   }
 
   Future<BuildExecution> build(Target target) async {
+    final signing = target.goos == 'windows'
+        ? WindowsSigning.load(rootDir)
+        : null;
     final outDir = target.isLib
         ? p.join(_outputPath, target.platformDir, target.abi!)
         : p.join(_outputPath, target.platformDir);
@@ -62,7 +66,7 @@ class GoBuilder {
 
     return cache.run(
       key: '${target.platformDir}-${target.goarch}-core',
-      fingerprint: () => _calculateFingerprint(target),
+      fingerprint: () => _calculateFingerprint(target, signing),
       primaryOutput: outFile,
       notice: notice,
       build: () async {
@@ -97,6 +101,7 @@ class GoBuilder {
               ),
             );
           } else {
+            await signing?.sign(staged);
             replaceFile(staged, outFile);
           }
 
@@ -132,7 +137,10 @@ class GoBuilder {
     if (outFile != null) ...['-o', outFile],
   ];
 
-  Future<Fingerprint> _calculateFingerprint(Target target) async {
+  Future<Fingerprint> _calculateFingerprint(
+    Target target,
+    WindowsSigning? signing,
+  ) async {
     final env = _buildEnvironment(target);
     final builder = FingerprintBuilder(rootDir: rootDir)
       ..addValue('cache_schema', BuildCache.schemaVersion)
@@ -181,6 +189,7 @@ class GoBuilder {
       if (File(goWorkSum).existsSync()) inputs.add(goWorkSum);
     }
     inputs.addAll(harnessInputs);
+    inputs.addAll(signing?.inputs ?? const []);
 
     if (target.isLib) {
       final compilerVersion = runCommand(env['CC']!, ['--version']);

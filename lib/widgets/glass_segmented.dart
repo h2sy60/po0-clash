@@ -1,7 +1,6 @@
-import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/common/shape.dart';
 import 'package:material_ui/material_ui.dart';
 
-/// A recessed track with a lifted thumb that slides to the chosen segment.
 class GlassSegmented<T> extends StatelessWidget {
   const GlassSegmented({
     super.key,
@@ -22,121 +21,49 @@ class GlassSegmented<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final glass = context.glass;
-    final index = values.indexOf(selected);
-    final count = values.length;
-    final duration = context.motionDuration(Durations.medium2);
     return SizedBox(
       height: height,
       child: DecoratedBox(
-        decoration: ShapeDecoration(color: glass.fill, shape: AppShape.full),
-        child: Padding(
-          padding: const EdgeInsets.all(3),
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              if (index >= 0)
-                AnimatedAlign(
-                  duration: duration,
-                  curve: Easing.emphasizedDecelerate,
-                  alignment: Alignment(
-                    count == 1 ? 0 : -1 + 2 * index / (count - 1),
-                    0,
-                  ),
-                  child: FractionallySizedBox(
-                    widthFactor: 1 / count,
-                    heightFactor: 1,
-                    child: DecoratedBox(
-                      decoration: ShapeDecoration(
-                        color: glass.thumb,
-                        shape: AppShape.full,
-                        shadows: [
-                          BoxShadow(
-                            color: Colors.black.withValues(
-                              alpha: glass.isDark ? 0.3 : 0.12,
-                            ),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              Material(
-                type: MaterialType.transparency,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    for (final value in values)
-                      Expanded(
-                        child: _Segment(
-                          label: labelOf(value),
-                          icon: iconOf?.call(value),
-                          selected: value == selected,
-                          onTap: () {
-                            if (value != selected) {
-                              onChanged(value);
-                            }
-                          },
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surfaceContainer,
+          borderRadius: AppRadius.medium,
         ),
-      ),
-    );
-  }
-}
-
-class _Segment extends StatelessWidget {
-  const _Segment({
-    required this.label,
-    required this.icon,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final String label;
-  final IconData? icon;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = context.colorScheme.onSurface;
-    final icon = this.icon;
-    return Semantics(
-      button: true,
-      selected: selected,
-      child: InkWell(
-        onTap: onTap,
-        customBorder: AppShape.full,
-        overlayColor: WidgetStatePropertyAll(
-          color.withValues(alpha: selected ? 0 : 0.04),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (icon != null) ...[
-              Icon(icon, size: 17, color: color),
-              const SizedBox(width: 6),
-            ],
-            Flexible(
-              child: Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: context.textTheme.labelLarge?.copyWith(
-                  color: color,
-                  fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+        child: SegmentedButton<T>(
+          segments: [
+            for (final value in values)
+              ButtonSegment(
+                value: value,
+                label: Text(
+                  labelOf(value),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
+                icon: iconOf == null ? null : Icon(iconOf!(value), size: 18),
               ),
-            ),
           ],
+          selected: {selected},
+          onSelectionChanged: (selection) {
+            if (selection.single != selected) onChanged(selection.single);
+          },
+          showSelectedIcon: false,
+          expandedInsets: EdgeInsets.zero,
+          style: ButtonStyle(
+            side: const WidgetStatePropertyAll(BorderSide.none),
+            shape: const WidgetStatePropertyAll(AppShape.medium),
+            backgroundColor: WidgetStateProperty.resolveWith(
+              (states) => states.contains(WidgetState.selected)
+                  ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)
+                  : Colors.transparent,
+            ),
+            foregroundColor: WidgetStateProperty.resolveWith(
+              (states) => states.contains(WidgetState.selected)
+                  ? Theme.of(context).colorScheme.primary
+                  : Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+            visualDensity: VisualDensity.standard,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            minimumSize: WidgetStatePropertyAll(Size(0, height)),
+          ),
         ),
       ),
     );

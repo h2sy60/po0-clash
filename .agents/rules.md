@@ -27,21 +27,19 @@ throw stays catchable as an `Exception` and carries a stack trace. Assert on it
 with `isA<MessageException>().having((e) => e.message, 'message', ...)`, not on a
 raw string.
 
-### Glass Shapes and Motion
+### Shapes and Motion
 
-Every platform uses the Liquid Glass language (`docs/adr/0010-liquid-glass.md`, `docs/features/glass-ui.md`).
+Every platform uses the same Apple-website-inspired minimal visual language, built with Material components (ADR 0016 and `docs/features/glass-ui.md`).
 
-- Corner radii come from `lib/common/shape.dart` (`AppCorner`, `AppRadius`, `AppShape`); never write a radius literal in
-  a widget. Surfaces use continuous corners (`RoundedSuperellipseBorder`).
-- Colors come from `context.glass` (`GlassStyle`) and states from `GlassTone`, Apple's system colors. Content cells are
-  opaque (`GlassKind.tile`); only floating controls are glass (`GlassKind.panel`, and `GlassKind.chrome` where content
-  scrolls beneath). Do not add gradients, glows or colored backgrounds.
-- Icons are monochrome; the solid colored squares of `GlassIconBadge` belong to settings rows only.
-- Durations come from `Durations.*` and curves from `Easing.*`, with `Curves.easeInOutCubicEmphasized` for the full
-  emphasized curve. Enter on a decelerate curve and exit on an accelerate one (`Easing.xxxAccelerate.flipped` for
-  reverse curves), and respect `context.disableAnimations`. Avoid endless animations: they force every blur to redraw.
-- A control's hit area is what it draws: fill tracks and rows with `StackFit.expand` / `CrossAxisAlignment.stretch`,
-  and size icon buttons with `GlassIconButton`.
+- Corner radii come from `AppCorner`, `AppRadius`, and `AppShape`; use the shared rounded rectangle shapes.
+- Neutral surfaces, text and user-selected accents come from `ColorScheme` roles. `GlassStyle` remains a compatibility
+  interface for those opaque roles, not a glass effect. Do not add backdrop blur, specular rims, or decorative glow.
+- Use a simple sidebar, standard bottom navigation, segmented controls, buttons and switches. Keep status colors legible in both
+  light and dark themes, and preserve the user's theme seed and pure-black preference.
+- Use `Durations.*` and `Easing.*` and respect `context.disableAnimations`. Continuous progress animation is for active
+  work; idle charts and hidden pages must not keep animating or polling.
+- UI visibility and statistics sampling must never become proxy/Core lifecycle intent. Keep macOS tray traffic working
+  when explicitly enabled, and preserve the whitelist schedulers' intervals and network-change behavior.
 
 CI gates formatting: `dart format --output=none --set-exit-if-changed lib test
 tool plugins setup.dart` runs before `flutter analyze`.

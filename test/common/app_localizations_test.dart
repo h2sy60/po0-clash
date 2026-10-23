@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:fl_clash/common/app_localizations.dart';
 import 'package:fl_clash/core/desktop/helper_client.dart';
@@ -96,23 +98,50 @@ void main() {
       smartAppControlStateReader = readSmartAppControlState;
     });
 
-    test('names Smart App Control when it is on', () {
+    test('adds Smart App Control context only when it is enforcing', () {
       smartAppControlStateReader = () => SmartAppControlState.on;
 
       expect(
         userFacingErrorMessage(blocked, appLocalizations),
-        appLocalizations.coreBlockedBySmartAppControlTip,
+        appLocalizations.coreBlockedBySmartAppControlTip(577),
       );
     });
 
-    test('names the generic policy with its error code otherwise', () {
-      smartAppControlStateReader = () => SmartAppControlState.off;
+    for (final state in [
+      SmartAppControlState.off,
+      SmartAppControlState.evaluation,
+      SmartAppControlState.unknown,
+    ]) {
+      test('does not blame Smart App Control in ${state.name} mode', () {
+        smartAppControlStateReader = () => state;
 
-      expect(
-        userFacingErrorMessage(blocked, appLocalizations),
-        appLocalizations.coreBlockedByPolicyTip(577),
-      );
-    });
+        expect(
+          userFacingErrorMessage(blocked, appLocalizations),
+          appLocalizations.coreSignatureInvalidTip(577),
+        );
+      });
+    }
+
+    for (final state in SmartAppControlState.values) {
+      for (final code in [225, 226, 1260]) {
+        test('keeps error $code distinct in ${state.name} mode', () {
+          smartAppControlStateReader = () => state;
+          final error = ProcessException(
+            'Po0ClashCore.exe',
+            [],
+            'blocked',
+            code,
+          );
+
+          expect(
+            userFacingErrorMessage(error, appLocalizations),
+            code == 1260
+                ? appLocalizations.coreBlockedByPolicyTip(code)
+                : appLocalizations.coreBlockedByAntivirusTip(code),
+          );
+        });
+      }
+    }
 
     test('leaves other start failures on the raw description', () {
       smartAppControlStateReader = () => SmartAppControlState.on;

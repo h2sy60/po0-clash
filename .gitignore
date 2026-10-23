@@ -50,6 +50,7 @@ app.*.map.json
 docs/*
 !docs/README.md
 !docs/*.md
+!docs/windows-security.txt
 !docs/adr/
 !docs/features/
 !docs/development/
@@ -74,6 +75,7 @@ docs/*
 /macos/**/Package.resolved
 /macos/build/
 /env.json
+/.signing/
 /core_sha256.json
 /plugins/rust_api/.claude/
 /issue-triage/

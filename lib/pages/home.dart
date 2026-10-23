@@ -20,7 +20,7 @@ class HomePage extends ConsumerWidget {
       return const SizedBox.shrink();
     }
     return HomeBackScopeContainer(
-      child: _GlassShell(
+      child: _MaterialShell(
         child: Consumer(
           builder: (_, ref, _) {
             final navigationItems = ref
@@ -46,13 +46,8 @@ class HomePage extends ConsumerWidget {
   }
 }
 
-/// Lays the spaces out on the window floor: a floating glass dock on phones,
-/// a glass rail on narrow windows and the glass control sidebar on wide ones,
-/// with the page itself resting directly on the floor.
-class _GlassShell extends ConsumerWidget {
-  const _GlassShell({required this.child});
-
-  static const _gutter = 12.0;
+class _MaterialShell extends ConsumerWidget {
+  const _MaterialShell({required this.child});
 
   final Widget child;
 
@@ -84,32 +79,23 @@ class _GlassShell extends ConsumerWidget {
     final currentIndex = state.currentIndex;
     void onSelected(PageLabel label) => _handleToPage(ref, label);
     if (state.viewMode == ViewMode.mobile) {
-      final dockExtent = GlassDock.extentOf(context);
-      return Material(
-        type: MaterialType.transparency,
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: BottomInsetScope(
-                inset: dockExtent - MediaQuery.paddingOf(context).bottom,
-                child: FocusTraversalGroup(
-                  policy: PageTraversalPolicy(),
-                  child: child,
-                ),
+      return Column(
+        children: [
+          Expanded(
+            child: BottomInsetScope(
+              inset: 0,
+              child: FocusTraversalGroup(
+                policy: PageTraversalPolicy(),
+                child: child,
               ),
             ),
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: GlassDock(
-                items: items,
-                currentIndex: currentIndex,
-                onSelected: onSelected,
-              ),
-            ),
-          ],
-        ),
+          ),
+          GlassDock(
+            items: items,
+            currentIndex: currentIndex,
+            onSelected: onSelected,
+          ),
+        ],
       );
     }
     final showsHeader = showsWindowHeader(
@@ -135,18 +121,15 @@ class _GlassShell extends ConsumerWidget {
             ),
           );
     return Material(
-      type: MaterialType.transparency,
+      color: context.colorScheme.surface,
       child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(_gutter),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              navigation,
-              const SizedBox(width: _gutter),
-              Expanded(child: _buildWorkspace(ref)),
-            ],
-          ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            navigation,
+            const VerticalDivider(width: 1),
+            Expanded(child: _buildWorkspace(ref)),
+          ],
         ),
       ),
     );

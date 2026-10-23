@@ -1,7 +1,8 @@
 # 构建
 
-上游的构建体系（Go 内核 + Rust helper 通过 Dart build hook 构建，`setup.dart` 负责打包）保持不变，
-细节见 [.agents/commands.md](../../.agents/commands.md)。本分支只约定**在哪里构建**。
+Go 内核与 Rust Helper 通过 Dart build hook 构建，`setup.dart` 负责打包。Windows 使用本分支的
+PowerShell / Inno Setup 签名流程，其余平台使用 distributor，细节见 [.agents/commands.md](../../.agents/commands.md)
+与 [Windows 自签名](windows-signing.md)。
 
 | 目标 | 构建位置 | 原因 |
 |---|---|---|
@@ -14,6 +15,14 @@
 `plugins/rust_api/rust/rust-toolchain.toml` 固定）。
 
 ## 构建 VPS（只做校验）
+
+当前使用机器管理仓库中的 `hostdzire-nl`，已有工具链位于 `/opt/toolchains/flutter`、`/opt/toolchains/go` 和 `/opt/toolchains/rust-1.95.0`，
+工作区位于 `/srv/build/po0-clash`。并行任务使用独立的 `/srv/build/po0-<任务名>` 目录。连接参数和机器使用约定以
+私有机器管理仓库为准；不要继续使用缺少当前端口的旧 `flclash-vps` 别名。
+
+`scripts/vps/verify.sh` 优先使用这套现有 Flutter / Go 工具链，同时兼容下列旧版初始化脚本的目录。
+原生 Rust 校验先将 `/opt/toolchains/rust-1.95.0/bin` 加入 `PATH`。Go 文件权限测试以非 root 用户执行，
+避免 root 绕过目录权限导致断言失真；为测试用户指定独立的 `GOCACHE`、`GOMODCACHE` 和 `GOTMPDIR`。
 
 一次性初始化（root）：
 
@@ -34,6 +43,11 @@ bash scripts/vps/verify.sh            # format 检查 + analyze + test + 覆盖�
 
 构建机只有 11 GB 内存，`provision.sh` 会创建 8 GB swap。VPS 不再构建发版 APK；需要本地试打包时可以在 VPS 上运行
 `dart setup.dart android --env stable`，但产物只用于测试，正式产物一律来自 GitHub Actions。
+
+## Windows 原生验证
+
+`windows-validation.yaml` 为本仓库相关 PR 和手动请求执行 Windows 上的 build hooks、Rust IPC / Helper 与签名安装流程验证。
+签名安装测试使用临时测试程序，不构建或发布正式应用；详见 [Windows 自签名](windows-signing.md#原生验证)。
 
 ## GitHub Actions（发版构建）
 
@@ -66,7 +80,7 @@ bash scripts/vps/verify.sh            # format 检查 + analyze + test + 覆盖�
 
 ```bash
 git push origin HEAD                          # 或用 tar 同步未提交的改动
-ssh root@<vps> 'cd /root/FlClash-po0 && git fetch && git checkout <branch> && bash scripts/vps/verify.sh'
+ssh hostdzire-nl 'cd /srv/build/po0-clash && git fetch && git checkout <branch> && bash scripts/vps/verify.sh'
 ```
 
 若本机开启了 Windows 开发者模式，也可以直接在本机运行 `flutter pub get` / `flutter test`（同样先关闭 `build_assets`）。

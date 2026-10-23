@@ -36,21 +36,12 @@ void main() {
       final b = tester.getRect(
         find.ancestor(of: find.text('B'), matching: find.byType(InkWell)),
       );
-      expect(b.height, track.height - 6, reason: 'the segment fills the track');
+      expect(b.height, track.height, reason: 'the segment fills the track');
       expect(b.center.dy, closeTo(track.center.dy, 0.5));
 
       await tester.tapAt(b.bottomCenter - const Offset(0, 2));
       await tester.pumpAndSettle();
       expect(selected, 'b');
-
-      final pill = tester.getRect(
-        find.descendant(
-          of: find.byType(AnimatedAlign),
-          matching: find.byType(DecoratedBox),
-        ),
-      );
-      expect(pill.center.dx, closeTo(b.center.dx, 0.5));
-      expect(pill.height, b.height);
     });
 
     testWidgets('tapping the chosen segment reports nothing', (tester) async {
@@ -111,15 +102,14 @@ void main() {
           child: const Text('row'),
         ),
       );
-      expect(
+      final materials = tester.widgetList<Material>(
         find.descendant(
           of: find.byType(GlassSurface),
-          matching: find.byWidgetPredicate(
-            (widget) => widget is CustomPaint && widget.painter != null,
-          ),
+          matching: find.byType(Material),
         ),
-        findsNothing,
       );
+      expect(materials.first.type, MaterialType.transparency);
+      expect(find.byType(BackdropFilter), findsNothing);
       expect(find.byTooltip('plain'), findsOneWidget);
     });
 
@@ -132,7 +122,7 @@ void main() {
           child: SizedBox(height: 40),
         ),
       );
-      expect(find.byType(BackdropFilter), findsOneWidget);
+      expect(find.byType(BackdropFilter), findsNothing);
     });
   });
 
@@ -178,7 +168,10 @@ void main() {
           .ancestor(of: find.text('floor'), matching: find.byType(ColoredBox))
           .first,
     );
-    expect(box.color, const Color(0xFFF2F2F7));
+    expect(
+      box.color,
+      Theme.of(tester.element(find.text('floor'))).colorScheme.surface,
+    );
   });
 
   test('glass follows the brightness and system colors follow suit', () {
@@ -191,7 +184,13 @@ void main() {
     );
     expect(light.isDark, isFalse);
     expect(dark.isDark, isTrue);
-    expect(dark.background, const Color(0xFF1C1C1E));
+    expect(
+      dark.background,
+      ColorScheme.fromSeed(
+        seedColor: Colors.indigo,
+        brightness: Brightness.dark,
+      ).surface,
+    );
     expect(
       GlassStyle.of(
         ColorScheme.fromSeed(
@@ -202,8 +201,8 @@ void main() {
       ).background,
       Colors.black,
     );
-    expect(light.card, Colors.white);
-    expect(light.copyWith(blurSigma: 4).blurSigma, 4);
+    expect(light.card.a, 1);
+    expect(light.copyWith(card: Colors.red).card, Colors.red);
     expect(light.lerp(null, 0.5), light);
     expect(light.lerp(dark, 1).card, dark.card);
     expect(GlassTone.success.on(Brightness.light), const Color(0xFF34C759));

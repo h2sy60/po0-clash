@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:fl_clash/common/color.dart';
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 
 class Point {
@@ -8,6 +9,13 @@ class Point {
   final double y;
 
   const Point(this.x, this.y);
+
+  @override
+  bool operator ==(Object other) =>
+      other is Point && x == other.x && y == other.y;
+
+  @override
+  int get hashCode => Object.hash(x, y);
 }
 
 class LineChart extends StatefulWidget {
@@ -48,7 +56,8 @@ class _LineChartState extends State<LineChart>
   @override
   void didUpdateWidget(LineChart oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.points != _points) {
+    _controller.duration = widget.duration;
+    if (!listEquals(widget.points, _points)) {
       _points = widget.points;
       _prevRenderPoints = _currentRenderPoints;
       _currentRenderPoints = _getRenderPoints(_points);

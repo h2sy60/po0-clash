@@ -2,12 +2,12 @@ import 'package:material_ui/material_ui.dart';
 
 abstract final class AppCorner {
   static const double none = 0;
-  static const double extraSmall = 8;
-  static const double small = 12;
-  static const double medium = 18;
-  static const double large = 24;
-  static const double largeIncreased = 28;
-  static const double extraLarge = 32;
+  static const double extraSmall = 4;
+  static const double small = 8;
+  static const double medium = 12;
+  static const double large = 16;
+  static const double largeIncreased = 20;
+  static const double extraLarge = 28;
   static const double full = 1000;
 }
 
@@ -47,20 +47,20 @@ abstract final class AppRadius {
 }
 
 abstract final class AppShape {
-  static const RoundedSuperellipseBorder none = RoundedSuperellipseBorder();
-  static const RoundedSuperellipseBorder extraSmall = RoundedSuperellipseBorder(
+  static const RoundedRectangleBorder none = RoundedRectangleBorder();
+  static const RoundedRectangleBorder extraSmall = RoundedRectangleBorder(
     borderRadius: AppRadius.extraSmall,
   );
-  static const RoundedSuperellipseBorder small = RoundedSuperellipseBorder(
+  static const RoundedRectangleBorder small = RoundedRectangleBorder(
     borderRadius: AppRadius.small,
   );
-  static const RoundedSuperellipseBorder medium = RoundedSuperellipseBorder(
+  static const RoundedRectangleBorder medium = RoundedRectangleBorder(
     borderRadius: AppRadius.medium,
   );
-  static const RoundedSuperellipseBorder large = RoundedSuperellipseBorder(
+  static const RoundedRectangleBorder large = RoundedRectangleBorder(
     borderRadius: AppRadius.large,
   );
-  static const RoundedSuperellipseBorder extraLarge = RoundedSuperellipseBorder(
+  static const RoundedRectangleBorder extraLarge = RoundedRectangleBorder(
     borderRadius: AppRadius.extraLarge,
   );
   static const StadiumBorder full = StadiumBorder();
@@ -70,19 +70,19 @@ abstract final class AppShape {
     borderSide: BorderSide.none,
   );
 
-  static RoundedSuperellipseBorder all(double corner) =>
-      RoundedSuperellipseBorder(borderRadius: AppRadius.all(corner));
+  static RoundedRectangleBorder all(double corner) =>
+      RoundedRectangleBorder(borderRadius: AppRadius.all(corner));
 
-  static RoundedSuperellipseBorder top(double corner) =>
-      RoundedSuperellipseBorder(borderRadius: AppRadius.top(corner));
+  static RoundedRectangleBorder top(double corner) =>
+      RoundedRectangleBorder(borderRadius: AppRadius.top(corner));
 
-  static RoundedSuperellipseBorder vertical({
+  static RoundedRectangleBorder vertical({
     double top = AppCorner.none,
     double bottom = AppCorner.none,
-  }) => RoundedSuperellipseBorder(
+  }) => RoundedRectangleBorder(
     borderRadius: AppRadius.vertical(top: top, bottom: bottom),
   );
 
-  static RoundedSuperellipseBorder of(BorderRadius borderRadius) =>
-      RoundedSuperellipseBorder(borderRadius: borderRadius);
+  static RoundedRectangleBorder of(BorderRadius borderRadius) =>
+      RoundedRectangleBorder(borderRadius: borderRadius);
 }

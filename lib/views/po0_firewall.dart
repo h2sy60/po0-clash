@@ -105,7 +105,6 @@ class WhitelistView extends StatelessWidget {
   }
 }
 
-/// Rebuilds its subtree periodically so relative times stay current.
 class _Ticker extends StatefulWidget {
   const _Ticker({required this.builder});
 
@@ -115,22 +114,17 @@ class _Ticker extends StatefulWidget {
   State<_Ticker> createState() => _TickerState();
 }
 
-class _TickerState extends State<_Ticker> {
-  late final Timer _timer;
+class _TickerState extends State<_Ticker>
+    with WidgetsBindingObserver, ActivePollingMixin<_Ticker> {
+  @override
+  Duration get pollInterval => const Duration(seconds: 30);
 
   @override
-  void initState() {
-    super.initState();
-    _timer = Timer.periodic(
-      const Duration(seconds: 30),
-      (_) => setState(() {}),
-    );
-  }
+  bool get pollOnStart => false;
 
   @override
-  void dispose() {
-    _timer.cancel();
-    super.dispose();
+  Future<void> poll(PollGuard isCurrent) async {
+    if (isCurrent()) setState(() {});
   }
 
   @override
