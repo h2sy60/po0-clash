@@ -26,6 +26,7 @@ $configPath = Join-Path $root '.dart_tool/windows-signing.json'
 New-Item -ItemType Directory -Force (Split-Path $configPath) | Out-Null
 try {
     if ($signed) {
+        Write-Output 'Preparing Windows signing identity.'
         if (-not $env:PO0_WINDOWS_PFX_PASSWORD) { throw 'The PFX password is missing.' }
         $password = ConvertTo-SecureString $env:PO0_WINDOWS_PFX_PASSWORD -AsPlainText -Force
         $data = Get-PfxData -FilePath $env:PO0_WINDOWS_PFX_PATH -Password $password
@@ -37,14 +38,16 @@ try {
         if ($thumbprint -ne $pinned.Thumbprint) { throw 'The signing key does not match windows/po0-clash-signing.cer.' }
         $importedMy = -not (Test-Path "Cert:\CurrentUser\My\$thumbprint")
         Import-PfxCertificate -FilePath $env:PO0_WINDOWS_PFX_PATH -Password $password -CertStoreLocation Cert:\CurrentUser\My | Out-Null
-        if ($certificate.Subject -eq $certificate.Issuer -and
-            -not (Test-Path "Cert:\CurrentUser\Root\$thumbprint")) {
-            if ($env:GITHUB_ACTIONS -ne 'true') {
-                throw 'A self-signed certificate must already be trusted on the build machine. Automatic temporary trust is limited to GitHub Actions runners.'
+        $trusted = (Test-Path "Cert:\CurrentUser\Root\$thumbprint") -or
+            (Test-Path "Cert:\LocalMachine\Root\$thumbprint")
+        if ($certificate.Subject -eq $certificate.Issuer -and -not $trusted) {
+            if ($env:GITHUB_ACTIONS -ne 'true' -or $env:RUNNER_ENVIRONMENT -ne 'github-hosted') {
+                throw 'A self-signed certificate must already be trusted on the build machine. Automatic temporary trust is limited to GitHub-hosted runners.'
             }
             $publicCertificate = Join-Path $root '.dart_tool/windows-signing.cer'
             Export-Certificate -Cert $certificate -FilePath $publicCertificate | Out-Null
-            Import-Certificate -FilePath $publicCertificate -CertStoreLocation Cert:\CurrentUser\Root | Out-Null
+            Write-Output 'Preparing temporary trust on the hosted build runner.'
+            Import-Certificate -FilePath $publicCertificate -CertStoreLocation Cert:\LocalMachine\Root | Out-Null
             $importedRoot = $true
         }
         $env:PO0_WINDOWS_SIGN_CERT_SHA1 = $thumbprint
@@ -54,6 +57,7 @@ try {
         $config = '{}'
     }
     [IO.File]::WriteAllText($configPath, "$config`n")
+    Write-Output 'Building Windows binaries.'
     $flutterArgs = @('build', 'windows', '--release', '--dart-define-from-file=env.json')
     if ($VerboseBuild) { $flutterArgs += '-v' }
     & flutter @flutterArgs
@@ -68,6 +72,7 @@ try {
         if (-not (Test-Path -LiteralPath $file)) { throw "Missing build output: $file" }
     }
     if ($signed) {
+        Write-Output 'Verifying Core and Helper, then signing application binaries.'
         & "$PSScriptRoot/sign.ps1" -Path $core -VerifyOnly
         & "$PSScriptRoot/sign.ps1" -Path $helper -VerifyOnly
         Get-ChildItem -LiteralPath $bundle -Recurse -File |
@@ -85,6 +90,7 @@ try {
     $baseName = "po0-clash-$version-windows-$Architecture"
     $artifacts = @()
     if ('exe' -in $formats) {
+        Write-Output 'Building the signed installer and uninstaller.'
         $inno = if ($env:INNO_SETUP_PATH) { Join-Path $env:INNO_SETUP_PATH 'ISCC.exe' } else { 'C:\Program Files (x86)\Inno Setup 6\ISCC.exe' }
         if (-not (Test-Path -LiteralPath $inno)) { $inno = (Get-Command ISCC.exe -ErrorAction Stop).Source }
         $innoArgs = @("/DAppVersion=$version", "/DSourceDir=$bundle", "/DProjectDir=$root", "/DOutputDir=$output", "/DOutputName=$baseName-setup", "/DTargetArch=$flutterArch")
@@ -114,7 +120,7 @@ try {
     }
     [IO.File]::WriteAllLines((Join-Path $output "$baseName-sha256.txt"), $checksums)
 } finally {
-    if ($importedRoot) { Remove-Item "Cert:\CurrentUser\Root\$thumbprint" -ErrorAction Continue }
+    if ($importedRoot) { Remove-Item "Cert:\LocalMachine\Root\$thumbprint" -ErrorAction Continue }
     if ($importedMy) { Remove-Item "Cert:\CurrentUser\My\$thumbprint" -ErrorAction Continue }
     Remove-Item Env:\PO0_WINDOWS_SIGN_CERT_SHA1 -ErrorAction SilentlyContinue
     [IO.File]::WriteAllText($configPath, "{}`n")

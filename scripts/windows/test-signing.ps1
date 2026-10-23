@@ -1,5 +1,5 @@
 $ErrorActionPreference = 'Stop'
-if ($env:GITHUB_ACTIONS -ne 'true' -or $env:OS -ne 'Windows_NT') {
+if ($env:GITHUB_ACTIONS -ne 'true' -or $env:RUNNER_ENVIRONMENT -ne 'github-hosted' -or $env:OS -ne 'Windows_NT') {
     throw 'Run this test only on an ephemeral Windows GitHub Actions runner.'
 }
 if (-not $env:WINDOWS_SIGNING_PFX_BASE64 -or -not $env:WINDOWS_SIGNING_PASSWORD) {
@@ -49,7 +49,7 @@ try {
     $certificate = [Security.Cryptography.X509Certificates.X509Certificate2]::new((Join-Path $script:fixtureRoot 'windows/po0-clash-signing.cer'))
     $thumbprint = $certificate.Thumbprint
     $hadMy = Test-Path "Cert:\CurrentUser\My\$thumbprint"
-    $hadRoot = Test-Path "Cert:\CurrentUser\Root\$thumbprint"
+    $hadRoot = (Test-Path "Cert:\CurrentUser\Root\$thumbprint") -or (Test-Path "Cert:\LocalMachine\Root\$thumbprint")
     Assert-That (-not $hadMy -and -not $hadRoot) 'The runner already contains the signing identity.'
 
     $source = Join-Path $sandbox 'fixture.cs'
@@ -85,11 +85,11 @@ try {
     $env:PO0_WINDOWS_PFX_PASSWORD = $env:WINDOWS_SIGNING_PASSWORD
     & $packager -AppEnvironment dev
     Assert-That (-not (Test-Path "Cert:\CurrentUser\My\$thumbprint")) 'Packaging left a private signing certificate behind.'
-    Assert-That (-not (Test-Path "Cert:\CurrentUser\Root\$thumbprint")) 'Packaging left temporary root trust behind.'
+    Assert-That (-not (Test-Path "Cert:\LocalMachine\Root\$thumbprint")) 'Packaging left temporary root trust behind.'
     $config = Get-Content (Join-Path $script:fixtureRoot '.dart_tool/windows-signing.json') -Raw | ConvertFrom-Json
     Assert-That (-not $config.thumbprint) 'Packaging left a signing configuration behind.'
 
-    Import-Certificate -FilePath (Join-Path $script:fixtureRoot 'windows/po0-clash-signing.cer') -CertStoreLocation Cert:\CurrentUser\Root | Out-Null
+    Import-Certificate -FilePath (Join-Path $script:fixtureRoot 'windows/po0-clash-signing.cer') -CertStoreLocation Cert:\LocalMachine\Root | Out-Null
     $temporaryRoot = $true
     $env:PO0_WINDOWS_SIGN_CERT_SHA1 = $thumbprint
     $signer = Join-Path $script:fixtureRoot 'scripts/windows/sign.ps1'
@@ -146,7 +146,7 @@ try {
     Write-Output 'Windows signing, timestamp, tamper rejection, Core hash, ZIP, install and uninstall validation passed.'
 } finally {
     Set-Location $originalLocation
-    if ($temporaryRoot) { Remove-Item "Cert:\CurrentUser\Root\$($certificate.Thumbprint)" -ErrorAction Continue }
+    if ($temporaryRoot) { Remove-Item "Cert:\LocalMachine\Root\$($certificate.Thumbprint)" -ErrorAction Continue }
     Remove-Item Env:\PO0_WINDOWS_PFX_PATH, Env:\PO0_WINDOWS_PFX_PASSWORD, Env:\PO0_WINDOWS_SIGN_CERT_SHA1 -ErrorAction SilentlyContinue
     Remove-Item Env:\PO0_SIGNING_FIXTURE_ROOT, Env:\PO0_SIGNING_FIXTURE_EXE -ErrorAction SilentlyContinue
     Remove-Item -LiteralPath $pfx -Force -ErrorAction SilentlyContinue

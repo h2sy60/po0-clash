@@ -46,7 +46,8 @@ tr -d '\r\n' < .signing/windows/pfx-password | gh secret set WINDOWS_SIGNING_PAS
 ```
 
 工作流把 PFX 解码到 runner 临时目录，仅 Windows 打包步骤接收密码。打包脚本核对 PFX 与仓库公钥一致后，
-导入当前用户的签名存储；仅在临时 GitHub Actions runner 上为自签名建立临时信任，以完成验签，退出时清除本次导入的证书。
+导入当前用户的签名存储；仅在 `github-hosted` 临时 runner 的 `LocalMachine\Root` 建立临时信任，以完成无人值守验签，退出时清除本次导入的证书。
+普通电脑或 self-hosted runner 必须预先配置信任，脚本不会自动修改其根证书存储。
 PFX 临时文件由 `always()` 清理步骤删除。产物上传只包含 `dist/`。
 
 ## 构建顺序
