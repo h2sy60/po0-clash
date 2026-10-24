@@ -1,15 +1,18 @@
-import 'iterable.dart';
+import 'dart:collection';
 
 class FixedList<T> {
   final int maxLength;
-  final List<T> _list;
+  final ListQueue<T> _list;
 
   final int _revision;
   List<T>? _snapshot;
 
   FixedList(this.maxLength, {List<T>? list})
     : assert(maxLength > 0, 'FixedList without a cap grows without bound'),
-      _list = (list ?? [])..truncate(maxLength),
+      _list = ListQueue<T>.from(
+        list?.skip(list.length > maxLength ? list.length - maxLength : 0) ??
+            <T>[],
+      ),
       _revision = 0;
 
   FixedList._(this.maxLength, this._list, this._revision);
@@ -17,8 +20,10 @@ class FixedList<T> {
   int get revision => _revision;
 
   void add(T item) {
-    _list.add(item);
-    _list.truncate(maxLength);
+    if (_list.length == maxLength) {
+      _list.removeFirst();
+    }
+    _list.addLast(item);
     _snapshot = null;
   }
 
@@ -36,7 +41,9 @@ class FixedList<T> {
 
   int get length => _list.length;
 
-  T operator [](int index) => _list[index];
+  T? get lastOrNull => _list.isEmpty ? null : _list.last;
+
+  T operator [](int index) => _list.elementAt(index);
 
   FixedList<T> copyWith() {
     return FixedList(maxLength, list: List.of(_list));

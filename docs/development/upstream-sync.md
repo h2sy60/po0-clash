@@ -91,8 +91,17 @@ Android 图标升级兼容由 `LauncherBranding.kt`、`LauncherUpdateReceiver.kt
 | `lib/manager/app_manager.dart` / `window_manager.dart` | 生命周期、最小化与恢复驱动 UI 可见性；重新聚焦不额外加白 |
 | `lib/widgets/active_polling.dart` / `line_chart.dart` / `lib/views/po0_firewall.dart` | 不可见时停轮询；相同图表数据不重启动画 |
 | `lib/providers/state/system.dart` / `proxies.dart` | 隐藏托盘网速时不订阅流量；节点规范化复用未变对象 |
+| `lib/models/common.dart` / `lib/common/task.dart` | 失效的节点偏好回退到当前出口；首次默认节点在排序前确定，分组复用节点对象 |
+| `lib/common/compute.dart` / `lib/providers/state/proxies.dart` / `lib/providers/actions/proxies.dart` | 节点名索引、快照内出口解析缓存、循环保护和延迟排序键复用 |
+| `core/proxies.go` / `core/constant.go` / `core/hub.go` | 分离节点列表处理，仅输出 Flutter 消费的字段，保留分组运行时出口与原有消息封装 |
+| `lib/common/fixed.dart` / `lib/models/common.dart` | 有上限的环形缓冲、不可变快照与列表筛选快速路径 |
+| `lib/widgets/active_feed.dart` / `lib/widgets/widgets.dart` / `lib/views/logs.dart` / `lib/views/connection/requests.dart` | 由数据事件触发、按页面 / 窗口 / 生命周期可见性合并的列表刷新，隐藏期间继续记录事件 |
+| `lib/providers/state/system.dart` / `lib/providers/actions/system.dart` | 托盘直接读取最新流量采样，避免为标题构建完整快照 |
 | `core/server.go` | 有上限的每连接接收缓冲区复用，异步分发前复制 JSON 参数 |
-| `plugins/rust_api/rust/src/ipc/{server,queue,frame}.rs` | 消息/关闭驱动发送，接收时预留事件字节以免再次复制整帧 |
+| `core/message.go` / `core/message_encoding.go` / `core/event_json.go` / `core/request_events.go` / `core/hub.go` | 有上限的编码缓冲；固定事件专用 JSON 写入及标准编码回退，完整字段契约与随机差分校验；请求排队仅保留展示信息，Android 避免重复 GC |
+| `core/main.go` / `core/logging.go` / `core/go.mod` | 桌面入口按调试开关控制控制台诊断，普通日志沿用事件通道；显式声明已有 logrus 依赖 |
+| `lib/core/event.dart` / `lib/core/desktop/rpc_client.dart` / `lib/plugins/service.dart` | UTF-8 / JSON 融合解码、匹配 Map 直接复用、监听器快照缓存及不可变事件模型共享；保留回调顺序和异常隔离 |
+| `plugins/rust_api/rust/src/ipc/{server,queue,frame,platform,readiness}.rs` | 消息/关闭驱动发送，接收时预留事件字节；Unix 通过描述符就绪与显式唤醒等待，Windows 保留原有管道处理 |
 
 ## Windows 签名验证
 

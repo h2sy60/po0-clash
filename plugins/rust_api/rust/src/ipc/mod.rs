@@ -5,6 +5,8 @@ mod platform;
 #[cfg(not(target_os = "android"))]
 mod queue;
 #[cfg(not(target_os = "android"))]
+mod readiness;
+#[cfg(not(target_os = "android"))]
 mod server;
 #[cfg(target_os = "android")]
 mod unsupported;

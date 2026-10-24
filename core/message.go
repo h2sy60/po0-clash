@@ -1,9 +1,6 @@
 package main
 
-import (
-	"encoding/json"
-	"time"
-)
+import "time"
 
 const (
 	messageBatchInterval = 16 * time.Millisecond
@@ -20,7 +17,8 @@ var (
 )
 
 func init() {
-	go runMessageBatcher(stateMessageQueue, priorityMessageQueue, bulkMessageQueue, sendMessageBatch)
+	sender := newMessageBatchSender(deliverEvent)
+	go runMessageBatcher(stateMessageQueue, priorityMessageQueue, bulkMessageQueue, sender.send)
 }
 
 type messageClass int
@@ -75,6 +73,7 @@ func enqueueLatest(queue chan Message, message Message) {
 	}
 }
 
+// send consumes a borrowed batch synchronously; it must not retain the slice.
 func runMessageBatcher(
 	stateMessages <-chan Message,
 	priorityMessages <-chan Message,
@@ -101,9 +100,9 @@ func runMessageBatcher(
 			}
 		}
 		deadline = nil
-		current := batch
-		batch = make([]Message, 0, messageBatchSize)
-		send(current)
+		send(batch)
+		clear(batch)
+		batch = batch[:0]
 	}
 	appendMessage := func(message Message) {
 		if len(batch) == 0 {
@@ -184,21 +183,4 @@ func runMessageBatcher(
 		}
 	}
 	flush()
-}
-
-type messageBatchCall struct {
-	Method    CoreMethod `json:"method"`
-	Arguments []Message  `json:"arguments"`
-}
-
-func sendMessageBatch(messages []Message) {
-	data, err := json.Marshal(messageBatchCall{
-		Method:    messageMethod,
-		Arguments: messages,
-	})
-	if err != nil {
-		logError("Message batch marshal error: %v", err)
-		return
-	}
-	deliverEvent(data)
 }

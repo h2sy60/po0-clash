@@ -24,6 +24,13 @@ PowerShell / Inno Setup 签名流程，其余平台使用 distributor，细节�
 原生 Rust 校验先将 `/opt/toolchains/rust-1.95.0/bin` 加入 `PATH`。Go 文件权限测试以非 root 用户执行，
 避免 root 绕过目录权限导致断言失真；为测试用户指定独立的 `GOCACHE`、`GOMODCACHE` 和 `GOTMPDIR`。
 
+桌面 Core 默认只将错误与致命诊断写入 stderr，由直接启动器或 Helper 收集；普通日志继续通过 Core 事件通道进入应用。
+排查原生问题时，可为 Core 进程设置 `PO0CLASH_CORE_DEBUG=1`，将完整控制台日志写入 stderr。Android 保留现有控制台输出。
+
+事件编码基准在 `core/` 内运行 `CGO_ENABLED=0 go test -run '^$' -bench '^BenchmarkMessageBatchEncoding$' -benchmem .`，
+覆盖每批 32 条日志、请求、含 Unicode / IPv6 zone 的请求和测速事件。`marshal` 为标准编码基准，`reused` 为实际批发送路径；
+结果描述合成事件的编码成本，不等同于整机 CPU / RSS。常规 Go 测试同时执行完整字段、空值、转义、时间和随机差分校验。
+
 一次性初始化（root）：
 
 ```bash

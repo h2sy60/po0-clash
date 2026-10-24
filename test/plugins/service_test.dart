@@ -226,6 +226,25 @@ void main() {
   });
 
   group('event dispatch', () {
+    test(
+      'listener registration changes invalidate a warmed snapshot',
+      () async {
+        final first = _RecordingListener();
+        final replacement = _RecordingListener();
+        Service().addListener(first);
+        addTearDown(() {
+          Service().removeListener(first);
+          Service().removeListener(replacement);
+        });
+        await emitFromPlatform({'type': 'loaded', 'data': 'first'});
+        Service().removeListener(first);
+        Service().addListener(replacement);
+        await emitFromPlatform({'type': 'loaded', 'data': 'second'});
+        expect(first.events.map((event) => event.data), ['first']);
+        expect(replacement.events.map((event) => event.data), ['second']);
+      },
+    );
+
     test('fans a batched event list out to every listener', () async {
       final first = _RecordingListener();
       final second = _RecordingListener();

@@ -60,16 +60,32 @@ Future<List<Group>> buildGroups(ComputeGroupsState state) async {
   final proxies = proxiesData.proxies;
   if (proxies.isEmpty) return [];
   final groups = <Group>[];
+  final members = <String, Proxy>{};
+  Proxy? memberOf(dynamic name) {
+    final raw = proxies[name];
+    if (raw is! Map) return null;
+    return members.putIfAbsent(
+      name as String,
+      () => Proxy.fromJson(Map<String, dynamic>.from(raw)),
+    );
+  }
+
   for (final groupName in all) {
     final raw = proxies[groupName];
     if (raw is! Map) continue;
     if (!GroupTypeExtension.valueList.contains(raw['type'])) continue;
     final memberNames = raw['all'];
-    final group = Map<String, dynamic>.from(raw);
-    group['all'] = memberNames is List
-        ? memberNames.map((name) => proxies[name]).nonNulls.toList()
-        : const [];
-    groups.add(Group.fromJson(group));
+    final group = Group.fromJson({
+      ...Map<String, dynamic>.from(raw),
+      'all': const [],
+    });
+    final allMembers = memberNames is List
+        ? memberNames.map(memberOf).nonNulls.toList()
+        : <Proxy>[];
+    final now = group.type == GroupType.Selector && group.realNow.isEmpty
+        ? allMembers.firstOrNull?.name
+        : group.now;
+    groups.add(group.copyWith(all: allMembers, now: now));
   }
   return computeSort(
     groups: groups,

@@ -173,11 +173,16 @@ abstract class LogsState with _$LogsState {
 
 extension LogsStateExt on LogsState {
   List<Log> get list {
+    final entries = logs;
+    final filters = keywords;
+    if (query.isEmpty && filters.isEmpty) return entries;
     final lowQuery = query.toLowerCase();
-    return logs.where((log) {
+    return entries.where((log) {
       final logLevelName = log.logLevel.name;
-      return {logLevelName}.containsAll(keywords) &&
-          ((log.payload.toLowerCase().contains(lowQuery)) ||
+      return (filters.isEmpty ||
+              filters.every((keyword) => keyword == logLevelName)) &&
+          (lowQuery.isEmpty ||
+              log.payload.toLowerCase().contains(lowQuery) ||
               logLevelName.contains(lowQuery));
     }).toList();
   }
@@ -195,23 +200,26 @@ abstract class TrackerInfosState with _$TrackerInfosState {
 
 extension TrackerInfosStateExt on TrackerInfosState {
   List<TrackerInfo> get list {
-    final lowerQuery = query.toLowerCase().trim();
+    final entries = trackerInfos;
+    final filters = keywords;
     final lowQuery = query.toLowerCase();
-    return trackerInfos.where((trackerInfo) {
+    final lowerQuery = lowQuery.trim();
+    if (lowerQuery.isEmpty && filters.isEmpty) return entries;
+    return entries.where((trackerInfo) {
       final chains = trackerInfo.chains;
       final process = trackerInfo.metadata.process;
-      final networkText = trackerInfo.metadata.network.toLowerCase();
-      final hostText = trackerInfo.metadata.host.toLowerCase();
-      final destinationIPText = trackerInfo.metadata.destinationIP
-          .toLowerCase();
-      final processText = trackerInfo.metadata.process.toLowerCase();
-      final chainsText = chains.join('').toLowerCase();
-      return {...chains, process}.containsAll(keywords) &&
-          (networkText.contains(lowerQuery) ||
-              hostText.contains(lowerQuery) ||
-              destinationIPText.contains(lowQuery) ||
-              processText.contains(lowerQuery) ||
-              chainsText.contains(lowerQuery));
+      return (filters.isEmpty ||
+              filters.every(
+                (keyword) => keyword == process || chains.contains(keyword),
+              )) &&
+          (lowerQuery.isEmpty ||
+              trackerInfo.metadata.network.toLowerCase().contains(lowerQuery) ||
+              trackerInfo.metadata.host.toLowerCase().contains(lowerQuery) ||
+              trackerInfo.metadata.destinationIP.toLowerCase().contains(
+                lowQuery,
+              ) ||
+              process.toLowerCase().contains(lowerQuery) ||
+              chains.join('').toLowerCase().contains(lowerQuery));
     }).toList();
   }
 }
@@ -422,10 +430,15 @@ extension GroupExt on Group {
   String get realNow => now ?? '';
 
   String getCurrentSelectedName(String proxyName) {
+    final preferred =
+        proxyName.isNotEmpty &&
+            (all.isEmpty || all.any((proxy) => proxy.name == proxyName))
+        ? proxyName
+        : '';
     if (type.isComputedSelected) {
-      return realNow.isNotEmpty ? realNow : proxyName;
+      return realNow.isNotEmpty ? realNow : preferred;
     }
-    return proxyName.isNotEmpty ? proxyName : realNow;
+    return preferred.isNotEmpty ? preferred : realNow;
   }
 }
 

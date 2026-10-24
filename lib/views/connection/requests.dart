@@ -1,5 +1,4 @@
 import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/features/features.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
@@ -14,9 +13,16 @@ class RequestsView extends ConsumerStatefulWidget {
   ConsumerState<RequestsView> createState() => _RequestsViewState();
 }
 
-class _RequestsViewState extends ConsumerState<RequestsView> {
+class _RequestsViewState extends ConsumerState<RequestsView>
+    with WidgetsBindingObserver, ActiveFeedMixin<RequestsView> {
   final _listController = TrackerInfoListController();
   late final ScrollController _scrollController;
+
+  @override
+  Duration get feedRefreshInterval => commonDuration;
+
+  @override
+  bool get feedVisible => ref.read(uiVisibleProvider);
 
   @override
   void initState() {
@@ -27,8 +33,9 @@ class _RequestsViewState extends ConsumerState<RequestsView> {
       _,
       _,
     ) {
-      updateRequestsThrottler();
+      requestFeedRefresh();
     });
+    ref.listenManual(uiVisibleProvider, (_, _) => syncFeedVisibility());
   }
 
   @override
@@ -38,13 +45,9 @@ class _RequestsViewState extends ConsumerState<RequestsView> {
     super.dispose();
   }
 
-  void updateRequestsThrottler() {
-    throttler.call(FunctionTag.requests, () {
-      if (!mounted) {
-        return;
-      }
-      _listController.setTrackerInfos(ref.read(requestsProvider).list);
-    }, duration: commonDuration);
+  @override
+  void refreshFeed() {
+    _listController.setTrackerInfos(ref.read(requestsProvider).list);
   }
 
   @override

@@ -130,7 +130,7 @@ final class TrayTitleStateProvider
   }
 }
 
-String _$trayTitleStateHash() => r'aacef4ae3642d8368b252bfb24e3de288849619e';
+String _$trayTitleStateHash() => r'3b4f21baaba9b0c0b4250a4041a9fccffa9fed99';
 
 @ProviderFor(vpnState)
 final vpnStateProvider = VpnStateProvider._();
@@ -2113,6 +2113,54 @@ final class UnfoldSetProvider
 
 String _$unfoldSetHash() => r'59a5b417611533069462ddf31eca080ab2f74ac9';
 
+@ProviderFor(proxySelectionResolver)
+final proxySelectionResolverProvider = ProxySelectionResolverProvider._();
+
+final class ProxySelectionResolverProvider
+    extends
+        $FunctionalProvider<
+          ProxySelectionResolver,
+          ProxySelectionResolver,
+          ProxySelectionResolver
+        >
+    with $Provider<ProxySelectionResolver> {
+  ProxySelectionResolverProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'proxySelectionResolverProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$proxySelectionResolverHash();
+
+  @$internal
+  @override
+  $ProviderElement<ProxySelectionResolver> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  ProxySelectionResolver create(Ref ref) {
+    return proxySelectionResolver(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(ProxySelectionResolver value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<ProxySelectionResolver>(value),
+    );
+  }
+}
+
+String _$proxySelectionResolverHash() =>
+    r'f30cd0b513daeaf01b81b9418e0f4bb9e3e8ef2a';
+
 @ProviderFor(realSelectedProxyState)
 final realSelectedProxyStateProvider = RealSelectedProxyStateFamily._();
 
@@ -2178,7 +2226,7 @@ final class RealSelectedProxyStateProvider
 }
 
 String _$realSelectedProxyStateHash() =>
-    r'42fa131419f0a26e30c4f5269bf020893b7f828c';
+    r'913572684cff374937e36a30a351bec227aa4768';
 
 final class RealSelectedProxyStateFamily extends $Family
     with $FunctionalFamilyOverride<SelectedProxyState, String> {

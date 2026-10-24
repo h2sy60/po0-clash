@@ -18,7 +18,7 @@ const _excludedPatterns = [
 // Floors ratchet up only. Raise one when new tests lift a group; never lower
 // one to make a run pass.
 const _groupFloors = <String, double>{
-  'core': 76.0,
+  'core': 84.0,
   'database': 81.0,
   'widgets': 82.0,
   'features': 81.0,
@@ -29,7 +29,7 @@ const _groupFloors = <String, double>{
   'views': 66.0,
   'enum': 86.0,
   'pages': 71.0,
-  'plugins': 67.0,
+  'plugins': 71.0,
   'lib': 20.0,
 };
 

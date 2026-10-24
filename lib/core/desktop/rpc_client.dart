@@ -29,6 +29,8 @@ abstract interface class CoreRpcChannel {
 }
 
 final class CoreRpcClient implements CoreRpcChannel {
+  static final _frameDecoder = utf8.decoder.fuse(json.decoder);
+
   final DesktopCoreTransport transport;
   final Duration extensionGrace;
   final Map<String, Completer<Object?>> _pending = {};
@@ -170,11 +172,10 @@ final class CoreRpcClient implements CoreRpcChannel {
 
   void _handleFrame(Uint8List frame) {
     try {
-      final decoded = json.decode(utf8.decode(frame));
-      if (decoded is! Map) {
+      final data = _frameDecoder.convert(frame);
+      if (data is! Map<String, Object?>) {
         throw const FormatException('Core transport data is not an object');
       }
-      final data = Map<String, Object?>.from(decoded);
       if (data.containsKey('method')) {
         _handleMethodCall(CoreMethodCall.fromJson(data));
       } else {

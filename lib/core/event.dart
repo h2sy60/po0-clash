@@ -8,9 +8,16 @@ import 'package:flutter/foundation.dart';
 List<CoreEvent> coreEventsFromData(Object? data) {
   final items = data is List ? data : [data];
   final events = <CoreEvent>[];
-  for (final item in items.whereType<Map>()) {
+  for (final item in items) {
+    if (item is! Map) {
+      continue;
+    }
     try {
-      events.add(CoreEvent.fromJson(Map<String, Object?>.from(item)));
+      events.add(
+        CoreEvent.fromJson(
+          item is Map<String, Object?> ? item : Map<String, Object?>.from(item),
+        ),
+      );
     } catch (error) {
       commonPrint.log(
         'Unable to parse Core event: $error',
@@ -45,17 +52,24 @@ class CoreEventManager {
 
   CoreEventManager._() {
     _controller.stream.listen((event) {
-      for (final CoreEventListener listener in List.of(_listeners)) {
+      final listeners = _listenerSnapshot ??= List.of(
+        _listeners,
+        growable: false,
+      );
+      Log? log;
+      Delay? delay;
+      TrackerInfo? request;
+      for (final listener in listeners) {
         try {
           switch (event.type) {
             case CoreEventType.log:
-              listener.onLog(Log.fromJson(event.data));
+              listener.onLog(log ??= Log.fromJson(event.data));
               break;
             case CoreEventType.delay:
-              listener.onDelay(Delay.fromJson(event.data));
+              listener.onDelay(delay ??= Delay.fromJson(event.data));
               break;
             case CoreEventType.request:
-              listener.onRequest(TrackerInfo.fromJson(event.data));
+              listener.onRequest(request ??= TrackerInfo.fromJson(event.data));
               break;
             case CoreEventType.loaded:
               listener.onLoaded(event.data);
@@ -87,6 +101,7 @@ class CoreEventManager {
 
   final ObserverList<CoreEventListener> _listeners =
       ObserverList<CoreEventListener>();
+  List<CoreEventListener>? _listenerSnapshot;
 
   bool get hasListeners {
     return _listeners.isNotEmpty;
@@ -98,10 +113,12 @@ class CoreEventManager {
 
   void addListener(CoreEventListener listener) {
     _listeners.add(listener);
+    _listenerSnapshot = null;
   }
 
   void removeListener(CoreEventListener listener) {
     _listeners.remove(listener);
+    _listenerSnapshot = null;
   }
 }
 

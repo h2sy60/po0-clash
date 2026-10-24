@@ -1,11 +1,11 @@
 use super::frame::{
-    self, FrameReader, IO_POLL_INTERVAL, TYPE_CONNECTED, TYPE_DATA, TYPE_DISCONNECTED, TYPE_ERROR,
-    TYPE_READY,
+    self, FrameReader, TYPE_CONNECTED, TYPE_DATA, TYPE_DISCONNECTED, TYPE_ERROR, TYPE_READY,
 };
 use super::platform;
 use super::queue::{
     enqueue_message, write_messages, MessageSender, MAX_PENDING_MESSAGES, SEND_QUEUE_TIMEOUT,
 };
+use super::readiness::Wakeup;
 use crate::frb_generated::StreamSink;
 use flutter_rust_bridge::for_generated::SseCodec;
 use interprocess::local_socket::prelude::*;
@@ -23,19 +23,19 @@ macro_rules! ipc_debug {
     };
 }
 
-const ACCEPT_POLL_INTERVAL: std::time::Duration = std::time::Duration::from_millis(50);
-
 static RUNNING: AtomicBool = AtomicBool::new(false);
 static LIFECYCLE: Mutex<()> = Mutex::new(());
 
 struct ServerState {
     sender: Option<MessageSender>,
     handle: Option<thread::JoinHandle<()>>,
+    wakeup: Option<Arc<Wakeup>>,
 }
 
 static STATE: Mutex<ServerState> = Mutex::new(ServerState {
     sender: None,
     handle: None,
+    wakeup: None,
 });
 
 fn server_active() -> bool {
@@ -49,6 +49,12 @@ fn stop_server_thread() -> Result<(), String> {
         if let Some(sender) = state.sender.take() {
             sender.close();
         }
+        if let Some(wakeup) = &state.wakeup {
+            wakeup
+                .notify()
+                .map_err(|e| format!("IPC wakeup failed: {e}"))?;
+        }
+        state.wakeup.take();
         state.handle.take()
     };
     if let Some(handle) = handle {
@@ -67,10 +73,12 @@ pub fn restart_server(name: String, sink: StreamSink<Vec<u8>, SseCodec>) -> Resu
     stop_server_thread()?;
     platform::cleanup_socket(&name).map_err(|e| format!("Failed to remove stale socket: {e}"))?;
 
+    let wakeup = Arc::new(Wakeup::new().map_err(|e| format!("IPC wakeup setup failed: {e}"))?);
+    let io_wakeup = Arc::clone(&wakeup);
     RUNNING.store(true, Ordering::SeqCst);
     let handle = thread::Builder::new()
         .name("ipc-server".into())
-        .spawn(move || io_loop(name, sink))
+        .spawn(move || io_loop(name, sink, io_wakeup))
         .map_err(|e| {
             RUNNING.store(false, Ordering::SeqCst);
             format!("Failed to spawn IPC server thread: {e}")
@@ -78,6 +86,7 @@ pub fn restart_server(name: String, sink: StreamSink<Vec<u8>, SseCodec>) -> Resu
 
     let mut state = STATE.lock().map_err(|e| format!("Lock poisoned: {e}"))?;
     state.handle = Some(handle);
+    state.wakeup = Some(wakeup);
     Ok(())
 }
 
@@ -116,7 +125,7 @@ fn finish_server(name: &str) {
     }
 }
 
-fn io_loop(name: String, sink: StreamSink<Vec<u8>, SseCodec>) {
+fn io_loop(name: String, sink: StreamSink<Vec<u8>, SseCodec>, wakeup: Arc<Wakeup>) {
     let fs_name = match name.clone().to_fs_name::<GenericFilePath>() {
         Ok(name) => name,
         Err(e) => {
@@ -157,7 +166,12 @@ fn io_loop(name: String, sink: StreamSink<Vec<u8>, SseCodec>) {
         let stream = match listener.accept() {
             Ok(stream) => stream,
             Err(e) if e.kind() == io::ErrorKind::WouldBlock => {
-                thread::sleep(ACCEPT_POLL_INTERVAL);
+                if let Err(error) = platform::wait_for_listener(&listener, &wakeup) {
+                    if server_active() {
+                        report_error(&sink, format!("accept wait error: {error}"));
+                    }
+                    break;
+                }
                 continue;
             }
             Err(e) => {
@@ -206,10 +220,12 @@ fn io_loop(name: String, sink: StreamSink<Vec<u8>, SseCodec>) {
         let (mut receiver, mut sender) = stream.split();
         let connection_running = Arc::new(AtomicBool::new(true));
         let writer_running = Arc::clone(&connection_running);
+        let writer_wakeup = Arc::clone(&wakeup);
         let writer = thread::spawn(move || {
             let is_running = || writer_running.load(Ordering::SeqCst) && server_active();
             let result = write_messages(&mut sender, &rx, &pending_bytes, &is_running);
             writer_running.store(false, Ordering::SeqCst);
+            let _ = writer_wakeup.notify();
             result
                 .err()
                 .filter(|error| error.kind() != io::ErrorKind::Interrupted)
@@ -231,7 +247,14 @@ fn io_loop(name: String, sink: StreamSink<Vec<u8>, SseCodec>) {
                         break;
                     }
                 }
-                Ok(None) => thread::sleep(IO_POLL_INTERVAL),
+                Ok(None) => {
+                    if let Err(error) = platform::wait_for_receiver(&receiver, &wakeup) {
+                        if server_active() {
+                            report_error(&sink, format!("read wait error: {error}"));
+                        }
+                        break;
+                    }
+                }
                 Err(e) => {
                     if !frame::is_expected_disconnect_error(&e) && server_active() {
                         ipc_debug!("[IPC] read error: {e}, raw={:?}", e.raw_os_error());
