@@ -73,9 +73,10 @@ func handleGetIsInit() bool {
 func handleForceGC() {
 	log.Infoln("[APP] request force GC")
 	tunnel.InvalidateAllProxies()
-	runtime.GC()
 	if features.Android {
 		debug.FreeOSMemory()
+	} else {
+		runtime.GC()
 	}
 }
 
@@ -104,61 +105,6 @@ func handleValidateConfig(path string) string {
 		return err.Error()
 	}
 	return ""
-}
-
-const globalProxyName = "GLOBAL"
-
-func isProxyGroupType(adapterType constant.AdapterType) bool {
-	switch adapterType {
-	case constant.Selector, constant.URLTest, constant.Fallback, constant.Relay, constant.LoadBalance:
-		return true
-	default:
-		return false
-	}
-}
-
-func proxyGroupNames(
-	nameList []string,
-	typeOf func(name string) (constant.AdapterType, bool),
-) []string {
-	hasGlobal := false
-	names := make([]string, 0, len(nameList)+1)
-
-	for _, name := range nameList {
-		if name == globalProxyName {
-			hasGlobal = true
-		}
-		adapterType, ok := typeOf(name)
-		if !ok || !isProxyGroupType(adapterType) {
-			continue
-		}
-		names = append(names, name)
-	}
-
-	if !hasGlobal {
-		if adapterType, ok := typeOf(globalProxyName); ok && isProxyGroupType(adapterType) {
-			names = append([]string{globalProxyName}, names...)
-		}
-	}
-
-	return names
-}
-
-func handleGetProxies() ProxiesData {
-	proxies := tunnel.AllProxies()
-
-	allNames := proxyGroupNames(config.GetProxyNameList(), func(name string) (constant.AdapterType, bool) {
-		p, ok := proxies[name]
-		if !ok || p == nil {
-			return 0, false
-		}
-		return p.Type(), true
-	})
-
-	return ProxiesData{
-		All:     allNames,
-		Proxies: proxies,
-	}
 }
 
 var (
@@ -695,10 +641,7 @@ func init() {
 		})
 	}
 	statistic.DefaultRequestNotify = func(c statistic.Tracker) {
-		sendMessage(Message{
-			Type: RequestMessage,
-			Data: c,
-		})
+		sendMessage(requestMessage(c))
 	}
 	executor.DefaultProviderLoadedHook = func(providerName string) {
 		scheduleReclaimOwnership()

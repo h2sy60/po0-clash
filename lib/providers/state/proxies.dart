@@ -220,14 +220,15 @@ Set<String> unfoldSet(Ref ref) {
 }
 
 @riverpod
-SelectedProxyState realSelectedProxyState(Ref ref, String proxyName) {
+ProxySelectionResolver proxySelectionResolver(Ref ref) {
   final groups = ref.watch(groupsProvider);
   final selectedMap = ref.watch(selectedMapProvider);
-  return computeRealSelectedProxyState(
-    proxyName,
-    groups: groups,
-    selectedMap: selectedMap,
-  );
+  return ProxySelectionResolver(groups: groups, selectedMap: selectedMap);
+}
+
+@riverpod
+SelectedProxyState realSelectedProxyState(Ref ref, String proxyName) {
+  return ref.watch(proxySelectionResolverProvider).resolve(proxyName);
 }
 
 @riverpod

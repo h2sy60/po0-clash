@@ -151,6 +151,43 @@ void main() {
   });
 
   test(
+    'buildGroups keeps the original default before sorting and shares members',
+    () async {
+      final groups = await buildGroups(
+        const ComputeGroupsState(
+          proxiesData: ProxiesData(
+            all: ['first', 'second'],
+            proxies: {
+              'first': {
+                'name': 'first',
+                'type': 'Selector',
+                'all': ['Zulu', 'Alpha'],
+              },
+              'second': {
+                'name': 'second',
+                'type': 'Selector',
+                'now': 'Alpha',
+                'all': ['Zulu', 'Alpha'],
+              },
+              'Zulu': {'name': 'Zulu', 'type': 'Direct'},
+              'Alpha': {'name': 'Alpha', 'type': 'Direct'},
+            },
+          ),
+          sortType: ProxiesSortType.name,
+          delayMap: {},
+          selectedMap: {},
+          defaultTestUrl: '',
+        ),
+      );
+      expect(groups.first.now, 'Zulu');
+      expect(groups.last.now, 'Alpha');
+      expect(groups.first.all.map((proxy) => proxy.name), ['Alpha', 'Zulu']);
+      expect(groups.first.all.first, same(groups.last.all.first));
+      expect(groups.first.all.last, same(groups.last.all.last));
+    },
+  );
+
+  test(
     'makeRealProfileTask normalizes runtime config and added rules',
     () async {
       final rawConfig = await decodeJSONTask<Map<String, dynamic>>(

@@ -174,9 +174,7 @@ class SystemAction extends _$SystemAction {
     await trayPort?.update(
       trayState: ref.read(trayStateProvider),
       traffic: ref.read(
-        trafficsProvider.select(
-          (state) => state.list.safeLast(const Traffic()),
-        ),
+        trafficsProvider.select((state) => state.lastOrNull ?? const Traffic()),
       ),
       read: globalState.container.read,
     );

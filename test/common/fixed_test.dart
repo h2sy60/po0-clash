@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:fl_clash/common/fixed.dart';
 import 'package:test/test.dart';
 
@@ -82,6 +84,80 @@ void main() {
         list = list.append(i);
       }
       expect(list.list, [3, 4]);
+    });
+
+    test('indexing and snapshots stay ordered after repeated wraparound', () {
+      var list = FixedList<int>(5000);
+      for (var i = 0; i < 5000; i++) {
+        list = list.append(i);
+      }
+      final before = list.list;
+      for (var i = 5000; i < 15001; i++) {
+        list = list.append(i);
+      }
+      expect(before, List.generate(5000, (i) => i));
+      expect(list.list, List.generate(5000, (i) => 10001 + i));
+      expect(list[0], 10001);
+      expect(list[2499], 12500);
+      expect(list.lastOrNull, 15000);
+      expect(() => list[-1], throwsRangeError);
+      expect(() => list[5000], throwsRangeError);
+    });
+
+    test('nullable items survive wraparound, copying, and clearing', () {
+      final list = FixedList<int?>(2, list: [1, null]);
+      expect(list.lastOrNull, isNull);
+      list.add(3);
+      expect(list.list, [null, 3]);
+      final copy = list.copyWith();
+      list.clear();
+      list.add(null);
+      expect(list.list, [null]);
+      expect(copy.list, [null, 3]);
+      copy.clear();
+      expect(copy.lastOrNull, isNull);
+    });
+
+    test('the input list is independent from the bounded buffer', () {
+      final source = [1, 2, 3, 4];
+      final list = FixedList<int>(2, list: source);
+      expect(source, [1, 2, 3, 4]);
+      source.clear();
+      list.add(5);
+      expect(list.list, [4, 5]);
+    });
+
+    test('mixed buffer operations agree with a bounded list', () {
+      final random = Random(731);
+      for (final capacity in [1, 2, 7, 64]) {
+        var list = FixedList<int>(capacity);
+        final expected = <int>[];
+        for (var i = 0; i < 1000; i++) {
+          switch (random.nextInt(10)) {
+            case 0:
+              list.clear();
+              expected.clear();
+              break;
+            case 1:
+              list = list.copyWith();
+              break;
+            default:
+              if (i.isEven) {
+                list.add(i);
+              } else {
+                list = list.append(i);
+              }
+              expected.add(i);
+              if (expected.length > capacity) expected.removeAt(0);
+          }
+          expect(list.list, expected);
+          expect(list.length, expected.length);
+          expect(list.lastOrNull, expected.lastOrNull);
+          for (var index = 0; index < expected.length; index++) {
+            expect(list[index], expected[index]);
+          }
+        }
+      }
     });
   });
 

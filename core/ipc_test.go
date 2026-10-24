@@ -1,4 +1,4 @@
-//go:build !cgo
+//go:build !(android && cgo)
 
 package main
 
@@ -349,7 +349,7 @@ func TestSendMessageBatchWrapsMessagesInMethodCall(t *testing.T) {
 	}
 
 	frame := captureSingleFrame(t, func() {
-		sendMessageBatch(batch)
+		newMessageBatchSender(deliverEvent).send(batch)
 	})
 
 	call := MethodCall{}
@@ -407,7 +407,7 @@ func TestMethodResponseAnswersExactlyOnce(t *testing.T) {
 
 func TestSendMessageBatchDoesNotDoubleEncodeArguments(t *testing.T) {
 	frame := captureSingleFrame(t, func() {
-		sendMessageBatch([]Message{{Type: LoadedMessage, Data: "provider"}})
+		newMessageBatchSender(deliverEvent).send([]Message{{Type: LoadedMessage, Data: "provider"}})
 	})
 
 	var envelope struct {
@@ -418,6 +418,31 @@ func TestSendMessageBatchDoesNotDoubleEncodeArguments(t *testing.T) {
 	}
 	if len(envelope.Arguments) == 0 || envelope.Arguments[0] != '[' {
 		t.Fatalf("arguments = %s, want a JSON array rather than an encoded string", envelope.Arguments)
+	}
+}
+
+func TestMessageBatchSenderKeepsConsecutiveIPCFramesIndependent(t *testing.T) {
+	payloads := []string{strings.Repeat("first", 1024), "second", "third"}
+	frames := captureFrames(t, func() {
+		sender := newMessageBatchSender(deliverEvent)
+		for _, payload := range payloads {
+			sender.send([]Message{{Type: LoadedMessage, Data: payload}})
+		}
+	})
+	if len(frames) != len(payloads) {
+		t.Fatalf("sent %d frames, want %d", len(frames), len(payloads))
+	}
+	for index, payload := range payloads {
+		want, err := json.Marshal(messageBatchCall{
+			Method:    messageMethod,
+			Arguments: []Message{{Type: LoadedMessage, Data: payload}},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !bytes.Equal(frames[index], want) {
+			t.Fatalf("reusing encoding storage corrupted IPC frame %d", index)
+		}
 	}
 }
 

@@ -48,9 +48,16 @@ class LogsView extends ConsumerStatefulWidget {
   ConsumerState<LogsView> createState() => _LogsViewState();
 }
 
-class _LogsViewState extends ConsumerState<LogsView> {
+class _LogsViewState extends ConsumerState<LogsView>
+    with WidgetsBindingObserver, ActiveFeedMixin<LogsView> {
   final _listController = LogListController();
   late final ScrollController _scrollController;
+
+  @override
+  Duration get feedRefreshInterval => commonDuration;
+
+  @override
+  bool get feedVisible => ref.read(uiVisibleProvider);
 
   @override
   void initState() {
@@ -58,8 +65,9 @@ class _LogsViewState extends ConsumerState<LogsView> {
     _scrollController = ScrollController(initialScrollOffset: double.maxFinite);
     _listController.setLogs(ref.read(logsProvider).list);
     ref.listenManual(logsProvider.select((state) => state.revision), (_, _) {
-      updateLogsThrottler();
+      requestFeedRefresh();
     });
+    ref.listenManual(uiVisibleProvider, (_, _) => syncFeedVisibility());
   }
 
   List<Widget> _buildActions() {
@@ -95,13 +103,9 @@ class _LogsViewState extends ConsumerState<LogsView> {
     );
   }
 
-  void updateLogsThrottler() {
-    throttler.call(FunctionTag.logs, () {
-      if (!mounted) {
-        return;
-      }
-      _listController.setLogs(ref.read(logsProvider).list);
-    }, duration: commonDuration);
+  @override
+  void refreshFeed() {
+    _listController.setLogs(ref.read(logsProvider).list);
   }
 
   @override

@@ -272,6 +272,48 @@ void main() {
     await transport.close();
   });
 
+  test('decodes UTF-8 JSON directly from a bounded byte view', () async {
+    final transport = FakeDesktopCoreTransport.connected();
+    final client = CoreRpcClient(transport);
+    addTearDown(client.close);
+    addTearDown(transport.close);
+    final invocation = client.invoke<Object?>(method: CoreMethod.getConfig);
+    final request = await _sentRequest(transport);
+    final result = <String, Object?>{
+      '订阅🚀': ['节点', '\u2028\u2029', '<>&\\"', 123, null],
+    };
+    final bytes = utf8.encode(
+      jsonEncode({'id': request['id'], 'result': result}),
+    );
+    final storage = Uint8List(bytes.length + 8)
+      ..fillRange(0, bytes.length + 8, 255);
+    storage.setRange(4, bytes.length + 4, bytes);
+    transport.addFrame(Uint8List.sublistView(storage, 4, bytes.length + 4));
+    expect(await invocation, result);
+    expect(client.pendingCount, 0);
+  });
+
+  test('invalid UTF-8 does not complete a pending response', () async {
+    final transport = FakeDesktopCoreTransport.connected();
+    final client = CoreRpcClient(transport);
+    addTearDown(client.close);
+    addTearDown(transport.close);
+    final invocation = client.invoke<bool>(method: CoreMethod.getIsInit);
+    final request = await _sentRequest(transport);
+    transport.addFrame(
+      Uint8List.fromList([
+        ...utf8.encode('{"id":"${request['id']}","result":"'),
+        255,
+        ...utf8.encode('"}'),
+      ]),
+    );
+    await pumpEventQueue();
+    expect(client.pendingCount, 1);
+    transport.addJson({'id': request['id'], 'result': true});
+    expect(await invocation, isTrue);
+    expect(client.pendingCount, 0);
+  });
+
   test('close fails pending requests and is idempotent', () async {
     final transport = FakeDesktopCoreTransport.connected();
     final client = CoreRpcClient(transport);

@@ -14,7 +14,7 @@ type batchCollector struct {
 func (collector *batchCollector) send(messages []Message) {
 	collector.mu.Lock()
 	defer collector.mu.Unlock()
-	collector.batches = append(collector.batches, messages)
+	collector.batches = append(collector.batches, append([]Message(nil), messages...))
 }
 
 func (collector *batchCollector) snapshot() [][]Message {
@@ -275,5 +275,55 @@ func TestRunMessageBatcherDrainsBulkAfterPriorityCloses(t *testing.T) {
 		if message.Type != RequestMessage || message.Data != i {
 			t.Errorf("message %d = {%s %v}, want {request %d}", i, message.Type, message.Data, i)
 		}
+	}
+}
+
+func TestMessageBatchStorageIsReusedAndClearedAfterSend(t *testing.T) {
+	priority := make(chan Message, messageBatchSize*2)
+	for i := 0; i < cap(priority); i++ {
+		priority <- Message{Type: DelayMessage, Data: i}
+	}
+	close(priority)
+	var storage []Message
+	var batches int
+	runMessageBatcher(closedMessages(), priority, closedMessages(), func(messages []Message) {
+		if storage == nil {
+			storage = messages
+		} else if &storage[0] != &messages[0] {
+			t.Error("allocated a replacement batch buffer")
+		}
+		batches++
+	})
+	if batches != 2 {
+		t.Fatalf("sent %d batches, want 2", batches)
+	}
+	for _, message := range storage {
+		if message.Type != "" || message.Data != nil {
+			t.Fatal("idle batch storage retained a delivered event")
+		}
+	}
+}
+
+func BenchmarkMessageBatcher(b *testing.B) {
+	priority := make(chan Message, messageQueueSize)
+	done := make(chan struct{})
+	var delivered int
+	go func() {
+		runMessageBatcher(closedMessages(), priority, closedMessages(), func(messages []Message) {
+			delivered += len(messages)
+		})
+		close(done)
+	}()
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		for j := 0; j < messageBatchSize; j++ {
+			priority <- Message{Type: DelayMessage, Data: "node"}
+		}
+	}
+	close(priority)
+	<-done
+	if delivered != b.N*messageBatchSize {
+		b.Fatal("batcher lost an event")
 	}
 }

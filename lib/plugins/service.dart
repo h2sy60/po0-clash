@@ -19,6 +19,7 @@ class Service {
 
   final ObserverList<ServiceListener> _listeners =
       ObserverList<ServiceListener>();
+  List<ServiceListener>? _listenerSnapshot;
 
   factory Service() {
     _instance ??= Service._internal();
@@ -32,10 +33,14 @@ class Service {
         case 'event':
           final data = call.arguments as String? ?? '';
           final methodCall = CoreMethodCall.fromJson(
-            Map<String, Object?>.from(json.decode(data) as Map),
+            json.decode(data) as Map<String, Object?>,
           );
           for (final event in coreEventsFromData(methodCall.arguments)) {
-            for (final listener in List.of(_listeners)) {
+            final listeners = _listenerSnapshot ??= List.of(
+              _listeners,
+              growable: false,
+            );
+            for (final listener in listeners) {
               try {
                 listener.onServiceEvent(event);
               } catch (error) {
@@ -104,10 +109,12 @@ class Service {
 
   void addListener(ServiceListener listener) {
     _listeners.add(listener);
+    _listenerSnapshot = null;
   }
 
   void removeListener(ServiceListener listener) {
     _listeners.remove(listener);
+    _listenerSnapshot = null;
   }
 }
 

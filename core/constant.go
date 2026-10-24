@@ -77,8 +77,8 @@ type ExternalProvider struct {
 }
 
 type ProxiesData struct {
-	Proxies map[string]constant.Proxy `json:"proxies"`
-	All     []string                  `json:"all"`
+	Proxies map[string]proxySnapshot `json:"proxies"`
+	All     []string                 `json:"all"`
 }
 
 const (

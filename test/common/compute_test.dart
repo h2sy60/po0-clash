@@ -132,6 +132,44 @@ void main() {
       );
       expect(state.proxyName, 'proxy-b');
     });
+
+    test('a removed preference falls back to the active runtime proxy', () {
+      final state = computeRealSelectedProxyState(
+        'selector',
+        groups: const [
+          Group(
+            name: 'selector',
+            type: GroupType.Selector,
+            now: 'replacement',
+            all: [Proxy(name: 'replacement', type: 'ss')],
+          ),
+        ],
+        selectedMap: {'selector': 'removed'},
+      );
+      expect(state.proxyName, 'replacement');
+    });
+
+    test('cycles terminate without overflowing the stack', () {
+      final state = computeRealSelectedProxyState(
+        'a',
+        groups: const [
+          Group(name: 'a', type: GroupType.Selector, now: 'b'),
+          Group(name: 'b', type: GroupType.Selector, now: 'a'),
+        ],
+        selectedMap: {},
+      );
+      expect(state.proxyName, 'a');
+    });
+
+    test('a resolver reuses the result within one selection snapshot', () {
+      final resolver = ProxySelectionResolver(
+        groups: const [
+          Group(name: 'selector', type: GroupType.Selector, now: 'leaf'),
+        ],
+        selectedMap: {},
+      );
+      expect(resolver.resolve('selector'), same(resolver.resolve('selector')));
+    });
   });
 
   group('computeProxyDelayState', () {
@@ -292,6 +330,38 @@ void main() {
         defaultTestUrl: '',
       );
       expect(result.length, 2);
+    });
+
+    test('delay sorting keeps each group test URL independent', () {
+      const proxies = [
+        Proxy(name: 'a', type: 'ss'),
+        Proxy(name: 'b', type: 'ss'),
+      ];
+      final result = computeSort(
+        groups: const [
+          Group(
+            name: 'one',
+            type: GroupType.Selector,
+            testUrl: 'one',
+            all: proxies,
+          ),
+          Group(
+            name: 'two',
+            type: GroupType.Selector,
+            testUrl: 'two',
+            all: proxies,
+          ),
+        ],
+        sortType: ProxiesSortType.delay,
+        delayMap: {
+          'one': {'a': 10, 'b': 90},
+          'two': {'a': 90, 'b': 10},
+        },
+        selectedMap: {},
+        defaultTestUrl: '',
+      );
+      expect(result.first.all.map((proxy) => proxy.name), ['a', 'b']);
+      expect(result.last.all.map((proxy) => proxy.name), ['b', 'a']);
     });
   });
 

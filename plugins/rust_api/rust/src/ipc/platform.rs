@@ -1,8 +1,7 @@
+use super::readiness::Wakeup;
 use std::io;
 
-#[cfg(windows)]
-use interprocess::local_socket::RecvHalf;
-use interprocess::local_socket::{ListenerOptions, Stream};
+use interprocess::local_socket::{Listener, ListenerOptions, RecvHalf, Stream};
 #[cfg(windows)]
 use std::io::Read;
 #[cfg(unix)]
@@ -14,6 +13,34 @@ use std::{
 };
 #[cfg(windows)]
 use windows_sys::Win32::System::Pipes::PeekNamedPipe;
+
+pub fn wait_for_listener(listener: &Listener, wakeup: &Wakeup) -> io::Result<()> {
+    #[cfg(unix)]
+    {
+        let Listener::UdSocket(listener) = listener;
+        wakeup.wait(listener)
+    }
+    #[cfg(not(unix))]
+    {
+        let _ = (listener, wakeup);
+        std::thread::sleep(std::time::Duration::from_millis(50));
+        Ok(())
+    }
+}
+
+pub fn wait_for_receiver(receiver: &RecvHalf, wakeup: &Wakeup) -> io::Result<()> {
+    #[cfg(unix)]
+    {
+        let RecvHalf::UdSocket(receiver) = receiver;
+        wakeup.wait(receiver)
+    }
+    #[cfg(not(unix))]
+    {
+        let _ = (receiver, wakeup);
+        std::thread::sleep(super::frame::IO_POLL_INTERVAL);
+        Ok(())
+    }
+}
 
 pub fn cleanup_socket(path: &str) -> io::Result<()> {
     #[cfg(unix)]

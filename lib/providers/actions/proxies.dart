@@ -243,19 +243,12 @@ class ProxiesAction extends _$ProxiesAction {
     List<Proxy> proxies,
     String? testUrl,
   ) {
-    final groups = ref.read(groupsProvider);
-    final selectedMap = ref.read(
-      currentProfileProvider.select((state) => state?.selectedMap ?? {}),
-    );
+    final resolver = ref.read(proxySelectionResolverProvider);
     final fallbackTestUrl = ref.read(realTestUrlProvider(testUrl));
     final seen = <String>{};
     final targets = <_DelayTestTarget>[];
     for (final proxy in proxies) {
-      final state = computeRealSelectedProxyState(
-        proxy.name,
-        groups: groups,
-        selectedMap: selectedMap,
-      );
+      final state = resolver.resolve(proxy.name);
       if (state.proxyName.isEmpty) {
         continue;
       }
