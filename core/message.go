@@ -41,6 +41,9 @@ func classOfMessage(message Message) messageClass {
 }
 
 func sendMessage(message Message) {
+	if !acceptsEvents() {
+		return
+	}
 	switch classOfMessage(message) {
 	case stateMessageClass:
 		enqueueState(stateMessageQueue, message)

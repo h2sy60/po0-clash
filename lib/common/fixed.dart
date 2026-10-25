@@ -46,7 +46,7 @@ class FixedList<T> {
   T operator [](int index) => _list.elementAt(index);
 
   FixedList<T> copyWith() {
-    return FixedList(maxLength, list: List.of(_list));
+    return FixedList._(maxLength, ListQueue<T>.from(_list), 0);
   }
 
   @override
@@ -69,6 +69,6 @@ List<T> retainTrimmedHead<T>(List<T> current, List<T> latest, int limit) {
   if (index == 0) {
     return latest;
   }
-  final head = index > 0 ? current.sublist(0, index) : current;
-  return List.unmodifiable([...head, ...latest].take(limit));
+  final head = current.take(index > 0 ? index : current.length);
+  return List.unmodifiable(head.followedBy(latest).take(limit));
 }

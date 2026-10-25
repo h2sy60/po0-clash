@@ -628,7 +628,7 @@ func handleSetupConfig(params *SetupParams) string {
 
 func init() {
 	adapter.UrlTestHook = func(url string, name string, delay uint16) {
-		if !shouldPublishDelay(delay) {
+		if !acceptsEvents() || !shouldPublishDelay(delay) {
 			return
 		}
 		sendMessage(Message{
@@ -641,7 +641,9 @@ func init() {
 		})
 	}
 	statistic.DefaultRequestNotify = func(c statistic.Tracker) {
-		sendMessage(requestMessage(c))
+		if acceptsEvents() {
+			sendMessage(requestMessage(c))
+		}
 	}
 	executor.DefaultProviderLoadedHook = func(providerName string) {
 		scheduleReclaimOwnership()

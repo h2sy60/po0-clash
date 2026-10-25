@@ -41,6 +41,12 @@ class TileService : android.service.quicksettings.TileService() {
         super.onStopListening()
     }
 
+    override fun onDestroy() {
+        scope?.cancel()
+        scope = null
+        super.onDestroy()
+    }
+
     private fun updateTile(runState: RunState) {
         qsTile?.apply {
             icon = Icon.createWithResource(this@TileService, R.drawable.ic_launcher_monochrome)

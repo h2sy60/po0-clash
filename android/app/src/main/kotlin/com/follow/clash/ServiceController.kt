@@ -29,6 +29,9 @@ import kotlin.coroutines.resume
 
 object ServiceController {
     private val lock = Mutex()
+    private val eventListenerLock = Any()
+    private var eventListenerOwner: Any? = null
+    private var releaseEventListener: (() -> Unit)? = null
     private var binding: ManagedServiceBinding? = null
     @Volatile
     private var runTimeMillis = 0L
@@ -59,8 +62,30 @@ object ServiceController {
         }
     }
 
-    fun setEventListener(callback: ((String?) -> Unit)?): Result<Unit> = runCatching {
-        Core.updateEventListener(callback)
+    fun setEventListener(
+        owner: Any,
+        callback: (String?) -> Unit,
+        onRelease: () -> Unit,
+    ): Result<Unit> = synchronized(eventListenerLock) {
+        runCatching {
+            clearEventListenerLocked()
+            Core.updateEventListener(callback)
+            eventListenerOwner = owner
+            releaseEventListener = onRelease
+        }
+    }
+
+    fun clearEventListener(owner: Any): Result<Unit> = synchronized(eventListenerLock) {
+        if (eventListenerOwner !== owner) return@synchronized Result.success(Unit)
+        runCatching { clearEventListenerLocked() }
+    }
+
+    private fun clearEventListenerLocked() {
+        if (eventListenerOwner == null) return
+        releaseEventListener?.invoke()
+        releaseEventListener = null
+        eventListenerOwner = null
+        Core.updateEventListener(null)
     }
 
     suspend fun start(options: VpnOptions): Long = lock.withLock {

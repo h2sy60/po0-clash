@@ -1,28 +1,26 @@
-po0-clash v6.4.1：修复订阅导入后的默认节点选中标记，降低后台 CPU 与内存开销。
+po0-clash v6.4.2：修复 Android 刚开启代理时的连接时序和服务测速结果，继续降低后台开销。
 
 ## 本次更新
 
-- 修复导入订阅后能够联网但节点列表没有默认选中标记的问题；默认节点按订阅原始顺序确定，列表排序不会改变默认值
-- 已保存的节点被订阅移除时，选中标记回退到 Core 当前出口，自动回退不会变成新的固定偏好
-- 优化大订阅的节点列表传输、共享节点解析和延迟排序，减少重复数据与分组计算
-- 日志和请求历史改用有上限的环形缓冲区，减少持续记录时的数据搬移和临时分配
-- 日志与请求页面不可见时暂停列表刷新，恢复可见后合并显示最新记录
-- 优化日志、请求与测速事件的编码和接收，复用有上限的缓冲区与监听器快照，减少后台持续流量下的 CPU 和内存开销
-- macOS 桌面 IPC 在空闲时等待系统通知，减少周期性唤醒；停止与重连仍可及时响应
-- 减少桌面重复控制台输出及 Android 主动内存回收时的重复 GC
+- 修复 Android 应用内刚开启代理后立即打开 Telegram 等应用可能未能正常连接、等待或重开后才恢复的问题，先同步配置和监听状态再启动 VPN
+- 修复 Google、GitHub、YouTube、ChatGPT 服务测速被代理组默认测速地址覆盖的问题，各服务现在独立发起请求、保存延迟并显示等待状态
+- Android Core 事件通过有上限的队列逐批交付并等待 Flutter 接收，释放监听器时取消待交付任务，避免事件积压和旧引擎回调残留
+- 屏幕关闭时暂停通知刷新，停止 VPN 时先关闭 TUN，再释放网络监听、挂起任务和回调，减少无效唤醒
+- 限制应用 UID 解析缓存，复用应用识别结果，取消过期扫描并及时释放广播与权限回调
+- 优化大型订阅分组编码、节点解析、连接列表排序和历史缓冲区复制，减少重复计算与临时内存分配
 
 ## 升级说明
 
 - 从旧版 po0-clash 直接覆盖安装，已有配置、节点与加白设置保留；Android 构建号递增，签名及应用 ID 保持一致
-- 本次不需要迁移配置；日志与请求记录仍持续采集，加白调度和代理运行不依赖页面是否可见
-- 资源占用改善程度取决于平台、订阅规模和实际流量，专项编码基准不代表整机 CPU 或内存降幅
+- 本次不需要迁移配置；后台资源占用改善程度取决于机型、订阅规模和实际流量
+- 服务卡片显示经当前出口访问目标地址的请求延迟，相同毫秒数仍可能偶然出现，不能用于衡量下载带宽
 
 ## 安装
 
-- Windows：po0-clash-6.4.1-windows-amd64-setup.exe（安装包）或 po0-clash-6.4.1-windows-amd64.zip（免安装）
-- Windows 校验：发布页提供 po0-clash-signing.cer 和 po0-clash-6.4.1-windows-amd64-sha256.txt，包内附 WINDOWS-SECURITY.txt
+- Windows：po0-clash-6.4.2-windows-amd64-setup.exe（安装包）或 po0-clash-6.4.2-windows-amd64.zip（免安装）
+- Windows 校验：发布页提供 po0-clash-signing.cer 和 po0-clash-6.4.2-windows-amd64-sha256.txt，包内附 WINDOWS-SECURITY.txt
 - macOS：curl -fsSL https://raw.githubusercontent.com/yuuuki-creation/po0-clash/main/scripts/install-macos.sh | bash
-- Android：po0-clash-6.4.1-android-arm64-v8a.apk（主流机型），另提供 armeabi-v7a 和 x86_64 版本
+- Android：po0-clash-6.4.2-android-arm64-v8a.apk（主流机型），另提供 armeabi-v7a 和 x86_64 版本
 
 ## 已知限制
 

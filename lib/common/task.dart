@@ -66,7 +66,9 @@ Future<List<Group>> buildGroups(ComputeGroupsState state) async {
     if (raw is! Map) return null;
     return members.putIfAbsent(
       name as String,
-      () => Proxy.fromJson(Map<String, dynamic>.from(raw)),
+      () => Proxy.fromJson(
+        raw is Map<String, dynamic> ? raw : Map<String, dynamic>.from(raw),
+      ),
     );
   }
 
@@ -75,10 +77,8 @@ Future<List<Group>> buildGroups(ComputeGroupsState state) async {
     if (raw is! Map) continue;
     if (!GroupTypeExtension.valueList.contains(raw['type'])) continue;
     final memberNames = raw['all'];
-    final group = Group.fromJson({
-      ...Map<String, dynamic>.from(raw),
-      'all': const [],
-    });
+    final groupData = Map<String, dynamic>.from(raw)..['all'] = const [];
+    final group = Group.fromJson(groupData);
     final allMembers = memberNames is List
         ? memberNames.map(memberOf).nonNulls.toList()
         : <Proxy>[];

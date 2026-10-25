@@ -252,7 +252,11 @@ class ProxiesAction extends _$ProxiesAction {
       if (state.proxyName.isEmpty) {
         continue;
       }
-      final currentTestUrl = state.testUrl.takeFirstValid([fallbackTestUrl]);
+      final currentTestUrl = resolveDelayTestUrl(
+        requestedUrl: testUrl,
+        groupUrl: state.testUrl,
+        fallbackUrl: fallbackTestUrl,
+      );
       final key = delayTestKey(currentTestUrl, state.proxyName);
       if (!seen.add(key)) {
         continue;

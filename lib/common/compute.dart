@@ -17,10 +17,11 @@ class ProxySelectionResolver {
     return _resolved.putIfAbsent(proxyName, () {
       var current = proxyName;
       String? testUrl;
-      final visited = <String>{};
-      while (current.isNotEmpty && visited.add(current)) {
+      Set<String>? visited;
+      while (current.isNotEmpty) {
         final group = _groups[current];
         if (group == null) break;
+        if (!(visited ??= <String>{}).add(current)) break;
         final selected = group.getCurrentSelectedName(
           _selectedMap[current] ?? '',
         );
@@ -103,6 +104,14 @@ SelectedProxyState computeRealSelectedProxyState(
 
 String delayTestKey(String testUrl, String proxyName) {
   return '$testUrl\u0000$proxyName';
+}
+
+String resolveDelayTestUrl({
+  String? requestedUrl,
+  String? groupUrl,
+  required String fallbackUrl,
+}) {
+  return requestedUrl.takeFirstValid([groupUrl, fallbackUrl]);
 }
 
 DelayState computeProxyDelayState({

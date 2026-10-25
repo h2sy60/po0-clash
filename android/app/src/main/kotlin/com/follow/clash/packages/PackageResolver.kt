@@ -9,15 +9,25 @@ import com.android.tools.smali.dexlib2.dexbacked.DexBackedDexFile
 import com.follow.clash.models.InstalledPackage
 import java.io.File
 import java.util.zip.ZipFile
+import kotlin.coroutines.CoroutineContext
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 internal class PackageResolver(
     private val packageManager: PackageManager,
     private val appPackageName: String,
 ) {
     private val cacheLock = Any()
+    private val scanLock = Mutex()
 
     @Volatile
     private var cachedPackages: List<InstalledPackage>? = null
+
+    @Volatile
+    private var cachedChinaPackages: List<String>? = null
 
     val installedPackages: List<InstalledPackage>
         get() = cachedPackages ?: synchronized(cacheLock) {
@@ -33,12 +43,29 @@ internal class PackageResolver(
         PackageManager.PERMISSION_GRANTED
 
     fun invalidate() {
-        synchronized(cacheLock) { cachedPackages = null }
+        synchronized(cacheLock) {
+            cachedPackages = null
+            cachedChinaPackages = null
+        }
     }
 
-    fun getChinaPackageNames(): List<String> = installedPackages
-        .map { it.packageName }
-        .filter(::isChinaPackage)
+    suspend fun getChinaPackageNames(): List<String> = scanLock.withLock {
+        val context = currentCoroutineContext()
+        context.ensureActive()
+        cachedChinaPackages?.let { return@withLock it }
+        val packages = installedPackages
+        val names = packages.asSequence()
+            .map { it.packageName }
+            .filter { packageName ->
+                context.ensureActive()
+                isChinaPackage(packageName, context)
+            }.toList()
+        context.ensureActive()
+        synchronized(cacheLock) {
+            if (cachedPackages === packages) cachedChinaPackages = names
+        }
+        names
+    }
 
     private fun loadPackages(): List<InstalledPackage> {
         val flags = PackageManager.GET_PERMISSIONS
@@ -69,7 +96,7 @@ internal class PackageResolver(
             }.toList()
     }
 
-    private fun isChinaPackage(packageName: String): Boolean {
+    private fun isChinaPackage(packageName: String, context: CoroutineContext): Boolean {
         if (ChinaPackageMatcher.isSkipped(packageName)) {
             return false
         }
@@ -77,11 +104,16 @@ internal class PackageResolver(
             return true
         }
 
-        return runCatching {
+        return try {
             val packageInfo = getPackageInfo(packageName)
+            context.ensureActive()
             packageInfo.componentNames().any(ChinaPackageMatcher::matchesKnownPrefix) ||
-                packageInfo.applicationInfo?.publicSourceDir?.let(::scanArchive) == true
-        }.getOrDefault(false)
+                packageInfo.applicationInfo?.publicSourceDir?.let { scanArchive(it, context) } == true
+        } catch (error: CancellationException) {
+            throw error
+        } catch (_: Exception) {
+            false
+        }
     }
 
     private fun getPackageInfo(packageName: String) = if (
@@ -103,12 +135,18 @@ internal class PackageResolver(
         yieldAll(providers.orEmpty().asSequence().map(ComponentInfo::name))
     }
 
-    private fun scanArchive(sourcePath: String): Boolean = ZipFile(File(sourcePath)).use { archive ->
-        if (archive.entries().asSequence().any { it.name.startsWith("firebase-") }) {
-            return false
+    private fun scanArchive(
+        sourcePath: String,
+        context: CoroutineContext,
+    ): Boolean = ZipFile(File(sourcePath)).use { archive ->
+        val hasFirebase = archive.entries().asSequence().any { entry ->
+            context.ensureActive()
+            entry.name.startsWith("firebase-")
         }
+        if (hasFirebase) return@use false
         archive.entries().asSequence()
             .filter { entry ->
+                context.ensureActive()
                 entry.name.startsWith("classes") && entry.name.endsWith(".dex")
             }.any { entry ->
                 if (entry.size > MAX_DEX_SIZE_BYTES) {
@@ -118,6 +156,7 @@ internal class PackageResolver(
                     DexBackedDexFile.fromInputStream(null, input)
                 }
                 dexFile.classes.any { clazz ->
+                    context.ensureActive()
                     ChinaPackageMatcher.matchesKnownPrefix(
                         ChinaPackageMatcher.classNameOf(clazz.type),
                     )
