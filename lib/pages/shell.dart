@@ -35,36 +35,40 @@ class GlassDock extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (items.isEmpty) return const SizedBox.shrink();
-    return SafeArea(
-      top: false,
-      minimum: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-      child: DecoratedBox(
-        decoration: ShapeDecoration(
-          shape: AppShape.full,
-          shadows: [
-            BoxShadow(
-              color: context.colorScheme.shadow.withValues(alpha: 0.12),
-              blurRadius: 24,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: ClipPath(
-          clipper: const ShapeBorderClipper(shape: AppShape.full),
-          child: NavigationBar(
-            height: height,
-            selectedIndex: currentIndex,
-            onDestinationSelected: (index) => onSelected(items[index].label),
-            destinations: [
-              for (final (index, item) in items.indexed)
-                NavigationDestination(
-                  icon: AnimatedGlyph(
-                    glyph: destinationGlyph(item.label),
-                    filled: index == currentIndex,
-                  ),
-                  label: item.label.label,
-                ),
+    return MediaQuery.removePadding(
+      context: context,
+      removeTop: true,
+      child: SafeArea(
+        top: false,
+        minimum: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+        child: DecoratedBox(
+          decoration: ShapeDecoration(
+            shape: AppShape.full,
+            shadows: [
+              BoxShadow(
+                color: context.colorScheme.shadow.withValues(alpha: 0.12),
+                blurRadius: 24,
+                offset: const Offset(0, 8),
+              ),
             ],
+          ),
+          child: ClipPath(
+            clipper: const ShapeBorderClipper(shape: AppShape.full),
+            child: NavigationBar(
+              height: height,
+              selectedIndex: currentIndex,
+              onDestinationSelected: (index) => onSelected(items[index].label),
+              destinations: [
+                for (final (index, item) in items.indexed)
+                  NavigationDestination(
+                    icon: AnimatedGlyph(
+                      glyph: destinationGlyph(item.label),
+                      filled: index == currentIndex,
+                    ),
+                    label: item.label.label,
+                  ),
+              ],
+            ),
           ),
         ),
       ),

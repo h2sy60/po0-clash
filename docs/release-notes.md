@@ -1,25 +1,20 @@
-po0-clash v6.4.3：修复 Android 先打开应用再开启代理的连接问题，网站测速遵循分流规则，默认主题改为跟随系统。
+po0-clash v6.4.4：修复 Android 底部导航栏被状态栏安全区撑高、图标与文字位置偏移的问题。
 
 ## 本次更新
 
-- 修复 Android 先打开 Telegram 等应用、再开启代理后旧连接未被正确接管，重复打开仍可能无法连接的问题
-- Google、GitHub、YouTube、ChatGPT 网站测速按当前分流规则和代理模式选择出口，不再固定使用默认节点；路由变化后取消过期请求并刷新结果
-- 新安装默认跟随系统主题，旧用户升级后也强制切换一次；之后可以手动选择浅色、深色或跟随系统，并保留后续选择
-- 限制图像、SVG 和图形缓存，进入后台后回收可重建缓存和闲置内存，恢复前台时自动恢复图形缓存预算
-- 收紧 Go 运行时内存预算，回收空闲分配器页与干净文件映射页，保持代理连接和加白调度运行
+- 修复 Android 底部导航栏重复应用顶部系统安全区，导致胶囊高度和图标、文字位置偏移的问题
+- 保留系统手势区和三键导航区的底部安全距离，五个导航入口的显示和点击区域保持对齐
 
 ## 升级说明
 
 - 从旧版 po0-clash 直接覆盖安装，已有配置、节点与加白设置保留；Android 构建号递增，签名及应用 ID 保持一致
-- 本次会迁移主题和 Android VPN 绕过策略：主题重置为跟随系统，旧版 VPN 绕过默认值统一改为关闭；确需绕过的用户可以在更新后重新开启
-- 网站卡片显示按当前分流规则访问目标地址的请求延迟，不能用于衡量下载带宽
 
 ## 安装
 
-- Windows：po0-clash-6.4.3-windows-amd64-setup.exe（安装包）或 po0-clash-6.4.3-windows-amd64.zip（免安装）
-- Windows 校验：发布页提供 po0-clash-signing.cer 和 po0-clash-6.4.3-windows-amd64-sha256.txt，包内附 WINDOWS-SECURITY.txt
+- Windows：po0-clash-6.4.4-windows-amd64-setup.exe（安装包）或 po0-clash-6.4.4-windows-amd64.zip（免安装）
+- Windows 校验：发布页提供 po0-clash-signing.cer 和 po0-clash-6.4.4-windows-amd64-sha256.txt，包内附 WINDOWS-SECURITY.txt
 - macOS：curl -fsSL https://raw.githubusercontent.com/yuuuki-creation/po0-clash/main/scripts/install-macos.sh | bash
-- Android：po0-clash-6.4.3-android-arm64-v8a.apk（主流机型），另提供 armeabi-v7a 和 x86_64 版本
+- Android：po0-clash-6.4.4-android-arm64-v8a.apk（主流机型），另提供 armeabi-v7a 和 x86_64 版本
 
 ## 已知限制
 
