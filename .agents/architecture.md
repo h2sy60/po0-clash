@@ -120,6 +120,10 @@ ready. When the Helper is ready, it owns the Core child and Dart owns it through
 
 Android deliberately keeps Flutter requests optimistic and the native layer authoritative:
 
+- VPN bypass defaults off. Android retains pre-VPN TCP connections when bypass is allowed, so the old default can leave
+  applications retrying on their previous physical network. `bypassPolicyVersion` migrates both saved Dart preferences
+  and native shortcut shared state; an explicit bypass choice made afterwards remains supported.
+
 - `ServicePlugin.start()` and `stop()` acknowledge immediately after submitting intent. They do not wait for service
   creation, VPN permission, binding, TUN establishment, or teardown.
 - `ServiceState` owns the latest `RunRequest`, shared configuration, run time, and `STOPPED`/`STARTING`/`STARTED`/`STOPPING`

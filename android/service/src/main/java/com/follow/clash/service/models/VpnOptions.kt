@@ -23,7 +23,11 @@ data class VpnOptions(
     val bypassDomain: List<String>,
     val stack: String,
     val routeAddress: List<String>,
-)
+    val bypassPolicyVersion: Int = 1,
+) {
+    val effectiveAllowBypass: Boolean
+        get() = bypassPolicyVersion >= 1 && allowBypass
+}
 
 data class CIDR(
     val address: InetAddress,

@@ -40,6 +40,7 @@ android {
 
     defaultConfig {
         applicationId = "io.github.yuuukicreation.po0clash"
+        testInstrumentationRunner = "com.follow.clash.VpnTakeoverInstrumentation"
         minSdk = flutter.minSdkVersion
         targetSdk = libs.versions.targetSdk.get().toInt()
         versionCode = flutter.versionCode
@@ -89,6 +90,17 @@ android {
     sourceSets {
         // Unit tests live under android/tests/ instead of each module's src/test.
         getByName("test").java.setSrcDirs(listOf("../tests/app"))
+        getByName("androidTest").java.setSrcDirs(listOf("../tests/device"))
+    }
+
+    if (providers.gradleProperty("po0-validation").isPresent) {
+        buildTypes.create("validation") {
+            initWith(buildTypes.getByName("release"))
+            isMinifyEnabled = false
+            isShrinkResources = false
+            matchingFallbacks += "release"
+        }
+        testBuildType = "validation"
     }
 }
 

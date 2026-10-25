@@ -99,8 +99,10 @@ class Migration {
         final hasPlainTextDavPassword =
             storedDavPassword != null &&
             storedDavPassword == config.davProps?.password;
-        if (hasPlainTextDavPassword && !await _store.saveConfig(config)) {
-          throw StateError('Failed to obfuscate the legacy WebDAV password');
+        final needsPolicyMigration = _needsPreferencePolicyMigration(configMap);
+        if ((hasPlainTextDavPassword || needsPolicyMigration) &&
+            !await _store.saveConfig(config)) {
+          throw StateError('Failed to save migrated preferences');
         }
         return config;
       }
@@ -147,6 +149,17 @@ class Migration {
 
 bool _isV0(Map<String, Object?>? configMap) =>
     configMap?['proxiesStyle'] != null;
+
+bool _needsPreferencePolicyMigration(Map<String, Object?>? configMap) {
+  for (final (section, version) in const [
+    ('themeProps', 'themeModePolicyVersion'),
+    ('vpnProps', 'bypassPolicyVersion'),
+  ]) {
+    final data = configMap?[section];
+    if (data is Map && !data.containsKey(version)) return true;
+  }
+  return false;
+}
 
 String? _getStoredDavPassword(Map<String, Object?>? configMap) {
   final dav = configMap?['davProps'] ?? configMap?['dav'];

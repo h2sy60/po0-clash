@@ -86,6 +86,9 @@ Android 图标升级兼容由 `LauncherBranding.kt`、`LauncherUpdateReceiver.kt
 | `lib/providers/actions/setup.dart` | Android 先准备配置再提交启动，取消启动后的延迟强制重载；相同配置复用已有内核状态，失败使配置指纹失效；准备期间 Wi-Fi 暂停状态不能提前启动 |
 | `lib/core/lib.dart` / `android/app/src/main/kotlin/com/follow/clash/plugins/ServicePlugin.kt` | 启动前同步最新 VPN 参数；原生共享状态按通道顺序应用，启动命令仍由 `ServiceState` 乐观接收并仲裁 |
 | `core/lib.go` | TUN 协议栈返回前已可能收包，保护套接字与 UID 查询以 JNI 回调有效性判断就绪，不等待 listener 字段赋值 |
+| `lib/models/{config,core}.dart` / `android/service/.../models/VpnOptions.kt` / `VpnService.kt` | 默认关闭 VPN 绕过；配置与原生共享状态按 `bypassPolicyVersion` 迁移旧默认值，让 Android 清理接管前的 TCP 连接；迁移后主动开启绕过仍有效 |
+| `lib/models/config.dart` | 默认主题跟随系统；缺少 `themeModePolicyVersion` 的旧主题升级后重置一次，之后保留手动选择 |
+| `lib/views/dashboard/widgets/summaries.dart` | 网站延迟经 mixed 入口发起真实 HEAD 请求，遵循当前分流规则；路由变化取消旧请求并清理结果，不复用节点测速缓存 |
 
 ## 简洁界面与性能（ADR 0016）
 

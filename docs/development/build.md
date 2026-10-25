@@ -51,6 +51,29 @@ bash scripts/vps/verify.sh            # format 检查 + analyze + test + 覆盖�
 构建机只有 11 GB 内存，`provision.sh` 会创建 8 GB swap。VPS 不再构建发版 APK；需要本地试打包时可以在 VPS 上运行
 `dart setup.dart android --env stable`，但产物只用于测试，正式产物一律来自 GitHub Actions。
 
+## Android VPN 接管回归
+
+在 NL 的 Android 模拟器上验证，独立测试 APK 使用另一个 UID 模拟先于 VPN 启动的应用。
+同一测试还覆盖 VPN 内存回收时 Core 的已有 TCP/UDP 连接、接管后的新连接，以及迁移后主动开启绕过的行为。
+`validation` 是通过 `-Ppo0-validation` 临时启用的测试构建类型，使用 release Flutter 引擎并保留可供 instrumentation 调用的原生类；不会发布到 GitHub。
+
+```bash
+python3 tool/android_vpn_fixture.py            # 另一个终端；只监听 NL 本机 127.0.0.1:18780
+./android/gradlew -p android :app:assembleValidation :app:assembleValidationAndroidTest \
+  -Ppo0-validation -Ptarget-platform=android-x64
+adb install -r build/app/outputs/apk/validation/app-validation.apk
+adb install -r build/app/outputs/apk/androidTest/validation/app-validation-androidTest.apk
+adb shell appops set io.github.yuuukicreation.po0clash ACTIVATE_VPN allow
+adb shell am instrument -w \
+  io.github.yuuukicreation.po0clash.test/com.follow.clash.VpnTakeoverInstrumentation | tee takeover.log
+grep -q '^VPN takeover:.*passed' takeover.log
+```
+
+`am instrument` 本身的退出码不能证明成功，必须检查最终结果。保留旧的 `allowBypass` 行为时，
+用例应报 `Stale connection retained with bypass policy 0`；修复后应通过。
+Android 只在禁止绕过的 VPN 上清理接管前的 TCP 连接，见
+[AOSP ConnectivityService 的 maybeCloseSockets / updateVpnUidRanges](https://android.googlesource.com/platform/packages/modules/Connectivity/+/refs/heads/main/service/src/com/android/server/ConnectivityService.java)。
+
 ## Windows 原生验证
 
 `windows-validation.yaml` 为本仓库相关 PR 和手动请求执行 Windows 上的 build hooks、Rust IPC / Helper 与签名安装流程验证。

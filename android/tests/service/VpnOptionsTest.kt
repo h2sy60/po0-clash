@@ -1,9 +1,11 @@
 package com.follow.clash.service.models
 
 import com.follow.clash.common.AccessControlMode
+import com.google.gson.Gson
 import java.net.Inet4Address
 import java.net.Inet6Address
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -27,6 +29,18 @@ private fun optionsWithRoutes(routeAddress: List<String>) = VpnOptions(
 )
 
 class ToCIDRTest {
+    @Test
+    fun `legacy shared state cannot restore the old bypass default`() {
+        val options = Gson().fromJson("""{"allowBypass":true}""", VpnOptions::class.java)
+        assertFalse(options.effectiveAllowBypass)
+    }
+
+    @Test
+    fun `a current explicit bypass choice remains available`() {
+        val options = optionsWithRoutes(emptyList()).copy(allowBypass = true)
+        assertTrue(options.effectiveAllowBypass)
+    }
+
     @Test
     fun `parses an IPv4 network`() {
         val cidr = "192.168.1.0/24".toCIDR()

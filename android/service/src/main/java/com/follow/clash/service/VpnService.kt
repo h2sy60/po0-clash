@@ -128,7 +128,7 @@ class VpnService : SystemVpnService(), ManagedService {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 setMetered(false)
             }
-            if (options.allowBypass) {
+            if (options.effectiveAllowBypass) {
                 allowBypass()
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && options.systemProxy) {

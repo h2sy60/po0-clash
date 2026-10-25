@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/common/website_probe.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/features/features.dart';
 import 'package:fl_clash/models/models.dart';
@@ -484,6 +485,11 @@ class ServiceStatusCard extends ConsumerStatefulWidget {
 
 class _ServiceStatusCardState extends ConsumerState<ServiceStatusCard>
     with WidgetsBindingObserver, ActivePollingMixin<ServiceStatusCard> {
+  final _probe = WebsiteProbe();
+  final Map<String, int> _delays = {};
+  int _revision = 0;
+  bool _pending = false;
+
   @override
   Duration get pollInterval => const Duration(minutes: 1);
   @override
@@ -498,21 +504,51 @@ class _ServiceStatusCardState extends ConsumerState<ServiceStatusCard>
     ref.listenManual(coreStatusProvider, (_, _) => restartPolling());
     ref.listenManual(isStartProvider, (_, _) => restartPolling());
     ref.listenManual(uiVisibleProvider, (_, _) => restartPolling());
+    ref.listenManual(currentProfileIdProvider, (_, _) => _routeChanged());
+    ref.listenManual(selectedMapProvider, (_, _) => _routeChanged());
+    ref.listenManual(patchClashConfigProvider, (_, _) => _routeChanged());
+    ref.listenManual(networkSettingProvider, (_, _) => _routeChanged());
+  }
+
+  void _routeChanged() {
+    _delays.clear();
+    restartPolling();
+  }
+
+  @override
+  void stopPolling() {
+    _revision++;
+    _pending = false;
+    _probe.close();
+    super.stopPolling();
+  }
+
+  @override
+  void dispose() {
+    _probe.close();
+    super.dispose();
   }
 
   Future<void> _refresh() async {
-    if (!canPoll) return;
-    final groups = ref.read(currentGroupsStateProvider).value;
-    final proxy = Proxy(
-      name: groups.firstOrNull?.name ?? 'DIRECT',
-      type: 'Selector',
-    );
+    if (!canPoll || _pending) return;
+    final revision = ++_revision;
+    setState(() => _pending = true);
     await Future.wait([
       for (final service in _services)
-        ref
-            .read(proxiesActionProvider.notifier)
-            .proxyDelayTest(proxy, service.$2),
+        (() async {
+          final uri = Uri.parse(service.$2);
+          final delay = await _probe.measure(
+            uri,
+            proxy: FlClashHttpOverrides.findProxyForReader(ref.read, uri),
+          );
+          if (mounted && canPoll && revision == _revision) {
+            setState(() => _delays[service.$2] = delay);
+          }
+        })(),
     ]);
+    if (mounted && revision == _revision) {
+      setState(() => _pending = false);
+    }
   }
 
   @override
@@ -520,16 +556,10 @@ class _ServiceStatusCardState extends ConsumerState<ServiceStatusCard>
   @override
   Widget build(BuildContext context) {
     final mobile = !DashboardDensityScope.of(context).isDesktop;
-    final groups = ref.watch(currentGroupsStateProvider).value;
-    final name = groups.firstOrNull?.name ?? 'DIRECT';
     Widget service(int index) {
       final target = _services[index];
-      final delay = ref.watch(
-        delayProvider(proxyName: name, testUrl: target.$2),
-      );
-      final pending = ref.watch(
-        delayTestPendingProvider(proxyName: name, testUrl: target.$2),
-      );
+      final delay = _delays[target.$2];
+      final pending = _pending;
       return DashboardBlock(
         radius: DashboardCorner.badge,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
