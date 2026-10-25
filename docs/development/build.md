@@ -74,6 +74,11 @@ grep -q '^VPN takeover:.*passed' takeover.log
 Android 只在禁止绕过的 VPN 上清理接管前的 TCP 连接，见
 [AOSP ConnectivityService 的 maybeCloseSockets / updateVpnUidRanges](https://android.googlesource.com/platform/packages/modules/Connectivity/+/refs/heads/main/service/src/com/android/server/ConnectivityService.java)。
 
+## 常驻内存验证
+
+采样口径、基线、回收边界与尚未完成的平台验证见 [常驻内存验证](resident-memory.md)。
+必须同时记录 PSS / RSS 与交换内存；桌面需要累加 UI 和 Core，不能只报告内核堆。
+
 ## Windows 原生验证
 
 `windows-validation.yaml` 为本仓库相关 PR 和手动请求执行 Windows 上的 build hooks、Rust IPC / Helper 与签名安装流程验证。

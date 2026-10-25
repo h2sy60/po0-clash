@@ -1,6 +1,8 @@
 #include <jni.h>
 
 #include <cstring>
+#include <dlfcn.h>
+#include <malloc.h>
 
 #include "jni_helper.h"
 #include "libclash.h"
@@ -26,6 +28,11 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_follow_clash_core_Core_forceGC(JNIEnv *env, jobject thiz) {
     forceGC();
+    using Mallopt = int (*)(int, int);
+    static const auto trim = reinterpret_cast<Mallopt>(dlsym(RTLD_DEFAULT, "mallopt"));
+    if (trim != nullptr && trim(M_PURGE_ALL, 0) == 0) {
+        trim(M_PURGE, 0);
+    }
 }
 
 extern "C"

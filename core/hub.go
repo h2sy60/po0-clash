@@ -8,7 +8,6 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
-	"runtime"
 	"runtime/debug"
 	"slices"
 	"strconv"
@@ -24,7 +23,6 @@ import (
 	"github.com/metacubex/mihomo/component/updater"
 	"github.com/metacubex/mihomo/config"
 	"github.com/metacubex/mihomo/constant"
-	"github.com/metacubex/mihomo/constant/features"
 	"github.com/metacubex/mihomo/hub/executor"
 	"github.com/metacubex/mihomo/listener"
 	"github.com/metacubex/mihomo/log"
@@ -73,11 +71,8 @@ func handleGetIsInit() bool {
 func handleForceGC() {
 	log.Infoln("[APP] request force GC")
 	tunnel.InvalidateAllProxies()
-	if features.Android {
-		debug.FreeOSMemory()
-	} else {
-		runtime.GC()
-	}
+	debug.FreeOSMemory()
+	releaseCleanMappings()
 }
 
 func handleShutdown() bool {

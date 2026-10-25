@@ -92,6 +92,13 @@ Android 图标升级兼容由 `LauncherBranding.kt`、`LauncherUpdateReceiver.kt
 
 ## 简洁界面与性能（ADR 0016）
 
+| 本轮常驻内存集成文件 | 分支行为 |
+|---|---|
+| `lib/bootstrap.dart` / `lib/manager/app_manager.dart` | 初始化缓存预算，按 UI 可见性延迟释放可重建缓存和闲置分配器页，恢复前台取消过期回收 |
+| `android/app/src/main/kotlin/com/follow/clash/{MainActivity,ServiceController}.kt` | 后台内存压力通知与已加载 Core 的回收，不新增服务生命周期所有者 |
+| `android/core/src/main/cpp/{core.cpp,CMakeLists.txt}` / `core/hub.go` | GC 归还闲置 Go 页，Android 分配器释放空闲空间，回收干净文件映射 |
+| `plugins/setup/setup_hooks/lib/src/go_builder.dart` | Android 使用 upstream `with_low_memory` 构建标签；构建与依赖指纹使用同一标签 |
+
 | 文件 | 本分支改动 |
 |---|---|
 | `lib/common/glass.dart` / `app_theme.dart` / `shape.dart` / `dialog.dart` | 中性色表面、蓝色主操作和圆角矩形；去掉模糊与玻璃装饰 |

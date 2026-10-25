@@ -12,6 +12,9 @@ Android lib mode:
 - `lib/core/lib.dart` (`CoreLib`) implements the shared Core interface, gates method calls on its connection completer,
   initializes and synchronizes Android shared state, and closes the native service path exactly once.
 - Because Core is in the application process on Android, application RSS already includes Core memory.
+- UI visibility may reclaim caches and idle allocator pages, never proxy intent or Core ownership. Go's soft memory
+  budget is not a process limit. File-page reclaim requires clean private mappings and pinned library lifetimes;
+  relocated RELRO, anonymous, dirty, swapped and unknown mappings stay untouched. See `docs/development/resident-memory.md`.
 
 Desktop core mode:
 
