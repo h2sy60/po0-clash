@@ -178,6 +178,63 @@ void main() {
     expect(find.text('page:tools').hitTestable(), findsOneWidget);
   });
 
+  testWidgets('phone system insets stay outside the dock destinations', (
+    tester,
+  ) async {
+    final items = [
+      ..._items,
+      _item(PageLabel.proxies, Icons.hub),
+      _item(PageLabel.whitelist, Icons.shield),
+    ];
+    final container = _container(tester, const Size(400, 800), items: items);
+    addTearDown(tester.view.resetPadding);
+    addTearDown(tester.view.resetViewPadding);
+
+    for (final bottom in [0.0, 24.0, 48.0]) {
+      tester.view.padding = FakeViewPadding(top: 32, bottom: bottom);
+      tester.view.viewPadding = FakeViewPadding(top: 32, bottom: bottom);
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: const _ThemeManagedTestApp(locale: Locale('zh', 'CN')),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final bar = tester.getRect(find.byType(NavigationBar));
+      expect(bar.height, GlassDock.height);
+      expect(bar.bottom, 800 - (bottom < 16 ? 16 : bottom));
+      expect(
+        tester.getRect(find.byType(PageView).first).bottom,
+        lessThanOrEqualTo(bar.top - 8),
+      );
+      for (final item in items) {
+        final destination = find.byWidgetPredicate(
+          (widget) =>
+              widget is NavigationDestination &&
+              widget.label == item.label.label,
+        );
+        final slot = tester.getRect(destination);
+        final label = tester.getRect(
+          find.descendant(
+            of: destination,
+            matching: find.text(item.label.label),
+          ),
+        );
+        expect(slot.top, bar.top);
+        expect(slot.bottom, bar.bottom);
+        expect(label.top, greaterThanOrEqualTo(bar.top));
+        expect(label.bottom, lessThanOrEqualTo(bar.bottom));
+        expect(label.left, greaterThanOrEqualTo(slot.left));
+        expect(label.right, lessThanOrEqualTo(slot.right));
+        await tester.tapAt(slot.center);
+        await tester.pumpAndSettle();
+        expect(container.read(currentPageLabelProvider), item.label);
+      }
+      expect(tester.takeException(), isNull);
+    }
+  });
+
   testWidgets('resizing across every breakpoint keeps the page state', (
     tester,
   ) async {
@@ -323,12 +380,21 @@ void main() {
 }
 
 class _ThemeManagedTestApp extends StatelessWidget {
-  const _ThemeManagedTestApp();
+  const _ThemeManagedTestApp({this.locale});
+
+  final Locale? locale;
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       navigatorKey: globalState.navigatorKey,
+      locale: locale,
+      theme: buildAppTheme(
+        brightness: Brightness.light,
+        materialScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        pageTransitionsTheme: const PageTransitionsTheme(),
+        themeProps: const ThemeProps(),
+      ),
       localizationsDelegates: const [
         AppLocalizations.delegate,
         ...GlobalMaterialLocalizations.delegates,
