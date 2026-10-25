@@ -133,7 +133,8 @@ _VpnProps _$VpnPropsFromJson(Map<String, dynamic> json) => _VpnProps(
   enable: json['enable'] as bool? ?? true,
   systemProxy: json['systemProxy'] as bool? ?? true,
   ipv6: json['ipv6'] as bool? ?? false,
-  allowBypass: json['allowBypass'] as bool? ?? true,
+  allowBypass: json['allowBypass'] as bool? ?? false,
+  bypassPolicyVersion: (json['bypassPolicyVersion'] as num?)?.toInt() ?? 1,
   dnsHijacking: json['dnsHijacking'] as bool? ?? false,
   accessControlProps: json['accessControlProps'] == null
       ? defaultAccessControlProps
@@ -147,6 +148,7 @@ Map<String, dynamic> _$VpnPropsToJson(_VpnProps instance) => <String, dynamic>{
   'systemProxy': instance.systemProxy,
   'ipv6': instance.ipv6,
   'allowBypass': instance.allowBypass,
+  'bypassPolicyVersion': instance.bypassPolicyVersion,
   'dnsHijacking': instance.dnsHijacking,
   'accessControlProps': instance.accessControlProps,
 };
@@ -272,7 +274,9 @@ _ThemeProps _$ThemePropsFromJson(Map<String, dynamic> json) => _ThemeProps(
       defaultPrimaryColors,
   themeMode:
       $enumDecodeNullable(_$ThemeModeEnumMap, json['themeMode']) ??
-      ThemeMode.dark,
+      ThemeMode.system,
+  themeModePolicyVersion:
+      (json['themeModePolicyVersion'] as num?)?.toInt() ?? 1,
   schemeVariant:
       $enumDecodeNullable(
         _$DynamicSchemeVariantEnumMap,
@@ -290,6 +294,7 @@ Map<String, dynamic> _$ThemePropsToJson(_ThemeProps instance) =>
       'primaryColor': instance.primaryColor,
       'primaryColors': instance.primaryColors,
       'themeMode': _$ThemeModeEnumMap[instance.themeMode]!,
+      'themeModePolicyVersion': instance.themeModePolicyVersion,
       'schemeVariant': _$DynamicSchemeVariantEnumMap[instance.schemeVariant]!,
       'pureBlack': instance.pureBlack,
       'textScale': instance.textScale,

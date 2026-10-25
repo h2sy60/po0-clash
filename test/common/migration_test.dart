@@ -3,9 +3,54 @@ import 'dart:convert';
 import 'package:fl_clash/common/migration.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 
 void main() {
   group('Migration', () {
+    test(
+      'upgrade policies persist once and retain later manual choices',
+      () async {
+        final configMap = _createConfigMap();
+        final theme = configMap['themeProps']! as Map<String, Object?>;
+        theme.remove('themeModePolicyVersion');
+        theme['themeMode'] = 'dark';
+        final vpn = configMap['vpnProps']! as Map<String, Object?>;
+        vpn.remove('bypassPolicyVersion');
+        vpn['allowBypass'] = true;
+        final store = _FakeMigrationStore(configMap: configMap, version: 1);
+        final upgraded = await Migration(store: store).run();
+        expect(upgraded.themeProps.themeMode, ThemeMode.system);
+        expect(upgraded.vpnProps.allowBypass, false);
+        expect(store.savedConfig, upgraded);
+        expect(store.events, ['getConfigMap', 'getVersion', 'saveConfig']);
+        final chosen = upgraded.copyWith(
+          themeProps: upgraded.themeProps.copyWith(themeMode: ThemeMode.light),
+          vpnProps: upgraded.vpnProps.copyWith(allowBypass: true),
+        );
+        final nextStore = _FakeMigrationStore(
+          configMap: jsonDecode(jsonEncode(chosen)) as Map<String, Object?>,
+          version: 1,
+        );
+        final restored = await Migration(store: nextStore).run();
+        expect(restored.themeProps.themeMode, ThemeMode.light);
+        expect(restored.vpnProps.allowBypass, true);
+        expect(nextStore.events, ['getConfigMap', 'getVersion']);
+      },
+    );
+
+    test('upgrade policy write failures are surfaced', () async {
+      final configMap = _createConfigMap();
+      (configMap['themeProps']! as Map<String, Object?>).remove(
+        'themeModePolicyVersion',
+      );
+      final store = _FakeMigrationStore(
+        configMap: configMap,
+        version: 1,
+        configSaveResult: false,
+      );
+      await expectLater(Migration(store: store).run(), throwsStateError);
+    });
+
     test('returns current config without rewriting storage', () async {
       final configMap = _createConfigMap(
         davProps: const DAVProps(

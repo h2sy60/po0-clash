@@ -202,7 +202,7 @@ void main() {
       expect(props.enable, true);
       expect(props.systemProxy, true);
       expect(props.ipv6, false);
-      expect(props.allowBypass, true);
+      expect(props.allowBypass, false);
       expect(props.dnsHijacking, false);
       expect(props.accessControlProps.enable, false);
     });
@@ -210,6 +210,18 @@ void main() {
     test('fromJson handles null', () {
       final props = VpnProps.fromJson(null);
       expect(props.enable, true);
+    });
+
+    test('legacy bypass defaults migrate to enforced VPN routing', () {
+      expect(VpnProps.fromJson({'allowBypass': true}).allowBypass, false);
+      expect(VpnProps.fromJson({'allowBypass': false}).allowBypass, false);
+    });
+
+    test('an explicit bypass choice survives after migration', () {
+      const props = VpnProps(allowBypass: true);
+      final restored = roundTrip(() => props.toJson(), VpnProps.fromJson);
+      expect(restored.allowBypass, true);
+      expect(restored.bypassPolicyVersion, 1);
     });
 
     test('round-trip with custom values', () {
@@ -331,7 +343,7 @@ void main() {
       const props = ThemeProps();
       expect(props.primaryColor, null);
       expect(props.primaryColors, defaultPrimaryColors);
-      expect(props.themeMode, ThemeMode.dark);
+      expect(props.themeMode, ThemeMode.system);
       expect(props.pureBlack, false);
       expect(props.textScale.scale, 1.0);
     });
@@ -362,7 +374,7 @@ void main() {
 
     test('safeFromJson returns default on null', () {
       final result = ThemeProps.safeFromJson(null);
-      expect(result.themeMode, ThemeMode.dark);
+      expect(result.themeMode, ThemeMode.system);
     });
 
     test('round-trip with custom values', () {
@@ -377,6 +389,30 @@ void main() {
       expect(restored.themeMode, ThemeMode.light);
       expect(restored.pureBlack, true);
       expect(restored.textScale.scale, 1.5);
+    });
+
+    test('an upgrade resets every legacy theme mode to system once', () {
+      for (final mode in ThemeMode.values) {
+        final upgraded = ThemeProps.safeFromJson({
+          'themeMode': mode.name,
+          'primaryColor': 0xFF123456,
+          'pureBlack': true,
+        });
+        expect(upgraded.themeMode, ThemeMode.system);
+        expect(upgraded.primaryColor, 0xFF123456);
+        expect(upgraded.pureBlack, true);
+      }
+    });
+
+    test('a manual theme choice survives after the upgrade', () {
+      final upgraded = ThemeProps.safeFromJson({'themeMode': 'dark'});
+      final chosen = upgraded.copyWith(themeMode: ThemeMode.dark);
+      final restored = roundTrip(
+        () => chosen.toJson(),
+        ThemeProps.safeFromJson,
+      );
+      expect(restored.themeMode, ThemeMode.dark);
+      expect(restored.themeModePolicyVersion, 1);
     });
   });
 

@@ -928,7 +928,7 @@ as double?,
 /// @nodoc
 mixin _$VpnProps {
 
- bool get enable; bool get systemProxy; bool get ipv6; bool get allowBypass; bool get dnsHijacking; AccessControlProps get accessControlProps;
+ bool get enable; bool get systemProxy; bool get ipv6; bool get allowBypass; int get bypassPolicyVersion; bool get dnsHijacking; AccessControlProps get accessControlProps;
 /// Create a copy of VpnProps
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -942,20 +942,20 @@ $VpnPropsCopyWith<VpnProps> get copyWith => _$VpnPropsCopyWithImpl<VpnProps>(thi
 @override
 bool operator ==(Object other) {
   final _this = this as VpnProps;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is VpnProps&&(identical(other.enable, _this.enable) || other.enable == _this.enable)&&(identical(other.systemProxy, _this.systemProxy) || other.systemProxy == _this.systemProxy)&&(identical(other.ipv6, _this.ipv6) || other.ipv6 == _this.ipv6)&&(identical(other.allowBypass, _this.allowBypass) || other.allowBypass == _this.allowBypass)&&(identical(other.dnsHijacking, _this.dnsHijacking) || other.dnsHijacking == _this.dnsHijacking)&&(identical(other.accessControlProps, _this.accessControlProps) || other.accessControlProps == _this.accessControlProps));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is VpnProps&&(identical(other.enable, _this.enable) || other.enable == _this.enable)&&(identical(other.systemProxy, _this.systemProxy) || other.systemProxy == _this.systemProxy)&&(identical(other.ipv6, _this.ipv6) || other.ipv6 == _this.ipv6)&&(identical(other.allowBypass, _this.allowBypass) || other.allowBypass == _this.allowBypass)&&(identical(other.bypassPolicyVersion, _this.bypassPolicyVersion) || other.bypassPolicyVersion == _this.bypassPolicyVersion)&&(identical(other.dnsHijacking, _this.dnsHijacking) || other.dnsHijacking == _this.dnsHijacking)&&(identical(other.accessControlProps, _this.accessControlProps) || other.accessControlProps == _this.accessControlProps));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as VpnProps;
-  return Object.hash(runtimeType,_this.enable,_this.systemProxy,_this.ipv6,_this.allowBypass,_this.dnsHijacking,_this.accessControlProps);
+  return Object.hash(runtimeType,_this.enable,_this.systemProxy,_this.ipv6,_this.allowBypass,_this.bypassPolicyVersion,_this.dnsHijacking,_this.accessControlProps);
 }
 
 @override
 String toString() {
   final _this = this as VpnProps;
-  return 'VpnProps(enable: ${_this.enable}, systemProxy: ${_this.systemProxy}, ipv6: ${_this.ipv6}, allowBypass: ${_this.allowBypass}, dnsHijacking: ${_this.dnsHijacking}, accessControlProps: ${_this.accessControlProps})';
+  return 'VpnProps(enable: ${_this.enable}, systemProxy: ${_this.systemProxy}, ipv6: ${_this.ipv6}, allowBypass: ${_this.allowBypass}, bypassPolicyVersion: ${_this.bypassPolicyVersion}, dnsHijacking: ${_this.dnsHijacking}, accessControlProps: ${_this.accessControlProps})';
 }
 
 
@@ -966,7 +966,7 @@ abstract mixin class $VpnPropsCopyWith<$Res>  {
   factory $VpnPropsCopyWith(VpnProps value, $Res Function(VpnProps) _then) = _$VpnPropsCopyWithImpl;
 @useResult
 $Res call({
- bool enable, bool systemProxy, bool ipv6, bool allowBypass, bool dnsHijacking, AccessControlProps accessControlProps
+ bool enable, bool systemProxy, bool ipv6, bool allowBypass, int bypassPolicyVersion, bool dnsHijacking, AccessControlProps accessControlProps
 });
 
 
@@ -983,13 +983,14 @@ class _$VpnPropsCopyWithImpl<$Res>
 
 /// Create a copy of VpnProps
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? enable = null,Object? systemProxy = null,Object? ipv6 = null,Object? allowBypass = null,Object? dnsHijacking = null,Object? accessControlProps = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? enable = null,Object? systemProxy = null,Object? ipv6 = null,Object? allowBypass = null,Object? bypassPolicyVersion = null,Object? dnsHijacking = null,Object? accessControlProps = null,}) {
   return _then(VpnProps(
 enable: null == enable ? _self.enable : enable // ignore: cast_nullable_to_non_nullable
 as bool,systemProxy: null == systemProxy ? _self.systemProxy : systemProxy // ignore: cast_nullable_to_non_nullable
 as bool,ipv6: null == ipv6 ? _self.ipv6 : ipv6 // ignore: cast_nullable_to_non_nullable
 as bool,allowBypass: null == allowBypass ? _self.allowBypass : allowBypass // ignore: cast_nullable_to_non_nullable
-as bool,dnsHijacking: null == dnsHijacking ? _self.dnsHijacking : dnsHijacking // ignore: cast_nullable_to_non_nullable
+as bool,bypassPolicyVersion: null == bypassPolicyVersion ? _self.bypassPolicyVersion : bypassPolicyVersion // ignore: cast_nullable_to_non_nullable
+as int,dnsHijacking: null == dnsHijacking ? _self.dnsHijacking : dnsHijacking // ignore: cast_nullable_to_non_nullable
 as bool,accessControlProps: null == accessControlProps ? _self.accessControlProps : accessControlProps // ignore: cast_nullable_to_non_nullable
 as AccessControlProps,
   ));
@@ -1085,10 +1086,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool enable,  bool systemProxy,  bool ipv6,  bool allowBypass,  bool dnsHijacking,  AccessControlProps accessControlProps)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool enable,  bool systemProxy,  bool ipv6,  bool allowBypass,  int bypassPolicyVersion,  bool dnsHijacking,  AccessControlProps accessControlProps)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _VpnProps() when $default != null:
-return $default(_that.enable,_that.systemProxy,_that.ipv6,_that.allowBypass,_that.dnsHijacking,_that.accessControlProps);case _:
+return $default(_that.enable,_that.systemProxy,_that.ipv6,_that.allowBypass,_that.bypassPolicyVersion,_that.dnsHijacking,_that.accessControlProps);case _:
   return orElse();
 
 }
@@ -1106,10 +1107,10 @@ return $default(_that.enable,_that.systemProxy,_that.ipv6,_that.allowBypass,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool enable,  bool systemProxy,  bool ipv6,  bool allowBypass,  bool dnsHijacking,  AccessControlProps accessControlProps)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool enable,  bool systemProxy,  bool ipv6,  bool allowBypass,  int bypassPolicyVersion,  bool dnsHijacking,  AccessControlProps accessControlProps)  $default,) {final _that = this;
 switch (_that) {
 case _VpnProps():
-return $default(_that.enable,_that.systemProxy,_that.ipv6,_that.allowBypass,_that.dnsHijacking,_that.accessControlProps);case _:
+return $default(_that.enable,_that.systemProxy,_that.ipv6,_that.allowBypass,_that.bypassPolicyVersion,_that.dnsHijacking,_that.accessControlProps);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -1126,10 +1127,10 @@ return $default(_that.enable,_that.systemProxy,_that.ipv6,_that.allowBypass,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool enable,  bool systemProxy,  bool ipv6,  bool allowBypass,  bool dnsHijacking,  AccessControlProps accessControlProps)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool enable,  bool systemProxy,  bool ipv6,  bool allowBypass,  int bypassPolicyVersion,  bool dnsHijacking,  AccessControlProps accessControlProps)?  $default,) {final _that = this;
 switch (_that) {
 case _VpnProps() when $default != null:
-return $default(_that.enable,_that.systemProxy,_that.ipv6,_that.allowBypass,_that.dnsHijacking,_that.accessControlProps);case _:
+return $default(_that.enable,_that.systemProxy,_that.ipv6,_that.allowBypass,_that.bypassPolicyVersion,_that.dnsHijacking,_that.accessControlProps);case _:
   return null;
 
 }
@@ -1141,13 +1142,14 @@ return $default(_that.enable,_that.systemProxy,_that.ipv6,_that.allowBypass,_tha
 @JsonSerializable()
 
 class _VpnProps implements VpnProps {
-  const _VpnProps({this.enable = true, this.systemProxy = true, this.ipv6 = false, this.allowBypass = true, this.dnsHijacking = false, this.accessControlProps = defaultAccessControlProps});
+  const _VpnProps({this.enable = true, this.systemProxy = true, this.ipv6 = false, this.allowBypass = false, this.bypassPolicyVersion = 1, this.dnsHijacking = false, this.accessControlProps = defaultAccessControlProps});
   factory _VpnProps.fromJson(Map<String, dynamic> json) => _$VpnPropsFromJson(json);
 
 @override@JsonKey() final  bool enable;
 @override@JsonKey() final  bool systemProxy;
 @override@JsonKey() final  bool ipv6;
 @override@JsonKey() final  bool allowBypass;
+@override@JsonKey() final  int bypassPolicyVersion;
 @override@JsonKey() final  bool dnsHijacking;
 @override@JsonKey() final  AccessControlProps accessControlProps;
 
@@ -1164,18 +1166,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _VpnProps&&(identical(other.enable, enable) || other.enable == enable)&&(identical(other.systemProxy, systemProxy) || other.systemProxy == systemProxy)&&(identical(other.ipv6, ipv6) || other.ipv6 == ipv6)&&(identical(other.allowBypass, allowBypass) || other.allowBypass == allowBypass)&&(identical(other.dnsHijacking, dnsHijacking) || other.dnsHijacking == dnsHijacking)&&(identical(other.accessControlProps, accessControlProps) || other.accessControlProps == accessControlProps));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _VpnProps&&(identical(other.enable, enable) || other.enable == enable)&&(identical(other.systemProxy, systemProxy) || other.systemProxy == systemProxy)&&(identical(other.ipv6, ipv6) || other.ipv6 == ipv6)&&(identical(other.allowBypass, allowBypass) || other.allowBypass == allowBypass)&&(identical(other.bypassPolicyVersion, bypassPolicyVersion) || other.bypassPolicyVersion == bypassPolicyVersion)&&(identical(other.dnsHijacking, dnsHijacking) || other.dnsHijacking == dnsHijacking)&&(identical(other.accessControlProps, accessControlProps) || other.accessControlProps == accessControlProps));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,enable,systemProxy,ipv6,allowBypass,dnsHijacking,accessControlProps);
+    return Object.hash(runtimeType,enable,systemProxy,ipv6,allowBypass,bypassPolicyVersion,dnsHijacking,accessControlProps);
 }
 
 @override
 String toString() {
-    return 'VpnProps(enable: $enable, systemProxy: $systemProxy, ipv6: $ipv6, allowBypass: $allowBypass, dnsHijacking: $dnsHijacking, accessControlProps: $accessControlProps)';
+    return 'VpnProps(enable: $enable, systemProxy: $systemProxy, ipv6: $ipv6, allowBypass: $allowBypass, bypassPolicyVersion: $bypassPolicyVersion, dnsHijacking: $dnsHijacking, accessControlProps: $accessControlProps)';
 }
 
 
@@ -1186,7 +1188,7 @@ abstract mixin class _$VpnPropsCopyWith<$Res> implements $VpnPropsCopyWith<$Res>
   factory _$VpnPropsCopyWith(_VpnProps value, $Res Function(_VpnProps) _then) = __$VpnPropsCopyWithImpl;
 @override @useResult
 $Res call({
- bool enable, bool systemProxy, bool ipv6, bool allowBypass, bool dnsHijacking, AccessControlProps accessControlProps
+ bool enable, bool systemProxy, bool ipv6, bool allowBypass, int bypassPolicyVersion, bool dnsHijacking, AccessControlProps accessControlProps
 });
 
 
@@ -1203,13 +1205,14 @@ class __$VpnPropsCopyWithImpl<$Res>
 
 /// Create a copy of VpnProps
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? enable = null,Object? systemProxy = null,Object? ipv6 = null,Object? allowBypass = null,Object? dnsHijacking = null,Object? accessControlProps = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? enable = null,Object? systemProxy = null,Object? ipv6 = null,Object? allowBypass = null,Object? bypassPolicyVersion = null,Object? dnsHijacking = null,Object? accessControlProps = null,}) {
   return _then(_VpnProps(
 enable: null == enable ? _self.enable : enable // ignore: cast_nullable_to_non_nullable
 as bool,systemProxy: null == systemProxy ? _self.systemProxy : systemProxy // ignore: cast_nullable_to_non_nullable
 as bool,ipv6: null == ipv6 ? _self.ipv6 : ipv6 // ignore: cast_nullable_to_non_nullable
 as bool,allowBypass: null == allowBypass ? _self.allowBypass : allowBypass // ignore: cast_nullable_to_non_nullable
-as bool,dnsHijacking: null == dnsHijacking ? _self.dnsHijacking : dnsHijacking // ignore: cast_nullable_to_non_nullable
+as bool,bypassPolicyVersion: null == bypassPolicyVersion ? _self.bypassPolicyVersion : bypassPolicyVersion // ignore: cast_nullable_to_non_nullable
+as int,dnsHijacking: null == dnsHijacking ? _self.dnsHijacking : dnsHijacking // ignore: cast_nullable_to_non_nullable
 as bool,accessControlProps: null == accessControlProps ? _self.accessControlProps : accessControlProps // ignore: cast_nullable_to_non_nullable
 as AccessControlProps,
   ));
@@ -2371,7 +2374,7 @@ as double,
 /// @nodoc
 mixin _$ThemeProps {
 
- int? get primaryColor; List<int> get primaryColors; ThemeMode get themeMode; DynamicSchemeVariant get schemeVariant; bool get pureBlack; TextScale get textScale;
+ int? get primaryColor; List<int> get primaryColors; ThemeMode get themeMode; int get themeModePolicyVersion; DynamicSchemeVariant get schemeVariant; bool get pureBlack; TextScale get textScale;
 /// Create a copy of ThemeProps
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -2385,20 +2388,20 @@ $ThemePropsCopyWith<ThemeProps> get copyWith => _$ThemePropsCopyWithImpl<ThemePr
 @override
 bool operator ==(Object other) {
   final _this = this as ThemeProps;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ThemeProps&&(identical(other.primaryColor, _this.primaryColor) || other.primaryColor == _this.primaryColor)&&const DeepCollectionEquality().equals(other.primaryColors, _this.primaryColors)&&(identical(other.themeMode, _this.themeMode) || other.themeMode == _this.themeMode)&&(identical(other.schemeVariant, _this.schemeVariant) || other.schemeVariant == _this.schemeVariant)&&(identical(other.pureBlack, _this.pureBlack) || other.pureBlack == _this.pureBlack)&&(identical(other.textScale, _this.textScale) || other.textScale == _this.textScale));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ThemeProps&&(identical(other.primaryColor, _this.primaryColor) || other.primaryColor == _this.primaryColor)&&const DeepCollectionEquality().equals(other.primaryColors, _this.primaryColors)&&(identical(other.themeMode, _this.themeMode) || other.themeMode == _this.themeMode)&&(identical(other.themeModePolicyVersion, _this.themeModePolicyVersion) || other.themeModePolicyVersion == _this.themeModePolicyVersion)&&(identical(other.schemeVariant, _this.schemeVariant) || other.schemeVariant == _this.schemeVariant)&&(identical(other.pureBlack, _this.pureBlack) || other.pureBlack == _this.pureBlack)&&(identical(other.textScale, _this.textScale) || other.textScale == _this.textScale));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as ThemeProps;
-  return Object.hash(runtimeType,_this.primaryColor,const DeepCollectionEquality().hash(_this.primaryColors),_this.themeMode,_this.schemeVariant,_this.pureBlack,_this.textScale);
+  return Object.hash(runtimeType,_this.primaryColor,const DeepCollectionEquality().hash(_this.primaryColors),_this.themeMode,_this.themeModePolicyVersion,_this.schemeVariant,_this.pureBlack,_this.textScale);
 }
 
 @override
 String toString() {
   final _this = this as ThemeProps;
-  return 'ThemeProps(primaryColor: ${_this.primaryColor}, primaryColors: ${_this.primaryColors}, themeMode: ${_this.themeMode}, schemeVariant: ${_this.schemeVariant}, pureBlack: ${_this.pureBlack}, textScale: ${_this.textScale})';
+  return 'ThemeProps(primaryColor: ${_this.primaryColor}, primaryColors: ${_this.primaryColors}, themeMode: ${_this.themeMode}, themeModePolicyVersion: ${_this.themeModePolicyVersion}, schemeVariant: ${_this.schemeVariant}, pureBlack: ${_this.pureBlack}, textScale: ${_this.textScale})';
 }
 
 
@@ -2409,7 +2412,7 @@ abstract mixin class $ThemePropsCopyWith<$Res>  {
   factory $ThemePropsCopyWith(ThemeProps value, $Res Function(ThemeProps) _then) = _$ThemePropsCopyWithImpl;
 @useResult
 $Res call({
- int? primaryColor, List<int> primaryColors, ThemeMode themeMode, DynamicSchemeVariant schemeVariant, bool pureBlack, TextScale textScale
+ int? primaryColor, List<int> primaryColors, ThemeMode themeMode, int themeModePolicyVersion, DynamicSchemeVariant schemeVariant, bool pureBlack, TextScale textScale
 });
 
 
@@ -2426,12 +2429,13 @@ class _$ThemePropsCopyWithImpl<$Res>
 
 /// Create a copy of ThemeProps
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? primaryColor = freezed,Object? primaryColors = null,Object? themeMode = null,Object? schemeVariant = null,Object? pureBlack = null,Object? textScale = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? primaryColor = freezed,Object? primaryColors = null,Object? themeMode = null,Object? themeModePolicyVersion = null,Object? schemeVariant = null,Object? pureBlack = null,Object? textScale = null,}) {
   return _then(ThemeProps(
 primaryColor: freezed == primaryColor ? _self.primaryColor : primaryColor // ignore: cast_nullable_to_non_nullable
 as int?,primaryColors: null == primaryColors ? _self.primaryColors : primaryColors // ignore: cast_nullable_to_non_nullable
 as List<int>,themeMode: null == themeMode ? _self.themeMode : themeMode // ignore: cast_nullable_to_non_nullable
-as ThemeMode,schemeVariant: null == schemeVariant ? _self.schemeVariant : schemeVariant // ignore: cast_nullable_to_non_nullable
+as ThemeMode,themeModePolicyVersion: null == themeModePolicyVersion ? _self.themeModePolicyVersion : themeModePolicyVersion // ignore: cast_nullable_to_non_nullable
+as int,schemeVariant: null == schemeVariant ? _self.schemeVariant : schemeVariant // ignore: cast_nullable_to_non_nullable
 as DynamicSchemeVariant,pureBlack: null == pureBlack ? _self.pureBlack : pureBlack // ignore: cast_nullable_to_non_nullable
 as bool,textScale: null == textScale ? _self.textScale : textScale // ignore: cast_nullable_to_non_nullable
 as TextScale,
@@ -2528,10 +2532,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int? primaryColor,  List<int> primaryColors,  ThemeMode themeMode,  DynamicSchemeVariant schemeVariant,  bool pureBlack,  TextScale textScale)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int? primaryColor,  List<int> primaryColors,  ThemeMode themeMode,  int themeModePolicyVersion,  DynamicSchemeVariant schemeVariant,  bool pureBlack,  TextScale textScale)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ThemeProps() when $default != null:
-return $default(_that.primaryColor,_that.primaryColors,_that.themeMode,_that.schemeVariant,_that.pureBlack,_that.textScale);case _:
+return $default(_that.primaryColor,_that.primaryColors,_that.themeMode,_that.themeModePolicyVersion,_that.schemeVariant,_that.pureBlack,_that.textScale);case _:
   return orElse();
 
 }
@@ -2549,10 +2553,10 @@ return $default(_that.primaryColor,_that.primaryColors,_that.themeMode,_that.sch
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int? primaryColor,  List<int> primaryColors,  ThemeMode themeMode,  DynamicSchemeVariant schemeVariant,  bool pureBlack,  TextScale textScale)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int? primaryColor,  List<int> primaryColors,  ThemeMode themeMode,  int themeModePolicyVersion,  DynamicSchemeVariant schemeVariant,  bool pureBlack,  TextScale textScale)  $default,) {final _that = this;
 switch (_that) {
 case _ThemeProps():
-return $default(_that.primaryColor,_that.primaryColors,_that.themeMode,_that.schemeVariant,_that.pureBlack,_that.textScale);case _:
+return $default(_that.primaryColor,_that.primaryColors,_that.themeMode,_that.themeModePolicyVersion,_that.schemeVariant,_that.pureBlack,_that.textScale);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -2569,10 +2573,10 @@ return $default(_that.primaryColor,_that.primaryColors,_that.themeMode,_that.sch
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int? primaryColor,  List<int> primaryColors,  ThemeMode themeMode,  DynamicSchemeVariant schemeVariant,  bool pureBlack,  TextScale textScale)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int? primaryColor,  List<int> primaryColors,  ThemeMode themeMode,  int themeModePolicyVersion,  DynamicSchemeVariant schemeVariant,  bool pureBlack,  TextScale textScale)?  $default,) {final _that = this;
 switch (_that) {
 case _ThemeProps() when $default != null:
-return $default(_that.primaryColor,_that.primaryColors,_that.themeMode,_that.schemeVariant,_that.pureBlack,_that.textScale);case _:
+return $default(_that.primaryColor,_that.primaryColors,_that.themeMode,_that.themeModePolicyVersion,_that.schemeVariant,_that.pureBlack,_that.textScale);case _:
   return null;
 
 }
@@ -2584,7 +2588,7 @@ return $default(_that.primaryColor,_that.primaryColors,_that.themeMode,_that.sch
 @JsonSerializable()
 
 class _ThemeProps implements ThemeProps {
-  const _ThemeProps({this.primaryColor,  List<int> primaryColors = defaultPrimaryColors, this.themeMode = ThemeMode.dark, this.schemeVariant = DynamicSchemeVariant.fidelity, this.pureBlack = false, this.textScale = const TextScale()}): _primaryColors = primaryColors;
+  const _ThemeProps({this.primaryColor,  List<int> primaryColors = defaultPrimaryColors, this.themeMode = ThemeMode.system, this.themeModePolicyVersion = 1, this.schemeVariant = DynamicSchemeVariant.fidelity, this.pureBlack = false, this.textScale = const TextScale()}): _primaryColors = primaryColors;
   factory _ThemeProps.fromJson(Map<String, dynamic> json) => _$ThemePropsFromJson(json);
 
 @override final  int? primaryColor;
@@ -2596,6 +2600,7 @@ class _ThemeProps implements ThemeProps {
 }
 
 @override@JsonKey() final  ThemeMode themeMode;
+@override@JsonKey() final  int themeModePolicyVersion;
 @override@JsonKey() final  DynamicSchemeVariant schemeVariant;
 @override@JsonKey() final  bool pureBlack;
 @override@JsonKey() final  TextScale textScale;
@@ -2613,18 +2618,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _ThemeProps&&(identical(other.primaryColor, primaryColor) || other.primaryColor == primaryColor)&&const DeepCollectionEquality().equals(other.primaryColors, _primaryColors)&&(identical(other.themeMode, themeMode) || other.themeMode == themeMode)&&(identical(other.schemeVariant, schemeVariant) || other.schemeVariant == schemeVariant)&&(identical(other.pureBlack, pureBlack) || other.pureBlack == pureBlack)&&(identical(other.textScale, textScale) || other.textScale == textScale));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _ThemeProps&&(identical(other.primaryColor, primaryColor) || other.primaryColor == primaryColor)&&const DeepCollectionEquality().equals(other.primaryColors, _primaryColors)&&(identical(other.themeMode, themeMode) || other.themeMode == themeMode)&&(identical(other.themeModePolicyVersion, themeModePolicyVersion) || other.themeModePolicyVersion == themeModePolicyVersion)&&(identical(other.schemeVariant, schemeVariant) || other.schemeVariant == schemeVariant)&&(identical(other.pureBlack, pureBlack) || other.pureBlack == pureBlack)&&(identical(other.textScale, textScale) || other.textScale == textScale));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,primaryColor,const DeepCollectionEquality().hash(_primaryColors),themeMode,schemeVariant,pureBlack,textScale);
+    return Object.hash(runtimeType,primaryColor,const DeepCollectionEquality().hash(_primaryColors),themeMode,themeModePolicyVersion,schemeVariant,pureBlack,textScale);
 }
 
 @override
 String toString() {
-    return 'ThemeProps(primaryColor: $primaryColor, primaryColors: $primaryColors, themeMode: $themeMode, schemeVariant: $schemeVariant, pureBlack: $pureBlack, textScale: $textScale)';
+    return 'ThemeProps(primaryColor: $primaryColor, primaryColors: $primaryColors, themeMode: $themeMode, themeModePolicyVersion: $themeModePolicyVersion, schemeVariant: $schemeVariant, pureBlack: $pureBlack, textScale: $textScale)';
 }
 
 
@@ -2635,7 +2640,7 @@ abstract mixin class _$ThemePropsCopyWith<$Res> implements $ThemePropsCopyWith<$
   factory _$ThemePropsCopyWith(_ThemeProps value, $Res Function(_ThemeProps) _then) = __$ThemePropsCopyWithImpl;
 @override @useResult
 $Res call({
- int? primaryColor, List<int> primaryColors, ThemeMode themeMode, DynamicSchemeVariant schemeVariant, bool pureBlack, TextScale textScale
+ int? primaryColor, List<int> primaryColors, ThemeMode themeMode, int themeModePolicyVersion, DynamicSchemeVariant schemeVariant, bool pureBlack, TextScale textScale
 });
 
 
@@ -2652,12 +2657,13 @@ class __$ThemePropsCopyWithImpl<$Res>
 
 /// Create a copy of ThemeProps
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? primaryColor = freezed,Object? primaryColors = null,Object? themeMode = null,Object? schemeVariant = null,Object? pureBlack = null,Object? textScale = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? primaryColor = freezed,Object? primaryColors = null,Object? themeMode = null,Object? themeModePolicyVersion = null,Object? schemeVariant = null,Object? pureBlack = null,Object? textScale = null,}) {
   return _then(_ThemeProps(
 primaryColor: freezed == primaryColor ? _self.primaryColor : primaryColor // ignore: cast_nullable_to_non_nullable
 as int?,primaryColors: null == primaryColors ? _self._primaryColors : primaryColors // ignore: cast_nullable_to_non_nullable
 as List<int>,themeMode: null == themeMode ? _self.themeMode : themeMode // ignore: cast_nullable_to_non_nullable
-as ThemeMode,schemeVariant: null == schemeVariant ? _self.schemeVariant : schemeVariant // ignore: cast_nullable_to_non_nullable
+as ThemeMode,themeModePolicyVersion: null == themeModePolicyVersion ? _self.themeModePolicyVersion : themeModePolicyVersion // ignore: cast_nullable_to_non_nullable
+as int,schemeVariant: null == schemeVariant ? _self.schemeVariant : schemeVariant // ignore: cast_nullable_to_non_nullable
 as DynamicSchemeVariant,pureBlack: null == pureBlack ? _self.pureBlack : pureBlack // ignore: cast_nullable_to_non_nullable
 as bool,textScale: null == textScale ? _self.textScale : textScale // ignore: cast_nullable_to_non_nullable
 as TextScale,

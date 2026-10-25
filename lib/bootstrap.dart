@@ -10,6 +10,7 @@ import 'package:fl_clash/common/migration.dart';
 import 'package:fl_clash/common/permission.dart';
 import 'package:fl_clash/common/tray.dart';
 import 'package:fl_clash/common/window.dart';
+import 'package:fl_clash/common/ui_memory.dart';
 import 'package:fl_clash/database/database.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/l10n/l10n.dart';
@@ -37,6 +38,7 @@ class Bootstrap {
   BootDecision _bootDecision = const BootDecision();
 
   Future<ProviderContainer> init(int version) async {
+    await configureUiMemory();
     globalState.appEnv = const String.fromEnvironment(
       'APP_ENV',
       defaultValue: 'pre',

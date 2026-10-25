@@ -3,6 +3,9 @@ import 'dart:async';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/common/permission.dart';
 import 'package:fl_clash/common/system_dns.dart';
+import 'package:fl_clash/common/idle_memory.dart';
+import 'package:fl_clash/common/native_memory.dart';
+import 'package:fl_clash/common/ui_memory.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/plugins/po0_screen.dart';
 import 'package:fl_clash/providers/providers.dart';
@@ -22,10 +25,33 @@ class AppStateManager extends ConsumerStatefulWidget {
 
 class _AppStateManagerState extends ConsumerState<AppStateManager>
     with WidgetsBindingObserver {
+  late final _memory = IdleMemoryTrimmer(
+    setCacheLimit: setGpuCacheLimit,
+    clearCaches: clearUiMemoryCaches,
+    releaseCore: () async {
+      if (system.isDesktop &&
+          ref.read(coreStatusProvider) == CoreStatus.connected) {
+        await ref.read(coreHandlerProvider).requestGc();
+      }
+    },
+    releaseAllocator: () {
+      if (system.isDesktop) trimNativeAllocator();
+    },
+    onError: (error, stack) => commonPrint.log(
+      'Unable to reclaim idle memory: $error',
+      logLevel: LogLevel.warning,
+    ),
+  );
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    ref.listenManual(
+      uiVisibleProvider,
+      (_, visible) => _memory.setVisible(visible),
+      fireImmediately: true,
+    );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _syncUiVisibility(WidgetsBinding.instance.lifecycleState);
@@ -108,6 +134,7 @@ class _AppStateManagerState extends ConsumerState<AppStateManager>
 
   @override
   void dispose() {
+    _memory.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }

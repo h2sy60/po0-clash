@@ -164,6 +164,11 @@ object ServiceController {
 
     fun getRunTimeMillis(): Long = runTimeMillis
 
+    fun trimMemory() {
+        val coreAttached = synchronized(eventListenerLock) { eventListenerOwner != null }
+        if (coreAttached || runTimeMillis != 0L) Core.forceGC()
+    }
+
     private fun handleServiceDisconnected(
         disconnectedBinding: ManagedServiceBinding,
         message: String,

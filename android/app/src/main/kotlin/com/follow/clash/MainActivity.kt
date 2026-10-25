@@ -1,16 +1,19 @@
 package com.follow.clash
 
+import android.content.ComponentCallbacks2
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.WindowManager
+import com.follow.clash.common.GlobalState
 import com.follow.clash.plugins.AppPlugin
 import com.follow.clash.plugins.Po0ScreenPlugin
 import com.follow.clash.plugins.ServicePlugin
 import com.follow.clash.plugins.TilePlugin
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
+import kotlinx.coroutines.launch
 
 class MainActivity : FlutterActivity() {
     var isWhitelistBootstrap = false
@@ -20,6 +23,24 @@ class MainActivity : FlutterActivity() {
     val needsWhitelistBootstrap: Boolean
         get() = bootstrapEnginePending
     private val parkBootstrap = Runnable { finishWhitelistBootstrap(true, ready = false) }
+    private val trimBackgroundMemory = Runnable {
+        flutterEngine?.let { engine ->
+            engine.systemChannel.sendMemoryPressureWarning()
+            engine.dartExecutor.notifyLowMemoryWarning()
+            engine.renderer.onTrimMemory(ComponentCallbacks2.TRIM_MEMORY_COMPLETE)
+        }
+        GlobalState.launch { ServiceController.trimMemory() }
+    }
+
+    override fun onStart() {
+        bootstrapHandler.removeCallbacks(trimBackgroundMemory)
+        super.onStart()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        bootstrapHandler.postDelayed(trimBackgroundMemory, 5_000)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         isWhitelistBootstrap = intent.getBooleanExtra(WHITELIST_BOOTSTRAP, false)
@@ -65,6 +86,7 @@ class MainActivity : FlutterActivity() {
 
     override fun onDestroy() {
         bootstrapHandler.removeCallbacks(parkBootstrap)
+        bootstrapHandler.removeCallbacks(trimBackgroundMemory)
         flutterEngine?.let(ServiceState::detachFlutterEngine)
         super.onDestroy()
     }

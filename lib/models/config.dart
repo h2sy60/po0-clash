@@ -143,13 +143,18 @@ abstract class VpnProps with _$VpnProps {
     @Default(true) bool enable,
     @Default(true) bool systemProxy,
     @Default(false) bool ipv6,
-    @Default(true) bool allowBypass,
+    @Default(false) bool allowBypass,
+    @Default(1) int bypassPolicyVersion,
     @Default(false) bool dnsHijacking,
     @Default(defaultAccessControlProps) AccessControlProps accessControlProps,
   }) = _VpnProps;
 
-  factory VpnProps.fromJson(Map<String, Object?>? json) =>
-      json == null ? defaultVpnProps : _$VpnPropsFromJson(json);
+  factory VpnProps.fromJson(Map<String, Object?>? json) => json == null
+      ? defaultVpnProps
+      : _$VpnPropsFromJson({
+          ...json,
+          if (!json.containsKey('bypassPolicyVersion')) 'allowBypass': false,
+        });
 
   factory VpnProps.safeFromJson(Map<String, Object?>? json) {
     if (json == null) {
@@ -250,7 +255,8 @@ abstract class ThemeProps with _$ThemeProps {
   const factory ThemeProps({
     int? primaryColor,
     @Default(defaultPrimaryColors) List<int> primaryColors,
-    @Default(ThemeMode.dark) ThemeMode themeMode,
+    @Default(ThemeMode.system) ThemeMode themeMode,
+    @Default(1) int themeModePolicyVersion,
     @Default(DynamicSchemeVariant.fidelity) DynamicSchemeVariant schemeVariant,
     @Default(false) bool pureBlack,
     @Default(TextScale()) TextScale textScale,
@@ -273,14 +279,18 @@ abstract class ThemeProps with _$ThemeProps {
 
 const _legacyDefaultPrimaryColors = {0xFFD8C0C3, 0xFF073042, 0xFF5E6BFF};
 
-/// A theme still on an earlier release's default moves to today's.
 Map<String, Object?> _migrateLegacyDefaultTheme(Map<String, Object?> json) {
+  final migrated = {
+    ...json,
+    if (!json.containsKey('themeModePolicyVersion'))
+      'themeMode': ThemeMode.system.name,
+  };
   if (!_legacyDefaultPrimaryColors.contains(json['primaryColor'])) {
-    return json;
+    return migrated;
   }
   final colors = json['primaryColors'];
   return {
-    ...json,
+    ...migrated,
     'primaryColor': defaultPrimaryColor,
     if (json['schemeVariant'] == DynamicSchemeVariant.content.name)
       'schemeVariant': DynamicSchemeVariant.fidelity.name,

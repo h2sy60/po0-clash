@@ -25,4 +25,5 @@ add_library(${CMAKE_PROJECT_NAME} SHARED
         jni_helper.cpp
         core.cpp)
 target_link_libraries(${CMAKE_PROJECT_NAME}
-        clash)
+        clash
+        dl)

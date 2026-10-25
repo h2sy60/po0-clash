@@ -49,6 +49,7 @@ abstract class VpnOptions with _$VpnOptions {
     required bool dnsHijacking,
     required AccessControlProps accessControlProps,
     required bool allowBypass,
+    @Default(1) int bypassPolicyVersion,
     required bool systemProxy,
     required List<String> bypassDomain,
     required String stack,

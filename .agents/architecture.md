@@ -12,6 +12,9 @@ Android lib mode:
 - `lib/core/lib.dart` (`CoreLib`) implements the shared Core interface, gates method calls on its connection completer,
   initializes and synchronizes Android shared state, and closes the native service path exactly once.
 - Because Core is in the application process on Android, application RSS already includes Core memory.
+- UI visibility may reclaim caches and idle allocator pages, never proxy intent or Core ownership. Go's soft memory
+  budget is not a process limit. File-page reclaim requires clean private mappings and pinned library lifetimes;
+  relocated RELRO, anonymous, dirty, swapped and unknown mappings stay untouched. See `docs/development/resident-memory.md`.
 
 Desktop core mode:
 
@@ -119,6 +122,10 @@ ready. When the Helper is ready, it owns the Core child and Dart owns it through
 ### Android Service Lifecycle
 
 Android deliberately keeps Flutter requests optimistic and the native layer authoritative:
+
+- VPN bypass defaults off. Android retains pre-VPN TCP connections when bypass is allowed, so the old default can leave
+  applications retrying on their previous physical network. `bypassPolicyVersion` migrates both saved Dart preferences
+  and native shortcut shared state; an explicit bypass choice made afterwards remains supported.
 
 - `ServicePlugin.start()` and `stop()` acknowledge immediately after submitting intent. They do not wait for service
   creation, VPN permission, binding, TUN establishment, or teardown.
