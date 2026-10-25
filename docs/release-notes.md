@@ -1,29 +1,29 @@
-po0-clash v6.4.2：修复 Android 刚开启代理时的连接时序和服务测速结果，继续降低后台开销。
+po0-clash v6.4.3：修复 Android 先打开应用再开启代理的连接问题，网站测速遵循分流规则，默认主题改为跟随系统。
 
 ## 本次更新
 
-- 修复 Android 应用内刚开启代理后立即打开 Telegram 等应用可能未能正常连接、等待或重开后才恢复的问题，先同步配置和监听状态再启动 VPN
-- 修复 Google、GitHub、YouTube、ChatGPT 服务测速被代理组默认测速地址覆盖的问题，各服务现在独立发起请求、保存延迟并显示等待状态
-- Android Core 事件通过有上限的队列逐批交付并等待 Flutter 接收，释放监听器时取消待交付任务，避免事件积压和旧引擎回调残留
-- 屏幕关闭时暂停通知刷新，停止 VPN 时先关闭 TUN，再释放网络监听、挂起任务和回调，减少无效唤醒
-- 限制应用 UID 解析缓存，复用应用识别结果，取消过期扫描并及时释放广播与权限回调
-- 优化大型订阅分组编码、节点解析、连接列表排序和历史缓冲区复制，减少重复计算与临时内存分配
+- 修复 Android 先打开 Telegram 等应用、再开启代理后旧连接未被正确接管，重复打开仍可能无法连接的问题
+- Google、GitHub、YouTube、ChatGPT 网站测速按当前分流规则和代理模式选择出口，不再固定使用默认节点；路由变化后取消过期请求并刷新结果
+- 新安装默认跟随系统主题，旧用户升级后也强制切换一次；之后可以手动选择浅色、深色或跟随系统，并保留后续选择
+- 限制图像、SVG 和图形缓存，进入后台后回收可重建缓存和闲置内存，恢复前台时自动恢复图形缓存预算
+- 收紧 Go 运行时内存预算，回收空闲分配器页与干净文件映射页，保持代理连接和加白调度运行
 
 ## 升级说明
 
 - 从旧版 po0-clash 直接覆盖安装，已有配置、节点与加白设置保留；Android 构建号递增，签名及应用 ID 保持一致
-- 本次不需要迁移配置；后台资源占用改善程度取决于机型、订阅规模和实际流量
-- 服务卡片显示经当前出口访问目标地址的请求延迟，相同毫秒数仍可能偶然出现，不能用于衡量下载带宽
+- 本次会迁移主题和 Android VPN 绕过策略：主题重置为跟随系统，旧版 VPN 绕过默认值统一改为关闭；确需绕过的用户可以在更新后重新开启
+- 网站卡片显示按当前分流规则访问目标地址的请求延迟，不能用于衡量下载带宽
 
 ## 安装
 
-- Windows：po0-clash-6.4.2-windows-amd64-setup.exe（安装包）或 po0-clash-6.4.2-windows-amd64.zip（免安装）
-- Windows 校验：发布页提供 po0-clash-signing.cer 和 po0-clash-6.4.2-windows-amd64-sha256.txt，包内附 WINDOWS-SECURITY.txt
+- Windows：po0-clash-6.4.3-windows-amd64-setup.exe（安装包）或 po0-clash-6.4.3-windows-amd64.zip（免安装）
+- Windows 校验：发布页提供 po0-clash-signing.cer 和 po0-clash-6.4.3-windows-amd64-sha256.txt，包内附 WINDOWS-SECURITY.txt
 - macOS：curl -fsSL https://raw.githubusercontent.com/yuuuki-creation/po0-clash/main/scripts/install-macos.sh | bash
-- Android：po0-clash-6.4.2-android-arm64-v8a.apk（主流机型），另提供 armeabi-v7a 和 x86_64 版本
+- Android：po0-clash-6.4.3-android-arm64-v8a.apk（主流机型），另提供 armeabi-v7a 和 x86_64 版本
 
 ## 已知限制
 
+- 常驻内存尚未达到三端 100 MB 目标；NL Android 固定测试配置后台约 116 MB PSS，Windows 和 macOS 尚无本轮原生内存实测，实际占用取决于设备、订阅和流量
 - 自签名提供完整性与发布者连续性，不会自动获得 Windows 信任，也不保证通过 SmartScreen、智能应用控制或杀毒检测；安装程序不会自动导入根证书或关闭安全策略
 - Android 从最近任务划掉客户端可能停止加白调度，再次通过快捷方式启动代理或打开客户端会重新初始化；系统强行停止应用后仍需手动打开
 - 「手动节点」配置在每次增删改节点时按模板整体重写，直接编辑这份配置文件的改动不会保留；调整规则请使用「覆写」
