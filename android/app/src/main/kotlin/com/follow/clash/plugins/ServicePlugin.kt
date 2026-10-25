@@ -17,6 +17,7 @@ import kotlinx.coroutines.launch
 class ServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     private lateinit var channel: MethodChannel
     private lateinit var scope: CoroutineScope
+    private var eventRelay: CoreEventRelay? = null
     private val gson = Gson()
 
     override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
@@ -27,8 +28,8 @@ class ServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         channel.setMethodCallHandler(null)
+        releaseEventRelay()
         scope.cancel()
-        ServiceController.setEventListener(null)
     }
 
     override fun onMethodCall(call: MethodCall, rawResult: MethodChannel.Result) {
@@ -49,12 +50,20 @@ class ServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     }
 
     private fun initialize(result: MethodChannel.Result) {
-        ServiceController.setEventListener(::sendEvent)
+        releaseEventRelay()
+        val relay = CoreEventRelay(scope, channel)
+        eventRelay = relay
+        ServiceController.setEventListener(relay, relay::send, relay::close)
             .onSuccess { result.success("") }
-            .onFailure { error -> result.success(error.message.orEmpty()) }
+            .onFailure { error ->
+                relay.close()
+                eventRelay = null
+                result.success(error.message.orEmpty())
+            }
     }
 
     private fun shutdown(result: MethodChannel.Result) {
+        releaseEventRelay()
         scope.launch {
             ServiceController.unbind()
             result.success(true)
@@ -91,10 +100,8 @@ class ServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             result.success("Invalid shared state")
             return
         }
-        scope.launch {
-            ServiceState.syncSharedState(state)
-            result.success("")
-        }
+        ServiceState.syncSharedState(state)
+        result.success("")
     }
 
     private fun start(result: MethodChannel.Result) {
@@ -107,9 +114,10 @@ class ServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         result.success(true)
     }
 
-    private fun sendEvent(value: String?) {
-        scope.launch(Dispatchers.Main) {
-            channel.invokeMethod("event", value)
-        }
+    private fun releaseEventRelay() {
+        val relay = eventRelay ?: return
+        relay.close()
+        eventRelay = null
+        ServiceController.clearEventListener(relay)
     }
 }

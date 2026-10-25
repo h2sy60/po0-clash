@@ -67,11 +67,11 @@ class _CoreContainerState extends ConsumerState<CoreManager>
   }
 
   @override
-  Future<void> onDelay(Delay delay) async {
+  void onDelay(Delay delay) {
     super.onDelay(delay);
     final proxiesAction = ref.read(proxiesActionProvider.notifier);
     proxiesAction.setDelay(delay);
-    debouncer.call(FunctionTag.updateDelay, () async {
+    debouncer.call(FunctionTag.updateDelay, () {
       proxiesAction.updateGroupsDebounce();
     }, duration: const Duration(milliseconds: 5000));
   }
@@ -91,7 +91,7 @@ class _CoreContainerState extends ConsumerState<CoreManager>
   }
 
   @override
-  void onRequest(TrackerInfo trackerInfo) async {
+  void onRequest(TrackerInfo trackerInfo) {
     ref.read(requestsProvider.notifier).addRequest(trackerInfo);
     super.onRequest(trackerInfo);
   }

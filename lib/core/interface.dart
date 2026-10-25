@@ -217,8 +217,11 @@ abstract class CoreHandlerInterface with CoreInterface {
     return data
             ?.whereType<Map>()
             .map(
-              (item) =>
-                  ExternalProvider.fromJson(Map<String, Object?>.from(item)),
+              (item) => ExternalProvider.fromJson(
+                item is Map<String, Object?>
+                    ? item
+                    : Map<String, Object?>.from(item),
+              ),
             )
             .toList() ??
         [];
@@ -270,7 +273,13 @@ abstract class CoreHandlerInterface with CoreInterface {
     }
     return connections
         .whereType<Map>()
-        .map((item) => TrackerInfo.fromJson(Map<String, Object?>.from(item)))
+        .map(
+          (item) => TrackerInfo.fromJson(
+            item is Map<String, Object?>
+                ? item
+                : Map<String, Object?>.from(item),
+          ),
+        )
         .toList();
   }
 

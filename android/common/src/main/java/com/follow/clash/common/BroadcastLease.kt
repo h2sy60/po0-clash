@@ -1,6 +1,6 @@
 package com.follow.clash.common
 
-import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
 
 /**
  * A `BroadcastReceiver.goAsync()` path holds the broadcast open until its
@@ -12,16 +12,14 @@ import java.util.concurrent.atomic.AtomicBoolean
  * It does not cancel, reverse, or otherwise redefine the work the broadcast
  * started, which keeps running under its own owner.
  */
-class BroadcastLease(private val release: () -> Unit) {
-    private val released = AtomicBoolean(false)
+class BroadcastLease(release: () -> Unit) {
+    private val pendingRelease = AtomicReference<(() -> Unit)?>(release)
 
     val isReleased: Boolean
-        get() = released.get()
+        get() = pendingRelease.get() == null
 
     fun release(onRelease: () -> Unit = {}): Boolean {
-        if (!released.compareAndSet(false, true)) {
-            return false
-        }
+        val release = pendingRelease.getAndSet(null) ?: return false
         try {
             onRelease()
         } finally {

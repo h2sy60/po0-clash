@@ -36,15 +36,18 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 
 class AppPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAware {
 
     private var activity: Activity? = null
+    private var engineAttached = false
 
     private var activityBinding: ActivityPluginBinding? = null
 
@@ -205,7 +208,11 @@ class AppPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAware 
     private fun reply(result: Result, block: suspend () -> Any?) {
         scope.launch(Dispatchers.IO) {
             try {
-                result.success(block())
+                val value = block()
+                coroutineContext.ensureActive()
+                result.success(value)
+            } catch (error: CancellationException) {
+                throw error
             } catch (error: Exception) {
                 GlobalState.log("Platform call failed: $error")
                 result.error("PLATFORM_ERROR", error.toString(), null)
@@ -265,6 +272,10 @@ class AppPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAware 
     }
 
     fun requestNotificationPermission(callback: (Boolean) -> Unit) = onMainThread {
+        if (!engineAttached) {
+            callback(false)
+            return@onMainThread
+        }
         requestNotificationCallback.replace(callback, supersededValue = false)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             val permission = ContextCompat.checkSelfPermission(
@@ -297,6 +308,10 @@ class AppPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAware 
     }
 
     private fun requestInstalledAppsPermission(callback: (Boolean) -> Unit) = onMainThread {
+        if (!engineAttached) {
+            callback(false)
+            return@onMainThread
+        }
         requestInstalledAppsCallback.replace(callback, supersededValue = false)
         val activity = activity
         if (packageResolver.hasInstalledAppsPermission()) {
@@ -322,6 +337,10 @@ class AppPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAware 
     }
 
     fun prepareVpn(needPrepare: Boolean, callback: (Boolean) -> Unit) = onMainThread {
+        if (!engineAttached) {
+            callback(false)
+            return@onMainThread
+        }
         vpnPrepareCallback.replace(callback, supersededValue = false)
         if (!needPrepare) {
             invokeVpnPrepareCallback(true)
@@ -356,6 +375,7 @@ class AppPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAware 
         channel =
             MethodChannel(flutterPluginBinding.binaryMessenger, "${Components.PACKAGE_NAME}/app")
         channel.setMethodCallHandler(this)
+        engineAttached = true
         watchPackageChanges(flutterPluginBinding.applicationContext)
     }
 
@@ -371,6 +391,8 @@ class AppPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAware 
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+        engineAttached = false
+        detachFromActivity()
         packageChangeContext?.unregisterReceiver(packageChangeReceiver)
         packageChangeContext = null
         channel.setMethodCallHandler(null)

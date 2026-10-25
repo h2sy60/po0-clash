@@ -23,6 +23,7 @@ class SetupAction extends _$SetupAction {
   final _setupScheduler = SerialTaskScheduler();
   final _listenerScheduler = SerialTaskScheduler();
   _RunRequest? _latestRunRequest;
+  _RunRequest? _preparingRunRequest;
   DateTime? _startTime;
 
   bool get _isRunning =>
@@ -183,6 +184,7 @@ class SetupAction extends _$SetupAction {
   }
 
   Future<bool> _start(_RunRequest request) async {
+    if (system.isAndroid) return _startAndroid(request);
     if (request.initialize) {
       var applied = false;
       try {
@@ -211,6 +213,32 @@ class SetupAction extends _$SetupAction {
     return true;
   }
 
+  Future<bool> _startAndroid(_RunRequest request) async {
+    _preparingRunRequest = request;
+    var accepted = false;
+    try {
+      debouncer.cancel(FunctionTag.applyProfile);
+      final applied = await applyProfile(
+        force: request.initialize,
+        silence: !request.initialize,
+      );
+      if (!applied) return false;
+      await _setCoreRunning(request);
+      accepted = true;
+      if (_isCurrent(request)) {
+        ref.read(checkIpNumProvider.notifier).add();
+      }
+      return true;
+    } finally {
+      if (identical(_preparingRunRequest, request)) {
+        _preparingRunRequest = null;
+      }
+      if (!accepted && _isCurrent(request)) {
+        await globalState.safeRun(() => setRunning(false));
+      }
+    }
+  }
+
   Future<bool> _stop(_RunRequest request) async {
     try {
       await _setCoreRunning(request);
@@ -236,7 +264,10 @@ class SetupAction extends _$SetupAction {
       if (request.running && ref.read(suspendProvider)) {
         return;
       }
-      await setCoreRunning(request.running);
+      final accepted = await setCoreRunning(request.running);
+      if (request.running && !accepted && _isCurrent(request)) {
+        throw StateError('Core listener start was rejected');
+      }
     });
   }
 
@@ -247,7 +278,12 @@ class SetupAction extends _$SetupAction {
       if (!ref.read(isStartProvider)) {
         return;
       }
-      await setCoreRunning(!ref.read(suspendProvider));
+      final suspended = ref.read(suspendProvider);
+      final preparing = _preparingRunRequest;
+      if (!suspended && preparing != null && _isCurrent(preparing)) {
+        return;
+      }
+      await setCoreRunning(!suspended);
     });
   }
 
@@ -571,13 +607,13 @@ class SetupAction extends _$SetupAction {
     final profileFailed = realProfile == null;
     final yamlString = realProfile?.yaml ?? '';
     final yamlMd5 = realProfile?.md5 ?? '';
-    if (!profileFailed && yamlMd5 == globalState.lastConfigMd5 && !force) {
-      return _SetupTaskResult.completed;
-    }
     if (system.isAndroid) {
       globalState.lastVpnState = ref.read(vpnStateProvider);
       final sharedState = ref.read(sharedStateProvider);
       await preferences.saveShareState(sharedState);
+    }
+    if (!profileFailed && yamlMd5 == globalState.lastConfigMd5 && !force) {
+      return _SetupTaskResult.completed;
     }
     // Recaptured so _start's catch can roll back after safeRun swallows it.
     (Object, StackTrace)? handoffFailure;
@@ -591,6 +627,7 @@ class SetupAction extends _$SetupAction {
           if (profileId != null) {
             await appPath.ensureProviderDirs(profileId);
           }
+          globalState.lastConfigMd5 = null;
           final message = await _core.setupConfig(
             params: _setupParams,
             preloadInvoke: preloadInvoke,

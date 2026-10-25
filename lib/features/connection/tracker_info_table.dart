@@ -28,6 +28,15 @@ class _TrackerInfoTableState extends State<TrackerInfoTable> {
   final _vertical = ScrollController();
   int _sortColumn = 6;
   bool _ascending = false;
+  List<TrackerInfo>? _sortedRows;
+
+  @override
+  void didUpdateWidget(covariant TrackerInfoTable oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!identical(oldWidget.trackerInfos, widget.trackerInfos)) {
+      _sortedRows = null;
+    }
+  }
 
   @override
   void dispose() {
@@ -36,16 +45,15 @@ class _TrackerInfoTableState extends State<TrackerInfoTable> {
     super.dispose();
   }
 
-  int _compare(TrackerInfo a, TrackerInfo b) {
-    final result = switch (_sortColumn) {
-      0 => a.desc.compareTo(b.desc),
-      1 => a.progressText.compareTo(b.progressText),
-      2 => a.rule.compareTo(b.rule),
-      3 => a.chains.join(' → ').compareTo(b.chains.join(' → ')),
-      4 => a.upload.compareTo(b.upload),
-      5 => a.download.compareTo(b.download),
-      _ => a.start.compareTo(b.start),
-    };
+  int _compare(TrackerInfo a, TrackerInfo b, Map<String, String>? textKeys) {
+    final result = textKeys != null
+        ? textKeys[a.id]!.compareTo(textKeys[b.id]!)
+        : switch (_sortColumn) {
+            2 => a.rule.compareTo(b.rule),
+            4 => a.upload.compareTo(b.upload),
+            5 => a.download.compareTo(b.download),
+            _ => a.start.compareTo(b.start),
+          };
     return result == 0
         ? a.id.compareTo(b.id)
         : _ascending
@@ -53,10 +61,26 @@ class _TrackerInfoTableState extends State<TrackerInfoTable> {
         : -result;
   }
 
+  List<TrackerInfo> _sortRows() {
+    final rows = List<TrackerInfo>.of(widget.trackerInfos);
+    final textKey = switch (_sortColumn) {
+      0 => (TrackerInfo info) => info.desc,
+      1 => (TrackerInfo info) => info.progressText,
+      3 => (TrackerInfo info) => info.chains.join(' → '),
+      _ => null,
+    };
+    final textKeys = textKey == null
+        ? null
+        : {for (final info in rows) info.id: textKey(info)};
+    rows.sort((a, b) => _compare(a, b, textKeys));
+    return rows;
+  }
+
   void _sort(int column) {
     setState(() {
       _ascending = _sortColumn == column ? !_ascending : column < 4;
       _sortColumn = column;
+      _sortedRows = null;
     });
   }
 
@@ -105,7 +129,7 @@ class _TrackerInfoTableState extends State<TrackerInfoTable> {
       strings.time,
     ];
     const flexes = [26, 14, 16, 22, 10, 10, 18];
-    final rows = List<TrackerInfo>.of(widget.trackerInfos)..sort(_compare);
+    final rows = _sortedRows ??= _sortRows();
     final height = math.max(
       48.0,
       MediaQuery.textScalerOf(context).scale(20) + 20,

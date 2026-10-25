@@ -8,6 +8,7 @@ import android.os.Binder
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
+import android.util.LruCache
 import androidx.core.content.getSystemService
 import com.follow.clash.common.AccessControlMode
 import com.follow.clash.common.GlobalState
@@ -20,7 +21,6 @@ import com.follow.clash.service.models.getIpv6RouteAddress
 import com.follow.clash.service.models.toCIDR
 import com.follow.clash.service.modules.ServiceModules
 import java.net.InetSocketAddress
-import java.util.concurrent.ConcurrentHashMap
 import android.net.VpnService as SystemVpnService
 
 class VpnService : SystemVpnService(), ManagedService {
@@ -40,7 +40,7 @@ class VpnService : SystemVpnService(), ManagedService {
     private val connectivity by lazy {
         getSystemService<ConnectivityManager>()
     }
-    private val uidPackageNameMap = ConcurrentHashMap<Int, String>()
+    private val uidPackageNameMap = LruCache<Int, String>(UID_PACKAGE_CACHE_SIZE)
 
     private fun resolveUid(
         protocol: Int,
@@ -61,7 +61,8 @@ class VpnService : SystemVpnService(), ManagedService {
             ?.firstOrNull()
             ?.takeIf { it.isNotEmpty() }
             .orEmpty()
-        return uidPackageNameMap.putIfAbsent(uid, packageName) ?: packageName
+        uidPackageNameMap.put(uid, packageName)
+        return packageName
     }
 
     private val VpnOptions.tunAddress
@@ -267,9 +268,9 @@ class VpnService : SystemVpnService(), ManagedService {
 
     private fun cleanup() {
         try {
-            modules.stop()
-        } finally {
             stopTun()
+        } finally {
+            modules.stop()
         }
     }
 
@@ -282,9 +283,11 @@ class VpnService : SystemVpnService(), ManagedService {
             Core.stopTun()
             tunRunning = false
         }
+        uidPackageNameMap.evictAll()
     }
 
     companion object {
+        private const val UID_PACKAGE_CACHE_SIZE = 512
         private const val IPV4_ADDRESS = "172.19.0.1/30"
         private const val IPV6_ADDRESS = "fdfe:dcba:9876::1/126"
         private const val DNS = "172.19.0.2"

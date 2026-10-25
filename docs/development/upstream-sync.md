@@ -21,7 +21,7 @@ git merge upstream/main
 | `ui/selection_mark.dart` | `lib/widgets/selection_badge.dart`；代理实际选中与固定偏好分别展示 |
 | `views/proxies/group_tabs.dart` | 同路径；复用现有弹出菜单，`lib/widgets/text.dart` 同步 emoji 字体测量 |
 | `ui/surface.dart`、主题与首页卡片 | `lib/common/upstream_color.dart`、`lib/widgets/upstream_surface.dart`、`lib/views/dashboard/` |
-| 连接 / 请求表格 | `lib/features/connection/tracker_info_table.dart`，接现有 `TrackerInfo`，保留窄屏列表 |
+| 连接 / 请求表格 | `lib/features/connection/tracker_info_table.dart`，接现有 `TrackerInfo`，保留窄屏列表；排序结果按列表快照复用，文本排序键每行只生成一次 |
 | 上游没有的页面 | `lib/views/po0_firewall.dart`、`lib/views/profiles/nodes.dart`，复用同一视觉组件 |
 
 新增前端接线还涉及 `lib/widgets/button.dart`（图标参数接受 Widget）、`lib/widgets/scaffold.dart`、
@@ -79,6 +79,14 @@ Android 图标升级兼容由 `LauncherBranding.kt`、`LauncherUpdateReceiver.kt
 | `assets_source/images/icon/` 及生成的桌面、Android、托盘图标 | po0 的扁平 P / 斜杠零标志，源 SVG 由 `tool/generate_app_icons.sh` 转换为各平台产物 |
 | `android/app/src/main/res/drawable/ic_launcher_monochrome.xml` / `android/app/src/main/res/values/splash.xml` | Android 主题图标沿用同一轮廓，启动背景匹配图标底色 |
 
+## Android 启动接管
+
+| 文件 | 本分支改动 |
+|---|---|
+| `lib/providers/actions/setup.dart` | Android 先准备配置再提交启动，取消启动后的延迟强制重载；相同配置复用已有内核状态，失败使配置指纹失效；准备期间 Wi-Fi 暂停状态不能提前启动 |
+| `lib/core/lib.dart` / `android/app/src/main/kotlin/com/follow/clash/plugins/ServicePlugin.kt` | 启动前同步最新 VPN 参数；原生共享状态按通道顺序应用，启动命令仍由 `ServiceState` 乐观接收并仲裁 |
+| `core/lib.go` | TUN 协议栈返回前已可能收包，保护套接字与 UID 查询以 JNI 回调有效性判断就绪，不等待 listener 字段赋值 |
+
 ## 简洁界面与性能（ADR 0016）
 
 | 文件 | 本分支改动 |
@@ -91,16 +99,29 @@ Android 图标升级兼容由 `LauncherBranding.kt`、`LauncherUpdateReceiver.kt
 | `lib/manager/app_manager.dart` / `window_manager.dart` | 生命周期、最小化与恢复驱动 UI 可见性；重新聚焦不额外加白 |
 | `lib/widgets/active_polling.dart` / `line_chart.dart` / `lib/views/po0_firewall.dart` | 不可见时停轮询；相同图表数据不重启动画 |
 | `lib/providers/state/system.dart` / `proxies.dart` | 隐藏托盘网速时不订阅流量；节点规范化复用未变对象 |
-| `lib/models/common.dart` / `lib/common/task.dart` | 失效的节点偏好回退到当前出口；首次默认节点在排序前确定，分组复用节点对象 |
-| `lib/common/compute.dart` / `lib/providers/state/proxies.dart` / `lib/providers/actions/proxies.dart` | 节点名索引、快照内出口解析缓存、循环保护和延迟排序键复用 |
-| `core/proxies.go` / `core/constant.go` / `core/hub.go` | 分离节点列表处理，仅输出 Flutter 消费的字段，保留分组运行时出口与原有消息封装 |
-| `lib/common/fixed.dart` / `lib/models/common.dart` | 有上限的环形缓冲、不可变快照与列表筛选快速路径 |
+| `lib/models/common.dart` / `lib/common/task.dart` | 失效的节点偏好回退到当前出口；首次默认节点在排序前确定，分组复用节点对象；解析复用只读 Map，分组只复制一次 |
+| `lib/common/compute.dart` / `lib/providers/state/proxies.dart` / `lib/providers/actions/proxies.dart` | 节点名索引、快照内出口解析缓存、循环保护和延迟排序键复用；叶节点不分配循环检测集合 |
+| `core/proxies.go` / `core/constant.go` / `core/hub.go` | 分离节点列表处理，仅输出 Flutter 消费的字段；分组成员保留 JSON 数组，叶节点直接编码，保留运行时出口与原有消息封装 |
+| `lib/common/fixed.dart` / `lib/models/common.dart` | 有上限的环形缓冲、不可变快照与列表筛选快速路径；历史拼接和队列复制省去中间列表 |
 | `lib/widgets/active_feed.dart` / `lib/widgets/widgets.dart` / `lib/views/logs.dart` / `lib/views/connection/requests.dart` | 由数据事件触发、按页面 / 窗口 / 生命周期可见性合并的列表刷新，隐藏期间继续记录事件 |
 | `lib/providers/state/system.dart` / `lib/providers/actions/system.dart` | 托盘直接读取最新流量采样，避免为标题构建完整快照 |
 | `core/server.go` | 有上限的每连接接收缓冲区复用，异步分发前复制 JSON 参数 |
 | `core/message.go` / `core/message_encoding.go` / `core/event_json.go` / `core/request_events.go` / `core/hub.go` | 有上限的编码缓冲；固定事件专用 JSON 写入及标准编码回退，完整字段契约与随机差分校验；请求排队仅保留展示信息，Android 避免重复 GC |
 | `core/main.go` / `core/logging.go` / `core/go.mod` | 桌面入口按调试开关控制控制台诊断，普通日志沿用事件通道；显式声明已有 logrus 依赖 |
 | `lib/core/event.dart` / `lib/core/desktop/rpc_client.dart` / `lib/plugins/service.dart` | UTF-8 / JSON 融合解码、匹配 Map 直接复用、监听器快照缓存及不可变事件模型共享；保留回调顺序和异常隔离 |
+| `lib/core/interface.dart` | 连接列表和供应器列表解码复用类型已匹配的 Map，避免逐条复制 |
+| `lib/common/compute.dart` / `lib/providers/state/proxies.dart` / `lib/providers/actions/proxies.dart` | 明确指定的测速网址优先于分组与全局默认值；任务、结果与进行中状态共用地址解析，服务检测按各自目标分别测速 |
+| `lib/manager/core_manager.dart` | 测速结果与请求事件使用同步回调，省去无异步工作的 Future 分配 |
+| `android/service/src/main/java/com/follow/clash/service/modules/NotificationModule.kt` / `SuspendModule.kt` | 模块持有可取消子任务，停止与最终副作用串行，防止停止后的回调恢复通知或休眠状态；通知熄屏时取消刷新循环 |
+| `android/service/src/main/java/com/follow/clash/service/modules/NetworkObserveModule.kt` | 停止清理与网络回调共用锁，禁止停止后重新投递 DNS 延迟任务；缓存网络能力通知，避免排序时重复 Binder 查询 |
+| `android/service/src/main/java/com/follow/clash/service/VpnService.kt` | UID 到包名缓存采用 512 项 LRU，停止 TUN 后清空；先停 TUN/listener 再恢复休眠状态，避免退出时触发健康检查 |
+| `android/app/src/main/kotlin/com/follow/clash/packages/PackageResolver.kt` | APK 识别扫描串行、可取消，结果随已安装应用缓存一起失效；包变更期间的旧扫描结果不会重新写入缓存 |
+| `android/app/src/main/kotlin/com/follow/clash/plugins/AppPlugin.kt` | 引擎销毁时清理 Activity 绑定；延后执行的权限请求拒绝已销毁引擎，扫描任务传播取消，避免完成后向旧引擎回传 |
+| `android/app/src/main/kotlin/com/follow/clash/plugins/ServicePlugin.kt` / `CoreEventRelay.kt` | 四批待发事件与单批在途回执，单一发送协程向 Dart 投递；先取消队列再移除 JNI 回调，避免无界主线程任务与销毁等待 |
+| `android/app/src/main/kotlin/com/follow/clash/ServiceController.kt` | 统一拥有 JNI 事件监听器；按 relay 身份释放，旧引擎销毁不覆盖新引擎监听器 |
+| `core/lib.go` / `core/server.go` / `core/message.go` / `core/hub.go` | Android 无事件监听器时跳过事件排队与请求快照；消费者状态由 JNI 监听器安装/释放同步，桌面队列行为保持原有语义 |
+| `android/common/src/main/java/com/follow/clash/common/BroadcastLease.kt` | 原子消费并清空结束回调，watchdog 提前释放后不再持有 PendingResult；服务操作继续由原有 owner 完成 |
+| `android/app/src/main/kotlin/com/follow/clash/TileService.kt` | 服务销毁时兜底取消状态收集任务 |
 | `plugins/rust_api/rust/src/ipc/{server,queue,frame,platform,readiness}.rs` | 消息/关闭驱动发送，接收时预留事件字节；Unix 通过描述符就绪与显式唤醒等待，Windows 保留原有管道处理 |
 
 ## Windows 签名验证

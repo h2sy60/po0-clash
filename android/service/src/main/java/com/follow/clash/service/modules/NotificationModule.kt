@@ -21,10 +21,11 @@ import com.follow.clash.service.ServiceConfig
 import com.follow.clash.service.models.NotificationParams
 import com.follow.clash.service.models.getSpeedTrafficText
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
@@ -49,9 +50,15 @@ internal class NotificationModule(
     private val service: Service,
     private val scope: CoroutineScope,
 ) : ServiceModule {
+    private var active = false
+    private var updateJob: Job? = null
+
+    @Synchronized
     override fun start() {
+        if (active) return
+        active = true
         update(ServiceConfig.notificationParams.value.extended)
-        scope.launch {
+        updateJob = scope.launch {
             val screenFlow = service.receiveBroadcastFlow {
                 addAction(Intent.ACTION_SCREEN_ON)
                 addAction(Intent.ACTION_SCREEN_OFF)
@@ -61,20 +68,21 @@ internal class NotificationModule(
                 emit(isScreenOn())
             }
 
-            combine(
-                flow {
-                    while (true) {
-                        delay(1_000)
+            screenFlow.distinctUntilChanged().collectLatest { screenOn ->
+                if (!screenOn) return@collectLatest
+                combine(
+                    flow {
                         emit(Unit)
-                    }
-                },
-                ServiceConfig.notificationParams,
-                screenFlow,
-            ) { _, params, screenOn ->
-                params.takeIf { screenOn }?.extended
-            }.filterNotNull()
-                .distinctUntilChanged()
-                .collect(::update)
+                        while (true) {
+                            delay(1_000)
+                            emit(Unit)
+                        }
+                    },
+                    ServiceConfig.notificationParams,
+                ) { _, params -> params.extended }
+                    .distinctUntilChanged()
+                    .collect(::update)
+            }
         }
     }
 
@@ -102,7 +110,9 @@ internal class NotificationModule(
         }
     }
 
+    @Synchronized
     private fun update(params: ExtendedNotificationParams) {
+        if (!active) return
         service.startForeground(
             with(notificationBuilder) {
                 setContentTitle(params.title)
@@ -121,7 +131,11 @@ internal class NotificationModule(
     }
 
     @Suppress("DEPRECATION")
+    @Synchronized
     override fun stop() {
+        active = false
+        updateJob?.cancel()
+        updateJob = null
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             service.stopForeground(STOP_FOREGROUND_REMOVE)
         } else {

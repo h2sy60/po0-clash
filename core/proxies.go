@@ -17,11 +17,11 @@ type proxyIdentity struct {
 
 type proxyGroupSnapshot struct {
 	proxyIdentity
-	All     []string `json:"all"`
-	Now     string   `json:"now,omitempty"`
-	TestURL string   `json:"testUrl"`
-	Hidden  bool     `json:"hidden"`
-	Icon    string   `json:"icon"`
+	All     json.RawMessage `json:"all"`
+	Now     string          `json:"now,omitempty"`
+	TestURL string          `json:"testUrl"`
+	Hidden  bool            `json:"hidden"`
+	Icon    string          `json:"icon"`
 }
 
 type proxySnapshot struct {
@@ -32,7 +32,12 @@ func (snapshot proxySnapshot) MarshalJSON() ([]byte, error) {
 	proxy := snapshot.proxy
 	identity := proxyIdentity{Name: proxy.Name(), Type: proxy.Type().String()}
 	if !isProxyGroupType(proxy.Type()) {
-		return json.Marshal(identity)
+		data := make([]byte, 0, len(identity.Name)+len(identity.Type)+21)
+		data = append(data, `{"name":`...)
+		data = appendJSONString(data, identity.Name)
+		data = append(data, `,"type":`...)
+		data = appendJSONString(data, identity.Type)
+		return append(data, '}'), nil
 	}
 	data, err := proxy.Adapter().MarshalJSON()
 	if err != nil {

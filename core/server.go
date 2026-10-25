@@ -33,6 +33,10 @@ const (
 
 var deliveryFailureReported atomic.Bool
 
+func acceptsEvents() bool {
+	return true
+}
+
 // logDeliveryError must not reach the mihomo logger: a log event is published
 // to the log subscriber, batched, and handed back to send, so reporting a send
 // failure through it feeds the failure straight back into itself.

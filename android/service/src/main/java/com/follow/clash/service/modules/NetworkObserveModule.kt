@@ -16,11 +16,11 @@ import com.follow.clash.core.Core
 import java.net.Inet4Address
 import java.net.Inet6Address
 import java.net.InetAddress
-import java.util.concurrent.ConcurrentHashMap
 
 private data class NetworkInfo(
-    @Volatile var losingUntilMillis: Long = 0,
-    @Volatile var dnsList: List<InetAddress> = emptyList(),
+    var losingUntilMillis: Long = 0,
+    var dnsList: List<InetAddress> = emptyList(),
+    var capabilities: NetworkCapabilities? = null,
 ) {
     val priorityPenalty: Int
         get() = if (losingUntilMillis > System.currentTimeMillis()) 10 else 0
@@ -28,7 +28,8 @@ private data class NetworkInfo(
 
 internal class NetworkObserveModule(private val service: Service) : ServiceModule {
 
-    private val networkInfos = ConcurrentHashMap<Network, NetworkInfo>()
+    private val networkInfos = mutableMapOf<Network, NetworkInfo>()
+    private var active = false
     private val connectivity by lazy {
         service.getSystemService<ConnectivityManager>()
     }
@@ -45,42 +46,72 @@ internal class NetworkObserveModule(private val service: Service) : ServiceModul
     }.build()
 
     private val callback = object : ConnectivityManager.NetworkCallback() {
-        override fun onAvailable(network: Network) {
-            networkInfos[network] = NetworkInfo()
+        override fun onAvailable(network: Network) = whileActive {
+            networkInfos[network] = NetworkInfo(
+                capabilities = connectivity?.getNetworkCapabilities(network),
+            )
             updateDns()
         }
 
-        override fun onLosing(network: Network, maxMsToLive: Int) {
-            val info = networkInfos[network] ?: return
+        override fun onLosing(network: Network, maxMsToLive: Int) = whileActive {
+            val info = networkInfos[network] ?: return@whileActive
             info.losingUntilMillis = System.currentTimeMillis() + maxMsToLive
             updateDns()
             if (maxMsToLive > 0) {
                 mainHandler.postDelayed({
-                    if (networkInfos.containsKey(network)) {
-                        updateDns()
+                    whileActive {
+                        if (networkInfos.containsKey(network)) {
+                            updateDns()
+                        }
                     }
                 }, maxMsToLive.toLong() + 50)
             }
         }
 
-        override fun onLost(network: Network) {
+        override fun onLost(network: Network) = whileActive {
             networkInfos.remove(network)
             updateDns()
         }
 
-        override fun onLinkPropertiesChanged(network: Network, linkProperties: LinkProperties) {
+        override fun onLinkPropertiesChanged(
+            network: Network,
+            linkProperties: LinkProperties,
+        ) = whileActive {
             networkInfos[network]?.dnsList = linkProperties.dnsServers
+            updateDns()
+        }
+
+        override fun onCapabilitiesChanged(
+            network: Network,
+            capabilities: NetworkCapabilities,
+        ) = whileActive {
+            networkInfos[network]?.capabilities = capabilities
             updateDns()
         }
     }
 
     override fun start() {
-        updateDns()
-        connectivity?.registerNetworkCallback(request, callback)
+        synchronized(this) {
+            if (active) return
+            active = true
+        }
+        try {
+            updateDns()
+            connectivity?.registerNetworkCallback(request, callback)
+        } catch (error: Exception) {
+            clearNetworks()
+            throw error
+        }
+    }
+
+    private inline fun whileActive(action: () -> Unit) {
+        synchronized(this) {
+            if (active) action()
+        }
     }
 
     private fun networkPriority(entry: Map.Entry<Network, NetworkInfo>): Int {
-        val capabilities = connectivity?.getNetworkCapabilities(entry.key)
+        val capabilities = entry.value.capabilities
         return when {
             capabilities == null -> 100
             capabilities.hasTransport(NetworkCapabilities.TRANSPORT_VPN) -> 90
@@ -115,13 +146,19 @@ internal class NetworkObserveModule(private val service: Service) : ServiceModul
     }
 
     override fun stop() {
-        mainHandler.removeCallbacksAndMessages(null)
         try {
-            connectivity?.unregisterNetworkCallback(callback)
+            clearNetworks()
         } finally {
-            networkInfos.clear()
-            updateDns()
+            connectivity?.unregisterNetworkCallback(callback)
         }
+    }
+
+    @Synchronized
+    private fun clearNetworks() {
+        active = false
+        mainHandler.removeCallbacksAndMessages(null)
+        networkInfos.clear()
+        updateDns()
     }
 }
 

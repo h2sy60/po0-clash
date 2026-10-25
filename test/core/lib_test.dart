@@ -218,6 +218,45 @@ void main() {
   });
 
   group('listeners', () {
+    test(
+      'syncs current state before starting the listener and service',
+      () async {
+        await lib.start();
+        service.onInvokeMethod = (call) =>
+            CoreMethodResponse(id: call.id, result: true);
+        service.calls.clear();
+
+        expect(await lib.startListener(), isTrue);
+        expect(service.calls, [
+          'syncState',
+          'invokeMethod:startListener',
+          'start',
+        ]);
+      },
+    );
+
+    test('does not start the service when the core listener fails', () async {
+      await lib.start();
+      service.onInvokeMethod = (call) =>
+          CoreMethodResponse(id: call.id, result: false);
+      service.calls.clear();
+
+      expect(await lib.startListener(), isFalse);
+      expect(service.calls, ['syncState', 'invokeMethod:startListener']);
+    });
+
+    test(
+      'does not start either side when shared state fails to sync',
+      () async {
+        await lib.start();
+        service.syncError = 'state sync failed';
+        service.calls.clear();
+
+        await expectLater(lib.startListener(), throwsStateError);
+        expect(service.calls, ['syncState']);
+      },
+    );
+
     test('a listener is started only when both sides agree', () async {
       await lib.start();
       service.onInvokeMethod = (_) =>

@@ -31,6 +31,7 @@ import (
 var (
 	eventListenerLock sync.RWMutex
 	eventListener     unsafe.Pointer
+	eventConsumer     atomic.Bool
 )
 
 type TunHandler struct {
@@ -48,11 +49,8 @@ func (th *TunHandler) start(fd int, stack, address, dns string) bool {
 	th.initHook()
 	th.mu.Unlock()
 
-	// t.Start runs outside th.mu on purpose. The hook is live from initHook
-	// onwards, and a socket opened anywhere inside Start reaches handleProtect
-	// on this very goroutine — an RLock taken while this one holds the write
-	// lock deadlocks the start outright. Nothing is lost by dropping it: both
-	// hooks return early until th.listener is set, which is below.
+	// Start can already dispatch packets; its callbacks must work before it returns.
+	// Do not hold th.mu here: protecting those sockets takes its read lock.
 	tunListener := t.Start(fd, stack, address, dns)
 
 	th.mu.Lock()
@@ -92,11 +90,7 @@ func (th *TunHandler) handleProtect(fd int) error {
 	th.mu.RLock()
 	defer th.mu.RUnlock()
 
-	if th.listener == nil || th.callback == nil {
-		// The tun routes are already live at this point (Android establishes
-		// them before it hands the fd over), so an unprotected socket would be
-		// routed straight back into the tunnel and hang until it times out.
-		// Failing it here costs nothing and is at least visible.
+	if th.callback == nil {
 		return errTunNotReady
 	}
 
@@ -118,7 +112,7 @@ func (th *TunHandler) handleResolveProcess(source, target net.Addr) (int, string
 	defer th.mu.RUnlock()
 
 	// A released callback is a null jobject, and JNI aborts on a call through one.
-	if th.listener == nil || th.callback == nil {
+	if th.callback == nil {
 		return -1, ""
 	}
 	var protocol int
@@ -338,6 +332,11 @@ func setEventListener(listener unsafe.Pointer) {
 		releaseObject(eventListener)
 	}
 	eventListener = listener
+	eventConsumer.Store(listener != nil)
+}
+
+func acceptsEvents() bool {
+	return eventConsumer.Load()
 }
 
 //export getTotalTraffic

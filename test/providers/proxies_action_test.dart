@@ -366,6 +366,39 @@ void main() {
   });
 
   group('delayTest', () {
+    test(
+      'service probes keep their URLs when a group has a test URL',
+      () async {
+        const serviceUrls = [
+          'https://www.google.com/generate_204',
+          'https://github.com',
+          'https://www.youtube.com/generate_204',
+          'https://chatgpt.com',
+        ];
+        final container = _delayContainer(
+          () => buildContainer(profile: _selectedProfile('HK-01')),
+        );
+        container.read(groupsProvider.notifier).value = [
+          _group('Proxy', [_proxy]).copyWith(testUrl: 'https://group.test'),
+        ];
+        for (var index = 0; index < serviceUrls.length; index++) {
+          final url = serviceUrls[index];
+          when(() => core.asyncTestDelay(url, 'HK-01')).thenAnswer(
+            (_) async => Delay(name: 'HK-01', url: url, value: 20 + index),
+          );
+          await actionOf(
+            container,
+          ).delayTest(const [Proxy(name: 'Proxy', type: 'Selector')], url);
+          expect(
+            container.read(delayProvider(proxyName: 'Proxy', testUrl: url)),
+            20 + index,
+          );
+          verify(() => core.asyncTestDelay(url, 'HK-01')).called(1);
+        }
+        verifyNever(() => core.asyncTestDelay('https://group.test', any()));
+      },
+    );
+
     test('measures every proxy and bumps the sort counter', () async {
       when(() => core.asyncTestDelay(_testUrl, any())).thenAnswer(
         (invocation) async => Delay(

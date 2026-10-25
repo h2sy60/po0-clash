@@ -1,5 +1,6 @@
 import 'package:fl_clash/common/app_ports.dart';
 import 'package:fl_clash/common/constant.dart';
+import 'package:fl_clash/common/compute.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/models/models.dart';
@@ -338,6 +339,50 @@ void main() {
         proxyDescProvider(const Proxy(name: 'Leaf', type: 'Direct')),
       ),
       'Direct',
+    );
+  });
+
+  test('service delay and pending state are isolated from group tests', () {
+    const groupUrl = 'https://group.test';
+    const serviceUrl = 'https://github.com';
+    final profile = Profile.normal().copyWith(
+      selectedMap: {'Selector': 'Leaf'},
+    );
+    _profiles(container).replace([profile]);
+    container.read(currentProfileIdProvider.notifier).update((_) => profile.id);
+    container
+        .read(groupsProvider.notifier)
+        .update(
+          (_) => const [
+            Group(
+              name: 'Selector',
+              type: GroupType.Selector,
+              testUrl: groupUrl,
+              all: [Proxy(name: 'Leaf', type: 'ss')],
+            ),
+          ],
+        );
+    final delays = container.read(delayDataSourceProvider.notifier);
+    delays.setDelay(const Delay(name: 'Leaf', url: groupUrl, value: 258));
+    delays.setDelay(const Delay(name: 'Leaf', url: serviceUrl, value: 71));
+    container.read(pendingDelayTestsProvider.notifier).acquire([
+      delayTestKey(serviceUrl, 'Leaf'),
+    ]);
+
+    expect(container.read(delayProvider(proxyName: 'Selector')), 258);
+    expect(
+      container.read(delayProvider(proxyName: 'Selector', testUrl: serviceUrl)),
+      71,
+    );
+    expect(
+      container.read(delayTestPendingProvider(proxyName: 'Selector')),
+      isFalse,
+    );
+    expect(
+      container.read(
+        delayTestPendingProvider(proxyName: 'Selector', testUrl: serviceUrl),
+      ),
+      isTrue,
     );
   });
 

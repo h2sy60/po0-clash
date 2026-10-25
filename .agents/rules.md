@@ -243,6 +243,8 @@ leaving a repo-wide policy as a comment reaches only the reader of that one file
   stay centralized in `SystemAction`/`SystemExitCoordinator`.
 - Android start/stop MethodChannel calls are optimistic UI commands. Keep latest-wins arbitration in native
   `ServiceState`; do not add a Flutter completion callback that creates a second lifecycle owner.
+- Android event delivery may backpressure Go's batch sender while it holds the JNI listener read lock. Close the
+  `CoreEventRelay` queue before replacing or removing that listener, so teardown never waits for Dart or the main thread.
 - Android service callbacks are not automatically user intent. Route explicit Quick Settings, Always-on VPN, and revoke
   actions through `ServiceState` and keep `ServiceController` as the sole binding/run-time owner.
 - Every `BroadcastReceiver.goAsync()` path must finish its `PendingResult` exactly once. A watchdog may release the

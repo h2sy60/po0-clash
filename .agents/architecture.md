@@ -154,17 +154,32 @@ directions. The envelope is the only JSON serialization layer: keep arguments, r
 values rather than embedding pre-encoded JSON strings. Plain domain strings, such as country codes or provider contents,
 remain strings.
 
-Go event delivery is intentionally non-blocking:
+Go event producers never block on event delivery:
 
-- State-bearing events such as delay, loaded-provider, and geo-update use a 256-entry priority queue. Desktop process
-  crashes are generated locally by `CoreService` from lifecycle failures rather than sent through the Go queue.
+- Loaded-provider and geo-update events use a 256-entry state queue that never evicts an older event. Delay events use a
+  separate 256-entry priority queue. Desktop process crashes are generated locally by `CoreService` from lifecycle failures.
 - High-volume log and request/connection events use a separate 256-entry bulk queue, so bulk floods cannot evict state.
-- A full queue evicts only its own oldest event and retries the newest event; Core work never blocks on event delivery.
+- Priority and bulk queues evict only their own oldest event; a full state queue rejects a new event. Core work never
+  blocks on event delivery.
 - The batcher flushes at 32 messages or every 16 milliseconds. Priority events are preferred, but one bulk opportunity is
   guaranteed after eight priority messages to prevent starvation.
 
 Desktop RPC accepts both a single event object and batched event lists. Android and desktop listener dispatch isolate
 listener exceptions so one faulty observer does not prevent the remaining events/listeners from running.
+
+`ServiceController` owns the active Android event listener by relay identity, so releasing an older plugin cannot remove
+a newer engine's listener. Android's `CoreEventRelay` owns one sender coroutine, a four-batch queue and one in-flight MethodChannel call. The next
+batch waits for Dart's event-handler reply; a full queue backpressures only Go's batch sender, preserving emitted order
+and the upstream queue priorities. Replacing or releasing the relay cancels its queue before clearing the JNI listener,
+so a blocked sender releases Go's listener read lock without needing the main thread or Dart to drain anything.
+Without an Android event listener, Go skips event queueing and request snapshots. Native proxying, statistics and health
+checks continue independently. `BroadcastLease` atomically consumes its finish callback, releasing its captured
+`PendingResult` even when the watchdog wins before the service operation completes.
+
+Notification and suspension modules own cancellable child jobs and serialize their final side effects with `stop()`.
+Cancellation alone cannot prevent an already-running callback from updating a notification or suspension after teardown.
+VPN cleanup stops TUN/listeners before stopping these modules, so clearing Doze suspension cannot start health checks
+while the VPN is being torn down.
 
 ## User-Facing Core And Delay Feedback
 

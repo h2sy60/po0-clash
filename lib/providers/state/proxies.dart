@@ -183,7 +183,11 @@ String realTestUrl(Ref ref, [String? testUrl]) {
 int? delay(Ref ref, {required String proxyName, String? testUrl}) {
   final currentTestUrl = ref.watch(realTestUrlProvider(testUrl));
   final proxyState = ref.watch(realSelectedProxyStateProvider(proxyName));
-  final effectiveTestUrl = proxyState.testUrl.takeFirstValid([currentTestUrl]);
+  final effectiveTestUrl = resolveDelayTestUrl(
+    requestedUrl: testUrl,
+    groupUrl: proxyState.testUrl,
+    fallbackUrl: currentTestUrl,
+  );
   final effectiveProxyName = proxyState.proxyName;
   return ref.watch(
     delayDataSourceProvider.select(
@@ -196,7 +200,11 @@ int? delay(Ref ref, {required String proxyName, String? testUrl}) {
 bool delayTestPending(Ref ref, {required String proxyName, String? testUrl}) {
   final currentTestUrl = ref.watch(realTestUrlProvider(testUrl));
   final proxyState = ref.watch(realSelectedProxyStateProvider(proxyName));
-  final effectiveTestUrl = proxyState.testUrl.takeFirstValid([currentTestUrl]);
+  final effectiveTestUrl = resolveDelayTestUrl(
+    requestedUrl: testUrl,
+    groupUrl: proxyState.testUrl,
+    fallbackUrl: currentTestUrl,
+  );
   final key = delayTestKey(effectiveTestUrl, proxyState.proxyName);
   return ref.watch(
     pendingDelayTestsProvider.select((state) => state.contains(key)),
