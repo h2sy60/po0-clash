@@ -1,9 +1,10 @@
-po0-clash v6.4.4：修复 Android 底部导航栏被状态栏安全区撑高、图标与文字位置偏移的问题。
+po0-clash v6.4.5：内核升到 FlClash 最新 HEAD，新增 Snell v6 支持；Windows 签名改用本 fork 自己的证书，恢复出包；Android 只编 arm64，安装包大幅瘦身。
 
 ## 本次更新
 
-- 修复 Android 底部导航栏重复应用顶部系统安全区，导致胶囊高度和图标、文字位置偏移的问题
-- 保留系统手势区和三键导航区的底部安全距离，五个导航入口的显示和点击区域保持对齐
+- 内核 Clash.Meta 从 70f0570 升到 FlClash 最新 HEAD 5b453f80，新增 Snell v6 支持（节点写 `version: 6`，`mode` 可选 default / unshaped / unsafe-raw，须与服务器一致；v6 不再支持 tls / http 混淆）；另含约 10 个月上游修复（测速与健康检查、断网重连、WireGuard / Hysteria2 / TUIC 修复、一个 CVE 安全修复）
+- Windows 签名改用本 fork 自己的自签名证书（指纹 06:C1:9F:05:D8:31:6A:F2:FF:B5:A9:42:19:D2:66:83:DC:92:56:8A:ED:A0:87:D3:A6:91:73:BD:74:37:53:AB，有效期至 2031-11-18），签名配置补齐，Windows 包恢复出包
+- Android 只编 arm64，安装包从 168 MB（三架构）降到 55.4 MB（单个 arm64 APK）；32 位 arm 与 x86_64 机型不再提供安装包
 
 ## 升级说明
 
@@ -11,10 +12,10 @@ po0-clash v6.4.4：修复 Android 底部导航栏被状态栏安全区撑高、�
 
 ## 安装
 
-- Windows：po0-clash-6.4.4-windows-amd64-setup.exe（安装包）或 po0-clash-6.4.4-windows-amd64.zip（免安装）
-- Windows 校验：发布页提供 po0-clash-signing.cer 和 po0-clash-6.4.4-windows-amd64-sha256.txt，包内附 WINDOWS-SECURITY.txt
-- macOS：curl -fsSL https://raw.githubusercontent.com/yuuuki-creation/po0-clash/main/scripts/install-macos.sh | bash
-- Android：po0-clash-6.4.4-android-arm64-v8a.apk（主流机型），另提供 armeabi-v7a 和 x86_64 版本
+- Windows：po0-clash-6.4.5-windows-amd64-setup.exe（安装包）或 po0-clash-6.4.5-windows-amd64.zip（免安装）
+- Windows 校验：发布页提供 po0-clash-signing.cer 和 po0-clash-6.4.5-windows-amd64-sha256.txt，包内附 WINDOWS-SECURITY.txt
+- macOS：curl -fsSL https://raw.githubusercontent.com/h2sy60/po0-clash/main/scripts/install-macos.sh | bash
+- Android：po0-clash-6.4.5-android-arm64-v8a.apk（仅 arm64 机型）
 
 ## 已知限制
 
