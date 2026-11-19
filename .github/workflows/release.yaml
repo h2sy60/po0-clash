@@ -35,6 +35,7 @@ jobs:
         include:
           - platform: android
             os: ubuntu-latest
+            arch: arm64
           - platform: windows
             os: windows-2022
             arch: amd64
@@ -117,7 +118,7 @@ jobs:
         if: matrix.platform != 'windows'
         env:
           ANDROID_NDK_HOME: ${{ steps.ndk.outputs.ndk-path }}
-        run: dart setup.dart ${{ matrix.platform }} --env stable -v
+        run: dart setup.dart ${{ matrix.platform }} --env stable -v ${{ matrix.platform ==  'android' && format('--arch {0}', matrix.arch) }}
 
       - name: Prepare Windows signing key
         if: matrix.platform == 'windows'
