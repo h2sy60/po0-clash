@@ -6,10 +6,10 @@ po0-clash 使用固定的自签名代码签名证书。公钥保存在 `windows/
 当前公钥证书的 SHA-256 指纹：
 
 ```text
-74:2E:DB:4A:67:1D:D5:82:9E:E1:53:52:CC:95:B0:88:A6:CC:FB:1A:4B:33:6D:AF:6B:51:3F:ED:8C:21:A2:F9
+06:C1:9F:05:D8:31:6A:F2:FF:B5:A9:42:19:D2:66:83:DC:92:56:8A:ED:A0:87:D3:A6:91:73:BD:74:37:53:AB
 ```
 
-证书有效期为 2026-10-23 至 2031-10-22。签名使用 SHA-256 和 RFC 3161 时间戳。
+证书有效期为 2026-11-19 至 2031-11-18。签名使用 SHA-256 和 RFC 3161 时间戳。
 
 ## 信任边界
 
@@ -41,8 +41,8 @@ bash scripts/windows/create-signing-key.sh
 从本机写入，避免在终端显示密钥或把密码放进命令参数：
 
 ```bash
-base64 < .signing/windows/code-signing.pfx | tr -d '\n' | gh secret set WINDOWS_SIGNING_PFX_BASE64 --repo yuuuki-creation/po0-clash
-tr -d '\r\n' < .signing/windows/pfx-password | gh secret set WINDOWS_SIGNING_PASSWORD --repo yuuuki-creation/po0-clash
+base64 < .signing/windows/code-signing.pfx | tr -d '\n' | gh secret set WINDOWS_SIGNING_PFX_BASE64 --repo h2sy60/po0-clash
+tr -d '\r\n' < .signing/windows/pfx-password | gh secret set WINDOWS_SIGNING_PASSWORD --repo h2sy60/po0-clash
 ```
 
 工作流把 PFX 解码到 runner 临时目录，仅 Windows 打包步骤接收密码。打包脚本核对 PFX 与仓库公钥一致后，
